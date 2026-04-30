@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      Role      @default(USER)
+  items     Item[]
+  orders    Order[]
+  reviews   Review[]
+  aiLogs    AiLog[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Item {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  category    String
+  price       Decimal     @db.Decimal(10, 2)
+  unit        String      @default("kg")
+  stock       Int         @default(0)
+  imageUrl    String?
+  sellerId    String
+  seller      User        @relation(fields: [sellerId], references: [id])
+  orderItems  OrderItem[]
+  reviews     Review[]
+  embedding   Embedding?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([category])
+  @@index([price])
+  @@index([sellerId])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  status    OrderStatus @default(PENDING)
+  total     Decimal     @db.Decimal(10, 2)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  itemId    String
+  item      Item    @relation(fields: [itemId], references: [id])
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([itemId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemId])
+  @@index([itemId])
+}
+
+model AiLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  type      String
+  prompt    String
+  response  String?
+  createdAt DateTime @default(now())
+}
+
+model Embedding {
+  id        String   @id @default(cuid())
+  itemId    String   @unique
+  item      Item     @relation(fields: [itemId], references: [id])
+  vector    Json
+  text      String
+  createdAt DateTime @default(now())
+}
