@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
 
 const categories = ["All", "Fruits", "Vegetables", "Grains", "Spices"];
 
@@ -102,6 +104,13 @@ const vendors = [
 export default function MarketplaceHome() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
+  const { user, isLoading, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/auth/login");
+  };
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -137,6 +146,25 @@ export default function MarketplaceHome() {
           <a href="/home">Landing</a>
           <a href="#vendors">Vendors</a>
           <button type="button">Cart 0</button>
+          {isLoading ? (
+            <span>...</span>
+          ) : user ? (
+            <>
+              <span className="text-sm">{user.name}</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-red-600 hover:text-red-700"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/login">Sign in</Link>
+              <Link href="/auth/signup">Sign up</Link>
+            </>
+          )}
         </nav>
       </header>
 
