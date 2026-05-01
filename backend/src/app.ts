@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { notFound } from './middleware/notFound';
 import { errorHandler } from './middleware/errorHandler';
+import { extractAuth } from './middleware/rbac';
 import { authRouter } from './modules/auth/auth.routes';
 import { itemRouter } from './modules/items/item.routes';
 import { orderRouter } from './modules/orders/order.routes';
@@ -24,6 +25,9 @@ app.use(
     legacyHeaders: false,
   }),
 );
+
+// Extract authentication from JWT
+app.use(extractAuth);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'agriqon-api' }));
 
