@@ -38,3 +38,21 @@ lcov-report
     
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
+
+
+# Agent files
+agent.log
+.agent.log.json
+.agents
+.agent.md
+.instructions.md
+.prompt.md
+SKILL.md
+AGENTS.md
+copilot-instructions.md
+agent-skills/
+.claude
+.continue
+.kiro
+.copilot
+.vscode/settings.json

@@ -28,3 +28,19 @@ yarn-error.log*
 
 PRD.txt
 RBAC.txt
+
+# Agent files
+.agents/
+.agent.md
+.instructions.md
+.prompt.md
+.claude/
+.continue/
+.kiro/
+.windsurf/
+.copilot/
+SKILL.md
+AGENTS.md
+copilot-instructions.md
+agent-skills/
+skills-lock.json
