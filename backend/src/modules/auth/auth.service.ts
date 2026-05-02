@@ -59,7 +59,7 @@ export const authService = {
   },
 
   async getOrCreateOAuthUser(input: OAuthUserInput) {
-    // Try to find existing user
+    // Try to find existing user by email
     let user = await prisma.user.findUnique({
       where: { email: input.email },
       select: publicUserSelect,
@@ -72,7 +72,7 @@ export const authService = {
           email: input.email,
           name: input.name,
           role: input.role,
-          password: await bcrypt.hash(Math.random().toString(), 12), // Random password for OAuth users
+          provider: input.provider,
         },
         select: publicUserSelect,
       });
@@ -82,5 +82,29 @@ export const authService = {
       user,
       token: signToken(user.id, user.role),
     };
+  },
+
+  async passwordResetOAuth(email: string, newPassword: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
+      select: publicUserSelect,
+    });
+
+    return { user: updatedUser };
+  },
+
+  async getUserById(id: string) {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: publicUserSelect,
+    });
   },
 };

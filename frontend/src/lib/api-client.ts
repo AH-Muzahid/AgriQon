@@ -1,8 +1,28 @@
 import axios, { AxiosInstance } from 'axios';
-import { createClient } from './supabase';
+
+// Type definitions for API payloads
+interface ItemData {
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  imageUrl?: string;
+}
+
+interface OrderData {
+  itemId: string;
+  quantity: number;
+  totalPrice: number;
+}
+
+interface ReviewData {
+  itemId: string;
+  rating: number;
+  comment: string;
+}
 
 class ApiClient {
-  private client: AxiosInstance;
+  public client: AxiosInstance;
   private token: string | null = null;
 
   constructor() {
@@ -52,11 +72,11 @@ class ApiClient {
     return this.client.get(`/items/${id}`);
   }
 
-  createItem(data: any) {
+  createItem(data: ItemData) {
     return this.client.post('/items', data);
   }
 
-  updateItem(id: string, data: any) {
+  updateItem(id: string, data: Partial<ItemData>) {
     return this.client.put(`/items/${id}`, data);
   }
 
@@ -73,7 +93,7 @@ class ApiClient {
     return this.client.get(`/orders/${id}`);
   }
 
-  createOrder(data: any) {
+  createOrder(data: OrderData) {
     return this.client.post('/orders', data);
   }
 
@@ -82,7 +102,7 @@ class ApiClient {
     return this.client.get('/reviews', { params: { itemId } });
   }
 
-  createReview(data: any) {
+  createReview(data: ReviewData) {
     return this.client.post('/reviews', data);
   }
 

@@ -30,14 +30,19 @@ export default function AuthCallbackPage() {
           throw new Error('No session found after OAuth');
         }
 
+// Extract provider and role from query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const provider = urlParams.get('provider') || 'google';
+        const role = urlParams.get('role') || 'USER';
+
         // Exchange token with backend to get user profile and JWT token
         try {
-          const response = await apiClient.client.post('/auth/oauth-callback', {
-            provider: 'google',
+          const response = await apiClient.client.post<{ user: { id: string; email: string; name: string; role: 'USER' | 'SELLER' | 'ADMIN'; }; token: string }>('/auth/oauth-callback', {
+            provider,
             idToken: session.access_token,
             email: session.user.email,
             name: session.user.user_metadata?.full_name || session.user.email,
-            role: new URLSearchParams(window.location.search).get('role') || 'USER',
+            role: role as 'USER' | 'SELLER',
           });
 
           const { user: userData, token } = response.data;
@@ -49,15 +54,16 @@ export default function AuthCallbackPage() {
 
           setUser(userData);
           router.push('/dashboard');
-        } catch (apiError: any) {
+        } catch (apiError) {
           console.error('Backend OAuth error:', apiError);
           // If backend call fails but Supabase auth succeeded, still redirect
           // The user can complete profile on next login
           router.push('/dashboard');
         }
-      } catch (err: any) {
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
         console.error('OAuth callback error:', err);
-        setError(err?.message || 'Authentication failed');
+        setError(errorMessage);
         setTimeout(() => router.push('/auth/login'), 3000);
       }
     };

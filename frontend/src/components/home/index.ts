@@ -1,0 +1,7 @@
+export * from "./HeroSection"
+export * from "./MarketplaceSection"
+export * from "./AISearchSection"
+export * from "./WorkflowsSection"
+export * from "./FAQSection"
+export * from "./NewsletterSection"
+export * from "./CallToActionSection"

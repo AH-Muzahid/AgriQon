@@ -26,8 +26,9 @@ model User {
   id        String    @id @default(cuid())
   name      String
   email     String    @unique
-  password  String
+  password  String?   // Optional - OAuth users may not have a password
   role      Role      @default(USER)
+  provider  String?  // "google", "supabase", or null for email/password
   items     Item[]
   orders    Order[]
   reviews   Review[]
