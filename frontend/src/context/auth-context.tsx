@@ -17,6 +17,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (email: string, password: string, name: string, role: 'USER' | 'SELLER') => Promise<User>;
+  signInWithGoogle: () => Promise<void>;
+  signUpWithGoogle: (role: 'USER' | 'SELLER') => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
@@ -114,8 +116,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function signInWithGoogle() {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function signUpWithGoogle(role: 'USER' | 'SELLER') {
+    setIsLoading(true);
+    try {
+      // Store role in session storage temporarily
+      sessionStorage.setItem('googleAuthRole', role);
+
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, isAuthenticated: !!user, login, register, logout, setUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isAuthenticated: !!user,
+        login,
+        register,
+        signInWithGoogle,
+        signUpWithGoogle,
+        logout,
+        setUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

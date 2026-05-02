@@ -20,4 +20,21 @@ export const authController = {
 
     return res.json(result);
   },
+
+  async oauthCallback(req: Request, res: Response) {
+    const { email, name, role } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const result = await authService.getOrCreateOAuthUser({
+      email,
+      name: name || email.split('@')[0],
+      role: role || 'USER',
+      provider: 'google',
+    });
+
+    return res.json(result);
+  },
 };

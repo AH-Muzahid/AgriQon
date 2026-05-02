@@ -11,6 +11,13 @@ type RegisterInput = {
   role: Role;
 };
 
+type OAuthUserInput = {
+  email: string;
+  name: string;
+  role: 'USER' | 'SELLER';
+  provider: string;
+};
+
 const publicUserSelect = {
   id: true,
   name: true,
@@ -47,6 +54,32 @@ export const authService = {
         role: user.role,
         createdAt: user.createdAt,
       },
+      token: signToken(user.id, user.role),
+    };
+  },
+
+  async getOrCreateOAuthUser(input: OAuthUserInput) {
+    // Try to find existing user
+    let user = await prisma.user.findUnique({
+      where: { email: input.email },
+      select: publicUserSelect,
+    });
+
+    // Create user if not exists
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: input.email,
+          name: input.name,
+          role: input.role,
+          password: await bcrypt.hash(Math.random().toString(), 12), // Random password for OAuth users
+        },
+        select: publicUserSelect,
+      });
+    }
+
+    return {
+      user,
       token: signToken(user.id, user.role),
     };
   },
