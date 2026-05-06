@@ -1,263 +1,258 @@
-# Frontend Authentication Setup
+# Frontend Authentication Setup (Agriqon + Supabase + Backend JWT)
 
-This document describes the authentication system implemented in the Agriqon frontend using Supabase Auth and JWT tokens.
+This guide matches the **current codebase** in `frontend/`.
 
-## Architecture
+## 0) What your system actually does (important)
+This project does **not** rely purely on Supabase session cookies for app access.
 
-### Authentication Flow
+Instead:
+1) UI uses **Supabase Auth** only to obtain an OAuth session (Google) when needed.
+2) For Email/Password + for OAuth callback, the frontend calls the **backend**.
+3) Backend validates credentials / OAuth and returns a **JWT token**.
+4) The frontend stores that JWT in **localStorage** and attaches it to API calls.
+5) `AuthContext` fetches `/auth/me` (backend) to populate `{ id, email, name, role }`.
 
-```
-User (Browser)
-    ↓
-[/auth/login or /auth/signup]
-    ↓
-[apiClient.login/register]
-    ↓
-[Backend API] → Validates credentials → Returns JWT token
-    ↓
-[localStorage] → Stores token
-    ↓
-[AuthContext] → Sets user state
-    ↓
-[Redirect] → /dashboard (success) or show error
-```
+So your “Supabase Auth setup” is coupled to the backend contract:
+- `POST /api/auth/login`
+- `POST /api/auth/register`
+- `POST /api/auth/logout`
+- `GET  /api/auth/me`
+- `POST /api/auth/oauth-callback`
 
-## Components
+---
 
-### 1. **Supabase Client** (`lib/supabase.ts`)
-- Initializes Supabase browser client
-- Loads `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Handles Supabase session management
+## 1) Supabase: Project + Auth Providers
+### 1.1 Create a Supabase project
+- Go to https://supabase.com → **New Project**
+- Copy:
+  - **Project URL**
+  - **anon public key**
 
-### 2. **API Client** (`lib/api-client.ts`)
-- Axios instance with base URL pointing to backend API
-- Automatically adds `Authorization: Bearer {token}` header
-- Provides methods for: login, register, logout, items, orders, reviews, AI
-- Token management via `setToken()`
+### 1.2 Enable Auth providers
+Supabase Dashboard → **Authentication → Providers**
+- **Email**: Enable
+- **Google**: Enable (optional but recommended)
 
-### 3. **Auth Context** (`context/auth-context.tsx`)
-- Global auth state management using React Context
-- User object with: `id`, `email`, `name`, `role`
-- Methods: `login()`, `register()`, `logout()`, `setUser()`
-- Provides `useAuth()` hook for components
-- Manages token persistence in localStorage
+### 1.3 URL Configuration (for local dev)
+Supabase Dashboard → **Authentication → URL Configuration**
+- **Site URL**: `http://localhost:3000`
+- **Redirect URL** (must match Supabase callback):
+  - `http://localhost:3000/auth/callback`
 
-### 4. **Auth Pages**
-- **Login** (`app/auth/login/page.tsx`): Email/password form
-- **Signup** (`app/auth/signup/page.tsx`): Registration with role selection (USER/SELLER)
-- **Dashboard** (`app/dashboard/page.tsx`): Protected route showing user profile
+> Note: Your OAuth flow uses a Next.js callback route at
+> `frontend/src/app/auth/callback/page.tsx`.
 
-## File Structure
+---
 
-```
-frontend/
-├── src/
-│   ├── app/
-│   │   ├── auth/
-│   │   │   ├── login/
-│   │   │   │   └── page.tsx
-│   │   │   └── signup/
-│   │   │       └── page.tsx
-│   │   ├── dashboard/
-│   │   │   ├── layout.tsx (protected layout)
-│   │   │   └── page.tsx
-│   │   ├── layout.tsx (root with AuthProvider)
-│   │   └── page.tsx (marketplace with auth UI)
-│   ├── context/
-│   │   └── auth-context.tsx
-│   └── lib/
-│       ├── supabase.ts
-│       └── api-client.ts
-├── .env.local (local environment - not committed)
-├── .env.example (template)
-└── .gitignore
+## 2) Frontend setup
+### 2.1 Install deps
+In `frontend/`:
+```bash
+npm i @supabase/ssr @supabase/supabase-js
 ```
 
-## Environment Variables
+### 2.2 Supabase client file (already exists)
+`frontend/src/lib/supabase.ts` uses `@supabase/ssr`:
+- It expects:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-Create `.env.local` in the frontend directory:
+You should not edit this unless you change strategy.
 
+### 2.3 Required environment variables
+Create `frontend/.env.local`:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://[YOUR-PROJECT].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[YOUR-ANON-KEY]
+NEXT_PUBLIC_SUPABASE_URL=https://<YOUR-PROJECT-REF>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR-ANON-KEY>
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
 ```
 
-**Note:** Variables starting with `NEXT_PUBLIC_` are sent to the browser. Never put secret keys here.
+---
 
-## Usage
+## 3) Auth flows (how to test)
 
-### Using Authentication in Components
+### 3.1 Email/Password signup + login
+Your UI pages:
+- `frontend/src/app/auth/signup/page.tsx`
+- `frontend/src/app/auth/login/page.tsx`
 
-```typescript
-'use client';
+Flow:
+- UI calls backend:
+  - `POST /api/auth/register`
+  - `POST /api/auth/login`
+- Backend returns `{ user, token }`
+- Frontend stores token in `localStorage` and sets it in `apiClient`
+- `AuthContext` loads user via `GET /api/auth/me`
 
-import { useAuth } from '@/context/auth-context';
+#### Test checklist
+- Start backend + frontend (see section 6)
+- Visit:
+  - `http://localhost:3000/auth/signup`
+  - create account (choose Buyer/Seller)
+  - ensure redirect works
 
-export default function MyComponent() {
-  const { user, isLoading, isAuthenticated, login, logout } = useAuth();
+> If you enabled Supabase Email verification in Supabase, your backend must be configured accordingly (otherwise backend login may fail).
 
-  if (isLoading) return <div>Loading...</div>;
+---
 
-  if (!isAuthenticated) {
-    return <div>Please log in</div>;
-  }
+### 3.2 Google OAuth (optional)
+Your UI:
+- Signup/login pages have a Google button
 
-  return (
-    <div>
-      <p>Welcome, {user.name}!</p>
-      <button onClick={() => logout()}>Logout</button>
-    </div>
-  );
-}
-```
+Flow:
+1) Frontend triggers Supabase OAuth:
+   - `supabase.auth.signInWithOAuth({ provider: 'google', options.redirectTo })`
+2) Supabase redirects back to:
+   - `http://localhost:3000/auth/callback`
+3) `frontend/src/app/auth/callback/page.tsx` does:
+   - `supabase.auth.getSession()`
+   - extracts `session.access_token`
+   - calls backend:
+     - `POST /api/auth/oauth-callback`
+     - payload includes `{ provider, idToken, email, name, role }`
+4) Backend returns `{ user, token }`
+5) Frontend stores token + redirects to `/dashboard`
 
-### Protected Routes
+#### IMPORTANT: Role propagation
+- Seller/Buyer role is passed via query param:
+  - `/auth/callback?role=SELLER` (or `USER`)
+- The callback page reads `role` and forwards it to backend.
 
-Wrap route layout with protection:
+---
 
-```typescript
-// app/dashboard/layout.tsx
-'use client';
+## 4) Protected routes (Dashboard)
+Dashboard protection is already implemented in:
+- `frontend/src/app/dashboard/layout.tsx`
 
-import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+It checks:
+- `useAuth()` → if `!isLoading && !user` → redirect `/auth/login`
 
-export default function ProtectedLayout({ children }) {
-  const { user, isLoading } = useAuth();
-  const router = useRouter();
+---
 
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/auth/login');
-    }
-  }, [user, isLoading, router]);
+## 5) Backend contract (must match)
+Frontend expects backend responses:
 
-  if (isLoading || !user) return null;
+### 5.1 Login/Register
+- `POST /api/auth/login`
+- `POST /api/auth/register`
 
-  return <>{children}</>;
-}
-```
-
-### Making API Calls with Auth
-
-```typescript
-import { apiClient } from '@/lib/api-client';
-
-// Automatically includes Authorization header
-const items = await apiClient.getItems();
-const orders = await apiClient.getOrders();
-const review = await apiClient.createReview(data);
-```
-
-## Backend Integration
-
-### Expected Backend Endpoints
-
-- `POST /api/auth/login` - Login with email/password
-  - Request: `{ email, password }`
-  - Response: `{ user, token }`
-
-- `POST /api/auth/register` - Sign up
-  - Request: `{ email, password, name, role }`
-  - Response: `{ user, token }`
-
-- `POST /api/auth/logout` - Logout
-  - Response: `{ success: true }`
-
-- `GET /api/auth/me` - Get current user (protected)
-  - Headers: `Authorization: Bearer {token}`
-  - Response: `{ user }`
-
-### Token Format
-
-Expected JWT structure in token claims:
-
+Response shape (as used in code):
 ```json
-{
-  "sub": "user-id",
-  "role": "USER|SELLER|ADMIN",
-  "email": "user@example.com",
-  "name": "User Name",
-  "iat": 1234567890,
-  "exp": 1234571490
-}
+{ "user": {"id":"...","email":"...","name":"...","role":"USER|SELLER|ADMIN"}, "token": "..." }
 ```
 
-## Security Best Practices
+### 5.2 Current user
+- `GET /api/auth/me`
 
-✅ **DO:**
-- Store tokens in secure HTTP-only cookies (production)
-- Validate user session on app load
-- Redirect to login if token expires
-- Use HTTPS in production
-- Keep env variables in `.env.local`
-- Validate input before sending to API
-
-❌ **DON'T:**
-- Store sensitive tokens in localStorage (use cookies in production)
-- Expose secret keys in client code
-- Skip role-based access checks
-- Trust token without backend verification
-- Store user metadata in localStorage
-
-## Future Enhancements
-
-- [ ] OAuth 2.0 integration (Google, GitHub)
-- [ ] Remember me functionality
-- [ ] Automatic token refresh
-- [ ] Social login
-- [ ] Two-factor authentication
-- [ ] Password reset flow
-- [ ] Email verification
-- [ ] Session management
-- [ ] Rate limiting on login attempts
-
-## Troubleshooting
-
-### "Cannot find module 'supabase-js'"
-```bash
-npm install @supabase/supabase-js @supabase/ssr axios
+Response shape:
+```json
+{ "id":"...","email":"...","name":"...","role":"USER|SELLER|ADMIN" }
 ```
 
-### "useAuth must be used within an AuthProvider"
-- Ensure `<AuthProvider>` wraps your app in layout
-- Check that provider is marked with `'use client'`
+### 5.3 OAuth callback
+- `POST /api/auth/oauth-callback`
 
-### Token not persisting between page reloads
-- Token is stored in localStorage on successful login
-- Check browser DevTools → Application → Local Storage
-- Verify `setToken()` is called after login
+Frontend sends:
+- `provider`
+- `idToken: session.access_token`
+- `email`
+- `name`
+- `role`
 
-### API requests returning 401
-- Token may have expired
-- Check Authorization header is being sent
-- Verify backend validates token correctly
+Backend should create/find user and return `{ user, token }`.
 
-## Testing Auth
+---
 
-### Login Test
+## 6) Local run & testing
+Run both servers:
+
+### Terminal 1 (backend)
 ```bash
-# Terminal 1: Start backend
 cd backend && npm run dev
-
-# Terminal 2: Start frontend
-cd frontend && npm run dev
-
-# Browser: Visit http://localhost:3000
-# Click "Sign up" → Fill form → Click "Create account"
-# You should be redirected to dashboard
 ```
 
-### Protected Route Test
+### Terminal 2 (frontend)
 ```bash
-# Visit http://localhost:3000/dashboard while logged out
-# Should redirect to login page
+cd frontend && npm run dev
 ```
 
-## Related Documentation
+Then test:
+- Email signup/login:
+  - http://localhost:3000/auth/signup
+  - http://localhost:3000/auth/login
+- Protected dashboard:
+  - http://localhost:3000/dashboard (should redirect if logged out)
+- Google OAuth:
+  - use the Google button on login/signup
 
-- [RBAC Implementation](../backend/RBAC-IMPLEMENTATION.md)
-- [Backend Auth Routes](../backend/src/modules/auth/)
-- [Supabase Docs](https://supabase.com/docs)
+---
+
+## 7) Security checks / common vulnerabilities to verify
+This section is focused on **real risks** in the current architecture.
+
+### 7.1 localStorage token risk (known tradeoff)
+Current code stores JWT in `localStorage`:
+- `AuthContext` sets `localStorage.setItem('authToken', token)`
+
+Impact:
+- XSS can steal token.
+
+What to verify:
+- Ensure you have strong Content Security Policy (CSP) in production.
+- Ensure no user-generated HTML is injected unsafely.
+- Avoid `dangerouslySetInnerHTML` with untrusted content.
+
+### 7.2 Trust boundary: never trust client role
+Client passes `role` during registration/OAuth.
+
+What to verify (backend must enforce):
+- Backend should not accept arbitrary `role` from the client without validation rules.
+- Role must be derived from allowed flows or validated against server-side policy.
+
+### 7.3 OAuth token validation
+In `auth/callback/page.tsx` you send:
+- `idToken: session.access_token`
+
+What to verify (backend must enforce):
+- Validate OAuth token properly with Google/Supabase.
+- Don’t just decode it and trust payload blindly.
+
+### 7.4 Protected API endpoints
+What to verify:
+- Backend endpoints must check JWT validity on every protected route.
+- `GET /auth/me` must verify signature and expiry.
+
+### 7.5 Redirect URI mismatch
+OAuth will fail if Supabase URL configuration doesn’t match.
+
+What to verify:
+- Supabase URL config:
+  - `Site URL: http://localhost:3000`
+  - Redirect URL: `http://localhost:3000/auth/callback`
+- Google OAuth redirect URLs should align with the Supabase provider configuration.
+
+---
+
+## 8) Troubleshooting
+### “Missing Supabase environment variables”
+- Check `frontend/.env.local` values:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+### “401 from /api/auth/*”
+- JWT missing or expired
+- Backend not configured to validate the token
+- Ensure `apiClient.setToken()` is called after login
+
+### “OAuth callback fails”
+- Confirm backend `/auth/oauth-callback` is reachable.
+- Check backend logs.
+
+---
+
+## 9) Related files
+- Supabase client: `frontend/src/lib/supabase.ts`
+- Auth state: `frontend/src/context/auth-context.tsx`
+- OAuth callback UI: `frontend/src/app/auth/callback/page.tsx`
+- Dashboard protection: `frontend/src/app/dashboard/layout.tsx`
+

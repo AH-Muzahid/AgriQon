@@ -14,19 +14,28 @@ export interface AuthRequest extends Request {
  * Middleware to extract and verify JWT from Authorization header
  */
 export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+  let token: string | undefined;
+
   const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next();
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7);
   }
 
-  const token = authHeader.substring(7);
-  
+  // If no bearer token, attempt to read authToken cookie
+  if (!token && req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';').map((c) => c.trim());
+    const match = cookies.find((c) => c.startsWith('authToken='));
+    if (match) {
+      token = decodeURIComponent(match.split('=')[1]);
+    }
+  }
+
+  if (!token) return next();
+
   try {
-    // Try Supabase JWT first
     const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
     const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
-    
+
     req.user = {
       id: decoded.sub || decoded.id,
       role: decoded.role || 'USER',

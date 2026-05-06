@@ -12,4 +12,5 @@ export const env = {
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET ?? '',
+  googleClientId: process.env.GOOGLE_CLIENT_ID,
 };

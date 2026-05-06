@@ -29,35 +29,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state on mount
+  // Initialize auth state on mount (avoid react-hooks/set-state-in-effect by not calling async function directly)
   useEffect(() => {
-    checkUser();
-  }, []);
+    let cancelled = false;
 
-  async function checkUser() {
-    try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const init = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (session?.user) {
-        // Get user profile from backend
-        try {
+        if (!cancelled && session?.user) {
           const response = await apiClient.client.get('/auth/me');
           setUser(response.data);
           apiClient.setToken(session.access_token);
-        } catch (error) {
-          console.error('Failed to fetch user profile:', error);
-          setUser(null);
         }
+      } catch (error) {
+        console.error('Error checking user:', error);
+        if (!cancelled) setUser(null);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error checking user:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+    };
+
+    init();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function login(email: string, password: string): Promise<User> {
     setIsLoading(true);
@@ -65,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.login({ email, password });
       const { user: userData, token } = response.data;
 
-      // Store token
       if (token) {
         localStorage.setItem('authToken', token);
         apiClient.setToken(token);
@@ -89,7 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await apiClient.register({ email, password, name, role });
       const { user: userData, token } = response.data;
 
-      // Store token
       if (token) {
         localStorage.setItem('authToken', token);
         apiClient.setToken(token);
@@ -120,16 +119,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
     } finally {
       setIsLoading(false);
     }
@@ -138,20 +135,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signUpWithGoogle(role: 'USER' | 'SELLER') {
     setIsLoading(true);
     try {
-      // Store role in session storage temporarily
       sessionStorage.setItem('googleAuthRole', role);
 
       const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
         },
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
     } finally {
       setIsLoading(false);
     }
@@ -183,3 +177,4 @@ export function useAuth() {
   }
   return context;
 }
+

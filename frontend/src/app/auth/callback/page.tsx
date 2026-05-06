@@ -30,34 +30,26 @@ export default function AuthCallbackPage() {
           throw new Error('No session found after OAuth');
         }
 
-// Extract provider and role from query params
+        // Extract provider from query params (do not trust client role)
         const urlParams = new URLSearchParams(window.location.search);
         const provider = urlParams.get('provider') || 'google';
-        const role = urlParams.get('role') || 'USER';
 
-        // Exchange token with backend to get user profile and JWT token
+        // Exchange token with backend to get user profile. Backend will set httpOnly cookie.
         try {
-          const response = await apiClient.client.post<{ user: { id: string; email: string; name: string; role: 'USER' | 'SELLER' | 'ADMIN'; }; token: string }>('/auth/oauth-callback', {
+          const response = await apiClient.client.post('/auth/oauth-callback', {
             provider,
             idToken: session.access_token,
             email: session.user.email,
             name: session.user.user_metadata?.full_name || session.user.email,
-            role: role as 'USER' | 'SELLER',
           });
 
-          const { user: userData, token } = response.data;
+          const { user: userData } = response.data as { user: { id: string; email: string; name: string; role: 'USER' | 'SELLER' | 'ADMIN'; } };
 
-          if (token) {
-            localStorage.setItem('authToken', token);
-            apiClient.setToken(token);
-          }
-
+          // Do not store token in localStorage; cookie is httpOnly
           setUser(userData);
           router.push('/dashboard');
         } catch (apiError) {
           console.error('Backend OAuth error:', apiError);
-          // If backend call fails but Supabase auth succeeded, still redirect
-          // The user can complete profile on next login
           router.push('/dashboard');
         }
       } catch (err) {

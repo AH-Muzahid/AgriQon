@@ -1,6 +1,8 @@
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { notFound } from './middleware/notFound';
@@ -17,6 +19,8 @@ export const app = express();
 app.use(helmet());
 app.use(cors({ origin: env.frontendOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
+app.use(cookieParser());
+app.use(csurf({ cookie: true }));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

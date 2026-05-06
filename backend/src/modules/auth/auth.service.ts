@@ -4,6 +4,31 @@ import { Role } from '@prisma/client';
 import { env } from '../../config/env';
 import { prisma } from '../../lib/prisma';
 
+async function getSupabaseAdminUserByEmail(email: string) {
+  if (!env.supabaseUrl || !env.supabaseServiceRoleKey) return null;
+
+  try {
+    const url = `${env.supabaseUrl.replace(/\/$/, '')}/auth/v1/admin/users?email=${encodeURIComponent(email)}`;
+    const resp = await fetch(url, {
+      method: 'GET',
+      headers: {
+        apikey: env.supabaseServiceRoleKey,
+        Authorization: `Bearer ${env.supabaseServiceRoleKey}`,
+      },
+    });
+
+    if (!resp.ok) return null;
+
+    const data = await resp.json();
+    // The admin endpoint may return an array of users
+    if (Array.isArray(data) && data.length > 0) return data[0];
+    return null;
+  } catch (err) {
+    console.error('Failed to fetch Supabase admin user', err);
+    return null;
+  }
+}
+
 type RegisterInput = {
   name: string;
   email: string;
@@ -14,7 +39,6 @@ type RegisterInput = {
 type OAuthUserInput = {
   email: string;
   name: string;
-  role: 'USER' | 'SELLER';
   provider: string;
 };
 
@@ -67,11 +91,26 @@ export const authService = {
 
     // Create user if not exists
     if (!user) {
+      // Try to derive role from Supabase admin user metadata when available
+      let derivedRole: Role = input.email.endsWith('@agroclients.com') ? 'SELLER' : 'USER';
+
+      const supaUser = await getSupabaseAdminUserByEmail(input.email);
+      if (supaUser) {
+        const metaRole = supaUser.user_metadata?.role || supaUser.user_metadata?.roles || supaUser.app_metadata?.roles;
+        if (typeof metaRole === 'string') {
+          const r = metaRole.toUpperCase();
+          if (r === 'SELLER' || r === 'ADMIN') derivedRole = r as Role;
+        } else if (Array.isArray(metaRole) && metaRole.length > 0) {
+          const r = String(metaRole[0]).toUpperCase();
+          if (r === 'SELLER' || r === 'ADMIN') derivedRole = r as Role;
+        }
+      }
+
       user = await prisma.user.create({
         data: {
           email: input.email,
           name: input.name,
-          role: input.role,
+          role: derivedRole,
           provider: input.provider,
         },
         select: publicUserSelect,
