@@ -35,23 +35,34 @@ class ApiClient {
       },
     });
 
-    // Add request interceptor to include auth token
+    // Read CSRF token from cookie and inject into header
     this.client.interceptors.request.use(
       (config) => {
-        if (this.token) {
-          config.headers.Authorization = `Bearer ${this.token}`;
+        const csrfToken = this.getCSRFToken();
+        if (csrfToken) {
+          config.headers['X-CSRF-TOKEN'] = csrfToken;
         }
+        config.withCredentials = true;
         return config;
       },
       (error) => Promise.reject(error)
     );
   }
 
+  private getCSRFToken(): string | null {
+    const match = document.cookie.match(/_csrf=([^;]+)/);
+    if (match) return decodeURIComponent(match[1]);
+
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    if (meta) return meta.getAttribute('content');
+
+    return null;
+  }
+
   setToken(token: string | null) {
     this.token = token;
   }
 
-  // Auth endpoints
   register(data: { email: string; password: string; name: string; role: 'USER' | 'SELLER' }) {
     return this.client.post('/auth/register', data);
   }
@@ -64,7 +75,6 @@ class ApiClient {
     return this.client.post('/auth/logout');
   }
 
-  // Items endpoints
   getItems(params?: { category?: string; page?: number }) {
     return this.client.get('/items', { params });
   }
@@ -85,7 +95,6 @@ class ApiClient {
     return this.client.delete(`/items/${id}`);
   }
 
-  // Orders endpoints
   getOrders() {
     return this.client.get('/orders');
   }
@@ -98,7 +107,6 @@ class ApiClient {
     return this.client.post('/orders', data);
   }
 
-  // Reviews endpoints
   getReviews(itemId: string) {
     return this.client.get('/reviews', { params: { itemId } });
   }
@@ -107,7 +115,6 @@ class ApiClient {
     return this.client.post('/reviews', data);
   }
 
-  // AI endpoints
   askAI(question: string) {
     return this.client.post('/ai/ask', { question });
   }
