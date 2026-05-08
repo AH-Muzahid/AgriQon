@@ -1,282 +1,63 @@
 "use client";
 
-import Image from "next/image";
+import { vendors } from "@/lib/mock-data";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useAuth } from "@/context/auth-context";
-import { useRouter } from "next/navigation";
 
-const categories = ["All", "Fruits", "Vegetables", "Grains", "Spices"];
-
-const products = [
-  {
-    name: "Himsagar Mango",
-    vendor: "Rahman Agro",
-    category: "Fruits",
-    location: "Rajshahi",
-    price: 280,
-    unit: "kg",
-    stock: "160 kg",
-    rating: "4.8",
-    orders: "92",
-    tag: "Export grade",
-    image:
-      "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Aromatic Rice",
-    vendor: "North Field Co-op",
-    category: "Grains",
-    location: "Dinajpur",
-    price: 86,
-    unit: "kg",
-    stock: "920 kg",
-    rating: "4.6",
-    orders: "214",
-    tag: "Bulk ready",
-    image:
-      "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Green Chili",
-    vendor: "Mita Farms",
-    category: "Spices",
-    location: "Bogura",
-    price: 140,
-    unit: "kg",
-    stock: "75 kg",
-    rating: "4.7",
-    orders: "68",
-    tag: "Fresh picked",
-    image:
-      "https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Fresh Potato",
-    vendor: "Bogura Growers",
-    category: "Vegetables",
-    location: "Rangpur",
-    price: 38,
-    unit: "kg",
-    stock: "1.2 ton",
-    rating: "4.5",
-    orders: "301",
-    tag: "Wholesale",
-    image:
-      "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Red Tomato",
-    vendor: "Green Delta Farm",
-    category: "Vegetables",
-    location: "Jashore",
-    price: 62,
-    unit: "kg",
-    stock: "450 kg",
-    rating: "4.4",
-    orders: "147",
-    tag: "Daily harvest",
-    image:
-      "https://images.unsplash.com/photo-1561136594-7f68413baa99?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    name: "Banana Bunch",
-    vendor: "Hill Fresh",
-    category: "Fruits",
-    location: "Narsingdi",
-    price: 95,
-    unit: "dozen",
-    stock: "310 dozen",
-    rating: "4.6",
-    orders: "122",
-    tag: "Fast delivery",
-    image:
-      "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=900&q=80",
-  },
-];
-
-const vendors = [
-  { name: "Rahman Agro", specialty: "Premium fruits", sales: "1.8k" },
-  { name: "North Field Co-op", specialty: "Rice and grains", sales: "3.4k" },
-  { name: "Bogura Growers", specialty: "Bulk vegetables", sales: "2.1k" },
-];
+import { HeroBanner } from "@/components/home/hero-banner";
+import { CategoryCarousel } from "@/components/home/category-carousel";
+import { PromoBanners } from "@/components/home/promo-banners";
+import { PopularProducts } from "@/components/home/popular-products";
+import { DeliveryBanner } from "@/components/home/delivery-banner";
 
 export default function MarketplaceHome() {
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchQuery, setSearchQuery] = useState("");
-  const { user, isLoading, logout } = useAuth();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await logout();
-    router.push("/auth/login");
-  };
-
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const matchesCategory =
-        selectedCategory === "All" || product.category === selectedCategory;
-      const searchText = `${product.name} ${product.vendor} ${product.location} ${product.category}`;
-      const matchesSearch = searchText
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase().trim());
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [searchQuery, selectedCategory]);
 
   return (
     <main className="storefront">
-      <header className="commerce-header">
-        <Link className="commerce-brand" href="/" aria-label="Agriqon marketplace">
-          <span>A</span>
-          Agriqon Market
-        </Link>
+      <HeroBanner />
+      <CategoryCarousel />
+      <PromoBanners />
 
-        <div className="commerce-search">
-          <input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search products, vendors, or region"
-            aria-label="Search marketplace"
-          />
-        </div>
+      <PopularProducts />
+      <DeliveryBanner />
 
-        <nav className="commerce-actions" aria-label="Marketplace actions">
-          <a href="/home">Landing</a>
-          <a href="#vendors">Vendors</a>
-          <button type="button">Cart 0</button>
-          {isLoading ? (
-            <span>...</span>
-          ) : user ? (
-            <>
-              <span className="text-sm">{user.name}</span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="text-red-600 hover:text-red-700"
+      {/* Vendors Section */}
+      <section id="vendors" className="w-full px-4 sm:px-6 lg:px-8 py-16 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <p className="text-[#a4d45c] font-bold text-xs uppercase tracking-widest mb-2">Partner Network</p>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#004d2e] tracking-tight">Trusted Seller Network</h2>
+            </div>
+            <Link href="/about" className="text-sm font-bold text-[#004d2e] hover:opacity-80 transition-opacity">
+              About AgriQon &rarr;
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vendors.map((vendor) => (
+              <article 
+                key={vendor.name}
+                className="group flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-white hover:shadow-xl hover:shadow-black/5 hover:border-emerald-100 transition-all duration-300 cursor-pointer"
               >
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/auth/login">Sign in</Link>
-              <Link href="/auth/signup">Sign up</Link>
-            </>
-          )}
-        </nav>
-      </header>
-
-      <section className="commerce-hero">
-        <div className="commerce-hero-copy">
-          <p className="store-kicker">Multivendor agriculture ecommerce</p>
-          <h1>Buy fresh farm products from verified sellers.</h1>
-          <p>
-            Browse crops by category, compare vendors, review stock, and place
-            orders from one clean marketplace interface.
-          </p>
-          <div className="commerce-hero-actions">
-            <a href="#products">Shop products</a>
-            <a href="#vendors">View vendors</a>
-          </div>
-        </div>
-
-        <div className="deal-board" aria-label="Today market summary">
-          <div>
-            <span>Today&apos;s featured deal</span>
-            <strong>Himsagar Mango</strong>
-            <p>Tk 280/kg from Rahman Agro</p>
-          </div>
-          <Image
-            src="https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=900&q=80"
-            alt="Fresh mango"
-            width={600}
-            height={460}
-            priority
-          />
-        </div>
-      </section>
-
-      <section className="category-strip" aria-label="Product categories">
-        {categories.map((category) => (
-          <button
-            type="button"
-            key={category}
-            className={selectedCategory === category ? "active" : ""}
-            onClick={() => setSelectedCategory(category)}
-          >
-            {category}
-          </button>
-        ))}
-      </section>
-
-      <section id="products" className="commerce-section">
-        <div className="commerce-section-title">
-          <div>
-            <p className="store-kicker">Products</p>
-            <h2>Available now</h2>
-          </div>
-          <span>{filteredProducts.length} products found</span>
-        </div>
-
-        <div className="commerce-grid">
-          {filteredProducts.map((product) => (
-            <article className="commerce-card" key={product.name}>
-              <div className="commerce-card-image">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={900}
-                  height={620}
-                  sizes="(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw"
-                />
-                <span>{product.tag}</span>
-              </div>
-              <div className="commerce-card-body">
-                <div>
-                  <p>{product.category} / {product.location}</p>
-                  <h3>{product.name}</h3>
-                  <a href="#vendors">{product.vendor}</a>
+                <div className="size-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-2xl font-bold text-[#004d2e] shadow-sm group-hover:scale-110 transition-transform">
+                  {vendor.name.charAt(0)}
                 </div>
-                <div className="commerce-card-meta">
-                  <strong>
-                    Tk {product.price}
-                    <span>/{product.unit}</span>
-                  </strong>
-                  <span>{product.stock}</span>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-[#004d2e] transition-colors">{vendor.name}</h3>
+                  <p className="text-xs text-slate-500 font-medium">{vendor.specialty}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      {vendor.sales} sales
+                    </span>
+                    <span className="size-1 bg-slate-300 rounded-full"></span>
+                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">
+                      Top Rated
+                    </span>
+                  </div>
                 </div>
-                <div className="commerce-card-bottom">
-                  <span>{product.rating} rating</span>
-                  <span>{product.orders} orders</span>
-                  <button type="button">Add</button>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section id="vendors" className="commerce-section vendor-section">
-        <div className="commerce-section-title">
-          <div>
-            <p className="store-kicker">Vendors</p>
-            <h2>Trusted seller network</h2>
+              </article>
+            ))}
           </div>
-          <a href="/home">About Agriqon</a>
-        </div>
-
-        <div className="vendor-grid">
-          {vendors.map((vendor) => (
-            <article className="vendor-card" key={vendor.name}>
-              <span>{vendor.name.charAt(0)}</span>
-              <div>
-                <h3>{vendor.name}</h3>
-                <p>{vendor.specialty}</p>
-              </div>
-              <strong>{vendor.sales} sales</strong>
-            </article>
-          ))}
         </div>
       </section>
     </main>

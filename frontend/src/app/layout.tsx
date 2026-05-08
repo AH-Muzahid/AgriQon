@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
+import CartProvider from "@/context/cart-context";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
-import Navbar from "@/components/ui/navbar";
+import Navbar from "@/components/home/navbar";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -22,8 +23,10 @@ export default function RootLayout({
     <html lang="en" className={cn("h-full antialiased", "font-sans", inter.variable)} data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AuthProvider>
-          <Navbar />
-          {children}
+          <CartProvider>
+            <Navbar />
+            {children}
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

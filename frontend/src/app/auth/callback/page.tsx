@@ -47,10 +47,10 @@ export default function AuthCallbackPage() {
 
           // Do not store token in localStorage; cookie is httpOnly
           setUser(userData);
-          router.push('/dashboard');
+          router.push('/');
         } catch (apiError) {
           console.error('Backend OAuth error:', apiError);
-          router.push('/dashboard');
+          router.push('/');
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Authentication failed';

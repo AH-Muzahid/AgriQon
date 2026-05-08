@@ -9,7 +9,9 @@ export interface User {
   email: string;
   name: string;
   role: 'USER' | 'SELLER' | 'ADMIN';
+  avatarUrl?: string | null;
 }
+
 
 interface AuthContextType {
   user: User | null;
@@ -40,10 +42,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: { session },
         } = await supabase.auth.getSession();
 
-        if (!cancelled && session?.user) {
-          const response = await apiClient.client.get('/auth/me');
-          setUser(response.data);
+        // If we have a Supabase session, set token first so apiClient sends auth header.
+        if (session?.access_token) {
           apiClient.setToken(session.access_token);
+        }
+
+        // If token exists in localStorage (legacy or non-supabase auth), prefer it.
+        const stored = localStorage.getItem('authToken');
+        if (stored) {
+          apiClient.setToken(stored);
+        }
+
+        if (!cancelled) {
+          try {
+            const response = await apiClient.client.get('/auth/me');
+            setUser(response.data);
+          } catch (err) {
+            // Not authenticated or endpoint failed; log and clear user
+            console.debug('Failed to fetch /auth/me:', err);
+            setUser(null);
+          }
+
         }
       } catch (error) {
         console.error('Error checking user:', error);
@@ -72,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(userData);
+      console.log('[Auth] login successful, user set:', userData);
       return userData;
     } finally {
       setIsLoading(false);

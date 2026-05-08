@@ -61,6 +61,11 @@ class ApiClient {
 
   setToken(token: string | null) {
     this.token = token;
+    if (token) {
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete this.client.defaults.headers.common['Authorization'];
+    }
   }
 
   register(data: { email: string; password: string; name: string; role: 'USER' | 'SELLER' }) {
