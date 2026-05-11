@@ -6,6 +6,7 @@ import { env } from '../config/env';
 export type AuthUser = {
   id: string;
   role: Role;
+  businessId?: string | null;
 };
 
 declare global {

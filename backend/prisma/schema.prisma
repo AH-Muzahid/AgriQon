@@ -8,68 +8,340 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ==========================================
+// ENUMS & TYPES
+// ==========================================
+
 enum Role {
   USER
   SELLER
   ADMIN
+  MANAGER
+  CASHIER
+  ACCOUNTANT
+  WAREHOUSE_KEEPER
 }
 
 enum OrderStatus {
+  DRAFT
   PENDING
   CONFIRMED
   SHIPPED
   DELIVERED
   CANCELLED
+  RETURNED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum MovementType {
+  IN
+  OUT
+  TRANSFER
+  ADJUSTMENT
+  RETURN
+}
+
+// ==========================================
+// CORE IDENTITY & MULTI-TENANCY
+// ==========================================
+
+model Organization {
+  id         String     @id @default(uuid())
+  name       String
+  businesses Business[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Business {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  taxNumber      String?
+  currency       String       @default("BDT")
+
+  // Relations
+  users          User[]
+  products       Item[]
+  categories     Category[]
+  brands         Brand[]
+  warehouses     Warehouse[]
+  orders         Order[]
+  purchases      PurchaseOrder[]
+  invoices       Invoice[]
+  customers      Customer[]
+  suppliers      Supplier[]
+  auditLogs      AuditLog[]
+  inventory      Inventory[]
+  stockReservations StockReservation[]
+  stockMovements StockMovement[]
+  accounts       Account[]
+  ledgerEntries  LedgerEntry[]
+  payments       Payment[]
+  webhookEvents  WebhookEvent[]
+  outboxEvents   OutboxEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
 }
 
 model User {
-  id        String    @id @default(cuid())
-  name      String
-  email     String    @unique
-  password  String?   // Optional - OAuth users may not have a password
-  role      Role      @default(USER)
-  provider  String?  // "google", "supabase", or null for email/password
-  items     Item[]
-  orders    Order[]
-  reviews   Review[]
-  aiLogs    AiLog[]
+  id         String    @id @default(cuid())
+  name       String
+  email      String    @unique
+  password   String?
+  role       Role      @default(USER)
+  businessId String?
+  business   Business? @relation(fields: [businessId], references: [id])
+
+  // Relations
+  reviews       Review[]
+  orders        Order[]
+  aiLogs        AiLog[]
+  ledgerEntries LedgerEntry[]
+  auditLogs     AuditLog[]
+
+  deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@index([businessId])
+}
+
+// ==========================================
+// PRODUCT CATALOG
+// ==========================================
+
+model Category {
+  id         String     @id @default(uuid())
+  businessId String
+  business   Business   @relation(fields: [businessId], references: [id])
+  name       String
+  parentId   String?
+  parent     Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children   Category[] @relation("CategoryHierarchy")
+  items      Item[]
+
+  @@index([businessId])
+}
+
+model Brand {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  name       String
+  items      Item[]
+
+  @@index([businessId])
 }
 
 model Item {
-  id          String      @id @default(cuid())
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  brandId    String?
+  brand      Brand?    @relation(fields: [brandId], references: [id])
+
   title       String
   description String?
-  category    String
-  price       Decimal     @db.Decimal(10, 2)
-  unit        String      @default("kg")
-  stock       Int         @default(0)
-  imageUrl    String?
-  sellerId    String
-  seller      User        @relation(fields: [sellerId], references: [id])
-  orderItems  OrderItem[]
-  reviews     Review[]
-  embedding   Embedding?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  sku         String?
+  barcode     String?
+  price       Decimal  @db.Decimal(15, 2)
+  costPrice   Decimal? @db.Decimal(15, 2)
+  unit        String   @default("kg")
 
-  @@index([category])
-  @@index([price])
-  @@index([sellerId])
+  // Tracking
+  hasBatches Boolean @default(false)
+  isService  Boolean @default(false)
+
+  // Relations
+  orderItems    OrderItem[]
+  purchaseItems PurchaseItem[]
+  reviews       Review[]
+  embedding     Embedding?
+  inventory     Inventory[]
+  batches       ProductBatch[]
+  searchVector  Unsupported("tsvector")?
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([businessId, sku])
+  @@index([categoryId])
+  @@index([brandId])
+  @@index([businessId])
+}
+
+model ProductBatch {
+  id          String    @id @default(uuid())
+  itemId      String
+  item        Item      @relation(fields: [itemId], references: [id])
+  batchNumber String
+  expiryDate  DateTime?
+  createdAt   DateTime  @default(now())
+
+  inventory Inventory[]
+
+  @@unique([itemId, batchNumber])
+}
+
+// ==========================================
+// INVENTORY & WAREHOUSING
+// ==========================================
+
+model Warehouse {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  name       String
+  location   String?
+
+  inventory     Inventory[]
+  transfersFrom WarehouseTransfer[] @relation("TransferSource")
+  transfersTo   WarehouseTransfer[] @relation("TransferDest")
+
+  @@index([businessId])
+}
+
+model Inventory {
+  id          String        @id @default(uuid())
+  businessId  String
+  business    Business      @relation(fields: [businessId], references: [id])
+  itemId      String
+  item        Item          @relation(fields: [itemId], references: [id])
+  warehouseId String
+  warehouse   Warehouse     @relation(fields: [warehouseId], references: [id])
+  batchId     String?
+  batch       ProductBatch? @relation(fields: [batchId], references: [id])
+
+  availableStock Int      @default(0)
+  reservedStock  Int      @default(0)
+  totalStock     Int      @default(0)
+  version        Int      @default(1)
+  updatedAt      DateTime @updatedAt
+
+  movements StockMovement[]
+  reservations StockReservation[]
+
+  @@unique([warehouseId, itemId, batchId])
+  @@index([businessId, itemId])
+}
+
+model StockMovement {
+  id          String       @id @default(uuid())
+  businessId  String
+  business    Business     @relation(fields: [businessId], references: [id])
+  inventoryId String
+  inventory   Inventory    @relation(fields: [inventoryId], references: [id])
+  type        MovementType
+  quantity    Int
+  reference   String? // Order ID, Transfer ID, etc.
+  reason      String?
+  createdAt   DateTime     @default(now())
+
+  @@index([businessId])
+  @@index([inventoryId])
+}
+
+model WarehouseTransfer {
+  id            String    @id @default(uuid())
+  sourceId      String
+  source        Warehouse @relation("TransferSource", fields: [sourceId], references: [id])
+  destinationId String
+  destination   Warehouse @relation("TransferDest", fields: [destinationId], references: [id])
+  status        String    @default("PENDING") // PENDING, IN_TRANSIT, COMPLETED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model StockReservation {
+  id          String    @id @default(uuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id])
+  inventoryId String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+  orderId     String
+  order       Order     @relation(fields: [orderId], references: [id])
+  
+  quantity    Int
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([businessId])
+  @@index([inventoryId])
+  @@index([orderId])
+}
+
+// ==========================================
+// CRM & SALES
+// ==========================================
+
+model Customer {
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id])
+  name          String
+  email         String?
+  phone         String?
+  address       String?
+  loyaltyPoints Int      @default(0)
+
+  orders   Order[]
+  invoices Invoice[]
+
+  searchVector Unsupported("tsvector")?
+  deletedAt    DateTime?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([businessId])
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id])
-  items     OrderItem[]
-  status    OrderStatus @default(PENDING)
-  total     Decimal     @db.Decimal(10, 2)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id])
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  userId     String? // Salesperson
+  user       User?     @relation(fields: [userId], references: [id])
 
-  @@index([userId])
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  total         Decimal       @db.Decimal(15, 2)
+  taxAmount     Decimal       @default(0) @db.Decimal(15, 2)
+  discount      Decimal       @default(0) @db.Decimal(15, 2)
+
+  items    OrderItem[]
+  invoice  Invoice?
+  payments Payment[]
+  reservations StockReservation[]
+
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([customerId])
   @@index([status])
 }
 
@@ -80,10 +352,208 @@ model OrderItem {
   itemId    String
   item      Item    @relation(fields: [itemId], references: [id])
   quantity  Int
-  unitPrice Decimal @db.Decimal(10, 2)
+  unitPrice Decimal @db.Decimal(15, 2)
+  discount  Decimal @default(0) @db.Decimal(15, 2)
+  tax       Decimal @default(0) @db.Decimal(15, 2)
 
   @@index([orderId])
   @@index([itemId])
+}
+
+// ==========================================
+// PROCUREMENT (SUPPLIERS)
+// ==========================================
+
+model Supplier {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  name       String
+  contact    String?
+  email      String?
+  phone      String?
+
+  purchases PurchaseOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+}
+
+model PurchaseOrder {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  status     String   @default("PENDING")
+  total      Decimal  @db.Decimal(15, 2)
+
+  items     PurchaseItem[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([businessId])
+  @@index([supplierId])
+}
+
+model PurchaseItem {
+  id              String        @id @default(uuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  itemId          String
+  item            Item          @relation(fields: [itemId], references: [id])
+  quantity        Int
+  unitCost        Decimal       @db.Decimal(15, 2)
+}
+
+// ==========================================
+// FINANCE & ACCOUNTING
+// ==========================================
+
+model Account {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  name       String
+  type       String // ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+  code       String? // Chart of accounts code
+  balance    Decimal  @default(0) @db.Decimal(15, 2)
+
+  ledgerEntries LedgerEntry[]
+
+  @@unique([businessId, code])
+  @@index([businessId])
+}
+
+model LedgerEntry {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id])
+  accountId  String
+  account    Account  @relation(fields: [accountId], references: [id])
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+
+  debit       Decimal  @default(0) @db.Decimal(15, 2)
+  credit      Decimal  @default(0) @db.Decimal(15, 2)
+  description String?
+  reference   String? // Invoice ID, Payment ID, etc.
+  createdAt   DateTime @default(now())
+
+  @@index([businessId])
+  @@index([accountId])
+}
+
+model Invoice {
+  id         String    @id @default(uuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id])
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  orderId    String    @unique
+  order      Order     @relation(fields: [orderId], references: [id])
+
+  invoiceNumber String    @unique
+  totalAmount   Decimal   @db.Decimal(15, 2)
+  paidAmount    Decimal   @default(0) @db.Decimal(15, 2)
+  dueAmount     Decimal   @db.Decimal(15, 2)
+  dueDate       DateTime?
+
+  searchVector Unsupported("tsvector")?
+  deletedAt    DateTime?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([businessId])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  businessId     String
+  business       Business      @relation(fields: [businessId], references: [id])
+  orderId        String
+  order          Order         @relation(fields: [orderId], references: [id])
+  amount         Decimal       @db.Decimal(15, 2)
+  method         String // CASH, CARD, MOBILE, BANK
+  status         PaymentStatus @default(PENDING)
+  transactionId  String? // Gateway Transaction ID
+  idempotencyKey String?       @unique
+  createdAt      DateTime      @default(now())
+
+  @@index([businessId])
+  @@index([orderId])
+}
+
+// ==========================================
+// SYSTEM & AUDIT
+// ==========================================
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id])
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  action        String
+  entityType    String
+  entityId      String
+  previousData  Json?
+  newData       Json?
+  changedFields Json?
+  createdAt     DateTime @default(now())
+
+  @@index([businessId])
+  @@index([entityType, entityId])
+}
+
+model AiLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  type        String
+  prompt      String
+  response    String?
+  contextData Json?
+  createdAt   DateTime @default(now())
+}
+
+model WebhookEvent {
+  id               String           @id @default(uuid())
+  businessId       String
+  business         Business         @relation(fields: [businessId], references: [id])
+  gateway          String
+  eventType        String
+  payload          Json
+  processingStatus ProcessingStatus @default(PENDING)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([businessId])
+}
+
+model OutboxEvent {
+  id            String   @id @default(uuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id])
+  aggregateType String
+  aggregateId   String
+  eventType     String
+  payload       Json
+  isProcessed   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  @@index([businessId])
+}
+
+model Embedding {
+  id        String   @id @default(cuid())
+  itemId    String   @unique
+  item      Item     @relation(fields: [itemId], references: [id])
+  vector    Json
+  text      String
+  createdAt DateTime @default(now())
 }
 
 model Review {
@@ -97,24 +567,4 @@ model Review {
   createdAt DateTime @default(now())
 
   @@unique([userId, itemId])
-  @@index([itemId])
-}
-
-model AiLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  type      String
-  prompt    String
-  response  String?
-  createdAt DateTime @default(now())
-}
-
-model Embedding {
-  id        String   @id @default(cuid())
-  itemId    String   @unique
-  item      Item     @relation(fields: [itemId], references: [id])
-  vector    Json
-  text      String
-  createdAt DateTime @default(now())
 }

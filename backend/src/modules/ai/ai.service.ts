@@ -8,12 +8,12 @@ export const aiService = {
         OR: keywords.flatMap((keyword) => [
           { title: { contains: keyword, mode: 'insensitive' as const } },
           { description: { contains: keyword, mode: 'insensitive' as const } },
-          { category: { contains: keyword, mode: 'insensitive' as const } },
+          { category: { name: { contains: keyword, mode: 'insensitive' as const } } },
         ]),
       },
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: { seller: { select: { id: true, name: true } } },
+      include: { business: { select: { id: true, name: true } } },
     });
 
     await prisma.aiLog.create({
@@ -36,13 +36,18 @@ export const aiService = {
     const contextItems = await prisma.item.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
-      select: { title: true, category: true, price: true, unit: true },
+      select: { 
+        title: true, 
+        category: { select: { name: true } }, 
+        price: true, 
+        unit: true 
+      },
     });
 
     const answer =
       contextItems.length > 0
         ? `Based on current marketplace data, compare freshness, stock, seller reliability, and price before buying. Relevant products: ${contextItems
-            .map((item) => `${item.title} (${item.category}, ${item.price}/${item.unit})`)
+            .map((item) => `${item.title} (${item.category?.name}, ${item.price}/${item.unit})`)
             .join(', ')}.`
         : 'Marketplace data is empty. Add products first, then connect an LLM provider for richer RAG answers.';
 

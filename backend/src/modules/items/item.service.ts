@@ -21,20 +21,21 @@ type ItemInput = {
 };
 
 const itemInclude = {
-  seller: { select: { id: true, name: true, email: true } },
+  business: { select: { id: true, name: true } },
+  category: { select: { id: true, name: true } },
   reviews: { select: { rating: true } },
 };
 
 export const itemService = {
   async list(filters: ItemFilters) {
     const where: Prisma.ItemWhereInput = {
-      ...(filters.category ? { category: filters.category } : {}),
+      ...(filters.category ? { categoryId: filters.category } : {}),
       ...(filters.search
         ? {
             OR: [
               { title: { contains: filters.search, mode: 'insensitive' } },
               { description: { contains: filters.search, mode: 'insensitive' } },
-              { category: { contains: filters.search, mode: 'insensitive' } },
+              { category: { name: { contains: filters.search, mode: 'insensitive' } } },
             ],
           }
         : {}),
@@ -74,27 +75,48 @@ export const itemService = {
     return prisma.item.findUnique({ where: { id }, include: itemInclude });
   },
 
-  create(sellerId: string, data: ItemInput) {
-    return prisma.item.create({ data: { ...data, sellerId }, include: itemInclude });
+  create(businessId: string, data: any) {
+    const { category, stock, stockThreshold, ...rest } = data;
+    return prisma.item.create({ 
+      data: { 
+        ...rest, 
+        businessId,
+        categoryId: category,
+        inventory: {
+          create: {
+            businessId,
+            warehouseId: 'default', // Placeholder or from data
+            totalStock: stock || 0,
+            availableStock: stock || 0,
+          }
+        }
+      }, 
+      include: itemInclude 
+    });
   },
 
-  async update(id: string, userId: string, isAdmin: boolean, data: Partial<ItemInput>) {
+  async update(id: string, businessId: string, isAdmin: boolean, data: any) {
     const item = await prisma.item.findUnique({ where: { id } });
 
     if (!item) return { status: 'not-found' as const };
-    if (!isAdmin && item.sellerId !== userId) return { status: 'forbidden' as const };
+    if (!isAdmin && item.businessId !== businessId) return { status: 'forbidden' as const };
 
+    const { category, ...rest } = data;
     return {
       status: 'ok' as const,
-      item: await prisma.item.update({ where: { id }, data, include: itemInclude }),
+      item: await prisma.item.update({ 
+        where: { id }, 
+        data: { ...rest, categoryId: category }, 
+        include: itemInclude 
+      }),
     };
   },
 
-  async remove(id: string, userId: string, isAdmin: boolean) {
+  async remove(id: string, businessId: string, isAdmin: boolean) {
     const item = await prisma.item.findUnique({ where: { id } });
 
     if (!item) return 'not-found' as const;
-    if (!isAdmin && item.sellerId !== userId) return 'forbidden' as const;
+    if (!isAdmin && item.businessId !== businessId) return 'forbidden' as const;
 
     await prisma.item.delete({ where: { id } });
     return 'ok' as const;

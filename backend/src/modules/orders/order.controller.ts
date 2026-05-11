@@ -5,7 +5,7 @@ import { orderService } from './order.service';
 export const orderController = {
   async create(req: Request, res: Response) {
     const payload = createOrderSchema.parse(req.body);
-    const result = await orderService.create(req.user!.id, payload.items);
+    const result = await orderService.create(req.user!.id, req.user!.businessId, payload.items);
 
     if (result.status === 'missing-item') {
       return res.status(400).json({ message: `Item not found: ${result.itemId}` });

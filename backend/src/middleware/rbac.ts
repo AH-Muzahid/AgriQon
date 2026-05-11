@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
     id: string;
     role: Role;
     email?: string;
+    businessId?: string | null;
   };
 }
 
@@ -40,6 +41,7 @@ export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction)
       id: decoded.sub || decoded.id,
       role: decoded.role || 'USER',
       email: decoded.email,
+      businessId: decoded.businessId,
     };
   } catch (err) {
     // Token invalid, continue as anonymous

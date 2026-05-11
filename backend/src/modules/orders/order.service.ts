@@ -10,15 +10,27 @@ const orderInclude = {
   user: { select: { id: true, name: true, email: true } },
   items: {
     include: {
-      item: { select: { id: true, title: true, category: true, sellerId: true } },
+      item: { 
+        select: { 
+          id: true, 
+          title: true, 
+          category: { select: { name: true } }, 
+          businessId: true 
+        } 
+      },
     },
   },
 };
 
 export const orderService = {
-  async create(userId: string, items: OrderItemInput[]) {
+  async create(userId: string, businessId: string | undefined | null, items: OrderItemInput[]) {
     const ids = items.map((item) => item.itemId);
     const products = await prisma.item.findMany({ where: { id: { in: ids } } });
+
+    // If businessId is not provided (e.g. customer), infer from products
+    const actualBusinessId = businessId || products[0]?.businessId;
+    if (!actualBusinessId) throw new Error("Business ID is required to create an order");
+
     const productById = new Map(products.map((product) => [product.id, product]));
 
     const missing = ids.find((id) => !productById.has(id));
@@ -32,6 +44,7 @@ export const orderService = {
     const order = await prisma.order.create({
       data: {
         userId,
+        businessId: actualBusinessId,
         total,
         items: {
           create: items.map((line) => ({

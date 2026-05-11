@@ -47,10 +47,12 @@ const publicUserSelect = {
   name: true,
   email: true,
   role: true,
+  businessId: true,
   createdAt: true,
 };
 
-const signToken = (id: string, role: Role) => jwt.sign({ id, role }, env.jwtSecret, { expiresIn: '7d' });
+const signToken = (id: string, role: Role, businessId?: string | null) => 
+  jwt.sign({ id, role, businessId }, env.jwtSecret, { expiresIn: '7d' });
 
 export const authService = {
   async register(input: RegisterInput) {
@@ -60,13 +62,13 @@ export const authService = {
       select: publicUserSelect,
     });
 
-    return { user, token: signToken(user.id, user.role) };
+    return { user, token: signToken(user.id, user.role, user.businessId) };
   },
 
   async login(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       return null;
     }
 
@@ -76,9 +78,10 @@ export const authService = {
         name: user.name,
         email: user.email,
         role: user.role,
+        businessId: user.businessId,
         createdAt: user.createdAt,
       },
-      token: signToken(user.id, user.role),
+      token: signToken(user.id, user.role, user.businessId),
     };
   },
 
@@ -111,7 +114,6 @@ export const authService = {
           email: input.email,
           name: input.name,
           role: derivedRole,
-          provider: input.provider,
         },
         select: publicUserSelect,
       });
@@ -119,7 +121,7 @@ export const authService = {
 
     return {
       user,
-      token: signToken(user.id, user.role),
+      token: signToken(user.id, user.role, user.businessId),
     };
   },
 
