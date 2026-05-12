@@ -1,0 +1,97 @@
+import { Response } from 'express';
+import catchAsync from '../../shared/utils/catchAsync';
+import sendResponse from '../../shared/utils/sendResponse';
+import { AuthRequest } from '../../middleware/auth.middleware';
+import { OrderService } from './order.service';
+import { OrderRepository } from './order.repository';
+import { OrderStatus } from '@prisma/client';
+
+const orderRepository = new OrderRepository();
+const orderService = new OrderService(orderRepository);
+
+const getAllOrders = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const status = req.query.status as OrderStatus | undefined;
+  const customerId = req.query.customerId as string | undefined;
+
+  const result = await orderService.getAllOrders({ businessId, status, customerId, page, limit });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Orders fetched successfully',
+    meta: result.meta,
+    data: result.items,
+  });
+});
+
+const getOrderById = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const { id } = req.params;
+
+  const result = await orderService.getOrderById(id, businessId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Order fetched successfully',
+    data: result,
+  });
+});
+
+const createOrder = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const userId = req.user!.id;
+
+  const result = await orderService.createOrder({
+    businessId,
+    userId,
+    ...req.body,
+  });
+
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: 'Order created successfully',
+    data: result,
+  });
+});
+
+const updateOrderStatus = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const result = await orderService.updateOrderStatus(id, businessId, status);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Order status updated successfully',
+    data: result,
+  });
+});
+
+const cancelOrder = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const { id } = req.params;
+
+  const result = await orderService.cancelOrder(id, businessId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Order cancelled successfully',
+    data: result,
+  });
+});
+
+export const OrderController = {
+  getAllOrders,
+  getOrderById,
+  createOrder,
+  updateOrderStatus,
+  cancelOrder,
+};

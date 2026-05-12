@@ -6,7 +6,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 4000),
   databaseUrl: process.env.DATABASE_URL,
-  jwtSecret: process.env.JWT_SECRET ?? 'change-me-in-production',
+  jwtSecret: process.env.JWT_SECRET as string,
   frontendOrigin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000',
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,

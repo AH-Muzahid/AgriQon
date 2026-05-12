@@ -1,0 +1,762 @@
+# Recommended Production-Grade Backend Structure
+
+তোমার ERP/POS SaaS এর scope অনুযায়ী এটা scalable, maintainable, team-friendly architecture হবে।
+
+এটা:
+
+* modular
+* domain-driven inspired
+* service-oriented
+* transaction-safe
+* enterprise scalable
+
+---
+
+# Full Backend Folder Structure
+
+```txt id="p9kv9r"
+src/
+│
+├── app/
+│
+│   ├── modules/
+│   │
+│   │   ├── auth/
+│   │   │
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.routes.ts
+│   │   │   ├── auth.validation.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── auth.repository.ts
+│   │   │   ├── auth.interface.ts
+│   │   │   ├── auth.constants.ts
+│   │   │   ├── auth.utils.ts
+│   │   │   │
+│   │   │   ├── services/
+│   │   │   │   ├── register.service.ts
+│   │   │   │   ├── login.service.ts
+│   │   │   │   ├── refresh-token.service.ts
+│   │   │   │   ├── logout.service.ts
+│   │   │   │   └── forgot-password.service.ts
+│   │   │   │
+│   │   │   └── helpers/
+│   │   │
+│   │   ├── users/
+│   │   ├── roles/
+│   │   ├── permissions/
+│   │   ├── businesses/
+│   │   ├── subscriptions/
+│   │   │
+│   │   ├── categories/
+│   │   ├── products/
+│   │   ├── product-variants/
+│   │   ├── warehouses/
+│   │   ├── inventory/
+│   │   ├── stock-movements/
+│   │   ├── stock-reservations/
+│   │   │
+│   │   ├── customers/
+│   │   ├── staff/
+│   │   │
+│   │   ├── carts/
+│   │   ├── orders/
+│   │   ├── order-items/
+│   │   │
+│   │   ├── invoices/
+│   │   ├── payments/
+│   │   ├── refunds/
+│   │   ├── returns/
+│   │   │
+│   │   ├── expenses/
+│   │   ├── expense-categories/
+│   │   │
+│   │   ├── notifications/
+│   │   ├── uploads/
+│   │   ├── audit-logs/
+│   │   │
+│   │   ├── reports/
+│   │   ├── analytics/
+│   │   ├── dashboard/
+│   │   │
+│   │   ├── ai/
+│   │   ├── settings/
+│   │   ├── webhooks/
+│   │   └── health/
+│   │
+│   │
+│   ├── middleware/
+│   │   ├── auth.middleware.ts
+│   │   ├── validateRequest.ts
+│   │   ├── rateLimiter.ts
+│   │   ├── tenant.middleware.ts
+│   │   ├── error.middleware.ts
+│   │   ├── notFound.middleware.ts
+│   │   ├── audit.middleware.ts
+│   │   └── upload.middleware.ts
+│   │
+│   │
+│   ├── lib/
+│   │   ├── prisma.ts
+│   │   ├── redis.ts
+│   │   ├── bullmq.ts
+│   │   ├── cloudinary.ts
+│   │   ├── gemini.ts
+│   │   └── logger.ts
+│   │
+│   │
+│   ├── config/
+│   │   ├── env.ts
+│   │   ├── cors.ts
+│   │   ├── auth.ts
+│   │   ├── app.ts
+│   │   └── constants.ts
+│   │
+│   │
+│   ├── routes/
+│   │   ├── index.ts
+│   │   └── moduleRoutes.ts
+│   │
+│   │
+│   ├── shared/
+│   │   ├── utils/
+│   │   ├── helpers/
+│   │   ├── builders/
+│   │   ├── formatters/
+│   │   ├── mappers/
+│   │   └── validators/
+│   │
+│   │
+│   ├── types/
+│   │   ├── express.d.ts
+│   │   ├── global.types.ts
+│   │   └── api.types.ts
+│   │
+│   │
+│   ├── errors/
+│   │   ├── AppError.ts
+│   │   ├── handlePrismaError.ts
+│   │   ├── handleZodError.ts
+│   │   └── errorHandler.ts
+│   │
+│   │
+│   ├── jobs/
+│   │   ├── reservation-cleanup.job.ts
+│   │   ├── invoice-reminder.job.ts
+│   │   ├── webhook-retry.job.ts
+│   │   └── analytics.job.ts
+│   │
+│   │
+│   ├── events/
+│   │   ├── order.events.ts
+│   │   ├── payment.events.ts
+│   │   ├── inventory.events.ts
+│   │   └── notification.events.ts
+│   │
+│   │
+│   ├── queues/
+│   │   ├── email.queue.ts
+│   │   ├── notification.queue.ts
+│   │   ├── webhook.queue.ts
+│   │   └── report.queue.ts
+│   │
+│   │
+│   ├── transactions/
+│   │   ├── order.transaction.ts
+│   │   ├── payment.transaction.ts
+│   │   ├── inventory.transaction.ts
+│   │   └── refund.transaction.ts
+│   │
+│   │
+│   └── database/
+│       ├── prisma-extensions.ts
+│       ├── prisma-middleware.ts
+│       └── seed/
+│
+│
+├── prisma/
+│   ├── schema.prisma
+│   ├── migrations/
+│   └── seed.ts
+│
+│
+├── workers/
+│   ├── email.worker.ts
+│   ├── reservation.worker.ts
+│   ├── webhook.worker.ts
+│   └── analytics.worker.ts
+│
+│
+├── tests/
+│   ├── integration/
+│   ├── unit/
+│   ├── fixtures/
+│   └── mocks/
+│
+│
+├── app.ts
+├── server.ts
+└── package.json
+```
+
+---
+
+# Architecture Philosophy
+
+তোমার architecture follow করবে:
+
+```txt id="mt6q4q"
+Thin Controller
+Fat Service
+Isolated Transactions
+Shared Infrastructure
+```
+
+---
+
+# Request Flow
+
+```txt id="a2fjlwm"
+Route
+↓
+Validation
+↓
+Controller
+↓
+Service
+↓
+Transaction
+↓
+Repository/Prisma
+↓
+Database
+```
+
+---
+
+# MUST DO RULES
+
+# 1. Controllers MUST Stay Thin
+
+GOOD:
+
+```txt id="g3ckl1"
+Controller = HTTP Layer only
+```
+
+Responsibilities:
+
+* req/res
+* status code
+* headers
+* call service
+
+---
+
+BAD:
+
+```txt id="l1cv9m"
+business logic inside controller
+```
+
+---
+
+# 2. Business Logic MUST Live In Services
+
+ALL:
+
+* stock logic
+* payment logic
+* invoice logic
+* refund logic
+
+goes inside services.
+
+---
+
+# 3. Critical Workflows MUST Use Transactions
+
+Mandatory for:
+
+```txt id="mjlwmr"
+order creation
+payment success
+refunds
+stock deduction
+reservation release
+```
+
+Use:
+
+```ts id="s0h6wf"
+prisma.$transaction()
+```
+
+As already defined in your architecture docs. 
+
+---
+
+# 4. NEVER Mutate Inventory Directly
+
+VERY IMPORTANT.
+
+BAD:
+
+```ts id="2y1b4p"
+inventory.availableStock -= quantity
+```
+
+---
+
+GOOD:
+
+```txt id="gpxw5l"
+Create StockMovement
+↓
+Recalculate Inventory
+↓
+Commit Transaction
+```
+
+Your own architecture explicitly requires this. 
+
+---
+
+# 5. Always Use Service Composition
+
+GOOD:
+
+```txt id="bn58zc"
+OrderService
+ ├── InventoryService
+ ├── InvoiceService
+ ├── PaymentService
+ └── AuditService
+```
+
+---
+
+BAD:
+
+```txt id="cgbf1k"
+Everything inside OrderService
+```
+
+---
+
+# 6. Queue Heavy Operations
+
+Use BullMQ for:
+
+* emails
+* reports
+* analytics
+* webhook retries
+* AI processing
+
+Already planned in your architecture. 
+
+---
+
+# 7. Always Scope By businessId
+
+EVERY query.
+
+GOOD:
+
+```ts id="u8zklx"
+where: {
+  businessId,
+  id
+}
+```
+
+---
+
+BAD:
+
+```ts id="jlwm66"
+where: {
+  id
+}
+```
+
+Cross-tenant leakage হবে।
+
+---
+
+# 8. Use Zod Everywhere
+
+Validate:
+
+* body
+* params
+* query
+* env
+
+---
+
+# 9. Centralize Constants
+
+Never hardcode:
+
+```txt id="tby4cj"
+statuses
+roles
+payment methods
+event names
+queue names
+```
+
+---
+
+# 10. Use Event-Driven Architecture
+
+GOOD:
+
+```txt id="jlwm0o"
+payment.success
+↓
+invoice update
+↓
+stock deduction
+↓
+notification
+↓
+analytics
+↓
+audit log
+```
+
+---
+
+# 11. Implement Concurrency Control (Optimistic Locking)
+
+Every update on the Inventory table MUST use the `version` column to prevent race conditions during simultaneous orders.
+
+GOOD:
+```ts
+where: { id, version: currentVersion },
+data: { availableStock, version: { increment: 1 } }
+```
+
+---
+
+# 12. Standardize API Responses
+
+All API responses MUST follow a unified format to ensure frontend consistency.
+
+```txt
+{
+  "success": boolean,
+  "data": T | null,
+  "message": string,
+  "meta"?: {
+    "page": number,
+    "limit": number,
+    "total": number
+  }
+}
+```
+
+---
+
+# 13. Use Idempotency Keys for Critical Writes
+
+Order and Payment creation MUST require an `idempotency-key` (UUID) from the frontend to prevent duplicate transactions on network retries.
+
+---
+
+# 14. Automated Soft Delete Filtering
+
+ERPs MUST NOT hard-delete data. Use `deletedAt` for all records.
+Rule: Use Prisma Middleware or Extensions to automatically filter out `deletedAt: !null` records globally so logic doesn't leak deleted data.
+
+---
+
+# MUST NOT DO
+
+# 1. NEVER Create God Services
+
+BAD:
+
+```txt id="k8x8wo"
+product.service.ts = 4000 lines
+```
+
+Split into:
+
+* create
+* update
+* search
+* analytics
+
+---
+
+# 2. NEVER Use Prisma Directly In Controllers
+
+BAD:
+
+```ts id="0u0wmv"
+await prisma.product.findMany()
+```
+
+inside controller.
+
+---
+
+# 3. NEVER Trust Frontend Payment Status
+
+Frontend lies.
+
+ONLY trust:
+
+* gateway verification
+* webhook confirmation
+
+Your docs already define this. 
+
+---
+
+# 4. NEVER Store Financial Values As Float
+
+Use:
+
+* Decimal
+* Numeric
+
+Already defined as critical rule. 
+
+---
+
+# 5. NEVER Skip Audit Logs
+
+Track:
+
+* stock adjustment
+* refunds
+* role changes
+* invoice deletion
+
+---
+
+# 6. NEVER Mix UI Logic In Backend
+
+Backend should NEVER know:
+
+* modal
+* tabs
+* frontend state
+
+---
+
+# 7. NEVER Create Circular Service Dependencies
+
+BAD:
+
+```txt id="18qgko"
+OrderService → PaymentService
+PaymentService → OrderService
+```
+
+---
+
+# 8. NEVER Put Huge Shared Utils Everywhere
+
+Avoid:
+
+```txt id="6cfr2n"
+helpers.ts = 2000 lines
+```
+
+---
+
+# 9. NEVER Use Long Transactions
+
+BAD:
+
+```txt id="2iwr22"
+DB transaction
+↓
+call external API
+↓
+wait response
+```
+
+Keep DB transactions short.
+
+---
+
+# 10. NEVER Build Analytics Using Live Complex Queries
+
+Use:
+
+* materialized views
+* cached aggregates
+* background jobs
+
+---
+
+# HIGH SCALABILITY RECOMMENDATIONS
+
+# 1. Use Repository Layer For Critical Modules
+
+Especially for inventory, orders, and payments.
+**Standard:** Repositories MUST only handle DB operations (queries/mapping). They should NEVER contain business logic or call other services. Logic belongs strictly to Services.
+
+---
+
+# 2. Introduce Domain Events Early
+
+Example:
+
+```txt id="g29ffl"
+ORDER_CREATED
+PAYMENT_SUCCESS
+REFUND_COMPLETED
+STOCK_RESERVED
+```
+
+---
+
+# 3. Separate Operational vs Analytical Queries
+
+Operational:
+
+* orders
+* payments
+* checkout
+
+Analytical:
+
+* reports
+* charts
+* dashboards
+
+---
+
+# 4. Add AsyncLocalStorage Later
+
+For:
+
+* request tracing
+* tenant context
+* audit context
+
+---
+
+# 5. Prepare For Read Replicas
+
+Analytics queries should eventually separate from transactional DB.
+
+---
+
+# 6. Add Pagination Everywhere
+
+Never return huge datasets.
+
+---
+
+# 7. Use Cursor Pagination For Large Tables
+
+Especially:
+
+* audit_logs
+* stock_movements
+* orders
+* payments
+
+---
+
+# BOTTLENECKS YOU WILL FACE
+
+# 1. Inventory Race Conditions
+
+Most dangerous bottleneck.
+
+Solution:
+
+* transactions
+* optimistic locking
+* reservation system
+
+Already designed in your schema. 
+
+---
+
+# 2. Reporting Queries
+
+Large joins become slow.
+
+Solution:
+
+* aggregation tables
+* caching
+* materialized views
+
+---
+
+# 3. Notification Flood
+
+Solution:
+
+* queues
+* batching
+* retry system
+
+---
+
+# 4. Audit Logs Growth
+
+Solution:
+
+* partitioning
+* archival
+* async writes
+
+---
+
+# 5. AI Costs
+
+Solution:
+
+* context trimming
+* queue processing
+* caching summaries
+
+---
+
+# Recommended Immediate Build Order
+
+```txt id="vcjlwm"
+1. Infrastructure
+2. Auth
+3. RBAC
+4. Business/Tenant
+5. Products
+6. Inventory
+7. Orders
+8. Payments
+9. Invoices
+10. Reservations
+11. Refunds
+12. Notifications
+13. Reports
+14. AI
+```
+
+---
+
+# Final Architecture Goal
+
+তোমার target হওয়া উচিত:
+
+```txt id="ruo53n"
+modular
+event-driven
+transaction-safe
+tenant-isolated
+queue-powered
+enterprise backend
+```
+
+এটাই future-proof architecture হবে তোমার SaaS ERP/POS এর জন্য।

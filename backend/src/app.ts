@@ -6,13 +6,9 @@ import csurf from 'csurf';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { notFound } from './middleware/notFound';
-import { errorHandler } from './middleware/errorHandler';
 import { extractAuth } from './middleware/rbac';
-import { authRouter } from './modules/auth/auth.routes';
-import { itemRouter } from './modules/items/item.routes';
-import { orderRouter } from './modules/orders/order.routes';
-import { reviewRouter } from './modules/reviews/review.routes';
-import { aiRouter } from './modules/ai/ai.routes';
+import router from './app/routes';
+import globalErrorHandler from './app/middleware/error.middleware';
 
 export const app = express();
 
@@ -20,7 +16,7 @@ app.use(helmet());
 app.use(cors({ origin: env.frontendOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
-app.use(csurf({ cookie: true }));
+app.use(csurf({ cookie: { key: '_csrf', httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' } }));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -35,11 +31,9 @@ app.use(extractAuth);
 
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'agriqon-api' }));
 
-app.use('/api/auth', authRouter);
-app.use('/api/items', itemRouter);
-app.use('/api/orders', orderRouter);
-app.use('/api/reviews', reviewRouter);
-app.use('/api/ai', aiRouter);
+// API Routes
+app.use('/api/v1', router);
 
+// Error Handling
 app.use(notFound);
-app.use(errorHandler);
+app.use(globalErrorHandler);
