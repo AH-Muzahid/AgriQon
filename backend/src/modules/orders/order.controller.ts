@@ -15,11 +15,11 @@ export const orderController = {
   },
 
   async list(req: Request, res: Response) {
-    return res.json(await orderService.list(req.user!.id, req.user!.role));
+    return res.json(await orderService.list(req.user!.id, req.user!.role, req.user?.businessId || undefined));
   },
 
   async updateStatus(req: Request, res: Response) {
     const payload = updateOrderStatusSchema.parse(req.body);
-    return res.json(await orderService.updateStatus(req.params.id, payload.status));
+    return res.json(await orderService.updateStatus(req.params.id, payload.status, req.user!.id, req.user!.businessId || undefined));
   },
 };

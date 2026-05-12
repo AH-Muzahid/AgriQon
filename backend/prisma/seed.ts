@@ -1,4 +1,4 @@
-import { PrismaClient, Role, OrderStatus, PaymentStatus, MovementType, ProcessingStatus } from '@prisma/client';
+import { PrismaClient, Role, OrderStatus, PaymentStatus, MovementType, ProcessingStatus } from '../src/generated/client';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
@@ -143,6 +143,7 @@ async function main() {
       if (item.hasBatches) {
         batch = await prisma.productBatch.create({
           data: {
+            businessId: business.id,
             itemId: item.id,
             batchNumber: 'BATCH-' + faker.string.alphanumeric(5).toUpperCase(),
             expiryDate: faker.date.future(),
@@ -189,6 +190,7 @@ async function main() {
           },
           update: {},
           create: {
+            businessId: business.id,
             rating: faker.number.int({ min: 3, max: 5 }),
             comment: faker.lorem.sentence(),
             userId: randomUser.id,
@@ -200,6 +202,7 @@ async function main() {
       // 13. Create Embeddings
       await prisma.embedding.create({
         data: {
+          businessId: business.id,
           itemId: item.id,
           vector: Array.from({ length: 5 }, () => Math.random()), // Mock vector
           text: `${item.title} ${item.description}`,
@@ -235,6 +238,7 @@ async function main() {
         const unitPrice = Number(item.price);
         total += unitPrice * qty;
         return {
+          businessId: business.id,
           itemId: item.id,
           quantity: qty,
           unitPrice: unitPrice,
@@ -317,6 +321,7 @@ async function main() {
       if (warehouses.length >= 2) {
         await prisma.warehouseTransfer.create({
           data: {
+            businessId: business.id,
             sourceId: warehouses[0].id,
             destinationId: warehouses[1].id,
             status: faker.helpers.arrayElement(['PENDING', 'IN_TRANSIT', 'COMPLETED']),
@@ -340,6 +345,7 @@ async function main() {
 
       await prisma.aiLog.create({
         data: {
+          businessId: business.id,
           userId: users[Math.floor(Math.random() * users.length)].id,
           type: 'CHAT',
           prompt: 'How to increase crop yield?',
