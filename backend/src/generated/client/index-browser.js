@@ -128,10 +128,16 @@ exports.Prisma.BusinessScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
   name: 'name',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  website: 'website',
+  logo: 'logo',
   taxNumber: 'taxNumber',
   currency: 'currency',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
@@ -258,6 +264,7 @@ exports.Prisma.OrderScalarFieldEnum = {
   userId: 'userId',
   status: 'status',
   paymentStatus: 'paymentStatus',
+  idempotencyKey: 'idempotencyKey',
   total: 'total',
   taxAmount: 'taxAmount',
   discount: 'discount',
@@ -420,6 +427,25 @@ exports.Prisma.ReviewScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.LoyaltyProgramScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  pointsPerUnit: 'pointsPerUnit',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LoyaltyPointScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  customerId: 'customerId',
+  points: 'points',
+  reason: 'reason',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -485,6 +511,21 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   REFUNDED: 'REFUNDED'
 };
 
+exports.PurchaseStatus = exports.$Enums.PurchaseStatus = {
+  PENDING: 'PENDING',
+  ORDERED: 'ORDERED',
+  RECEIVED: 'RECEIVED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.AccountType = exports.$Enums.AccountType = {
+  ASSET: 'ASSET',
+  LIABILITY: 'LIABILITY',
+  EQUITY: 'EQUITY',
+  REVENUE: 'REVENUE',
+  EXPENSE: 'EXPENSE'
+};
+
 exports.ProcessingStatus = exports.$Enums.ProcessingStatus = {
   PENDING: 'PENDING',
   PROCESSED: 'PROCESSED',
@@ -519,7 +560,9 @@ exports.Prisma.ModelName = {
   WebhookEvent: 'WebhookEvent',
   OutboxEvent: 'OutboxEvent',
   Embedding: 'Embedding',
-  Review: 'Review'
+  Review: 'Review',
+  LoyaltyProgram: 'LoyaltyProgram',
+  LoyaltyPoint: 'LoyaltyPoint'
 };
 
 /**
