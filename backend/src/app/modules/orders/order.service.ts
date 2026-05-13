@@ -1,5 +1,5 @@
-import { OrderStatus, MovementType, Prisma } from '@prisma/client';
-import { prisma } from '../../../lib/prisma';
+import { OrderStatus, MovementType, Prisma } from '../../../generated/client';
+import { prisma } from '../../lib/prisma';
 import { OrderRepository } from './order.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
@@ -70,14 +70,15 @@ export class OrderService {
     const { businessId, userId, customerId, items, discount = 0, taxAmount = 0, idempotencyKey, dueDate } = input;
 
     // Rule 13: Check idempotency — prevent duplicate order creation
-    const existingOrder = await prisma.order.findFirst({
-      where: { businessId },
-      // We store idempotencyKey in outbox or a dedicated field; here we check via OrderItem pattern
-      // For now, we protect via unique index on Payment.idempotencyKey
-      // The real guard is the transaction itself being idempotent
-    });
+    if (idempotencyKey) {
+      const existingOrder = await prisma.order.findUnique({
+        where: { idempotencyKey },
+        include: { items: true },
+      });
+      if (existingOrder) return existingOrder;
+    }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const orderRepo = new OrderRepository(tx);
       const inventoryRepo = new InventoryRepository(tx);
       const inventoryService = new InventoryService(inventoryRepo);
@@ -93,6 +94,7 @@ export class OrderService {
         businessId,
         userId,
         customerId,
+        idempotencyKey,
         status: OrderStatus.PENDING,
         total: new Prisma.Decimal(total),
         discount: new Prisma.Decimal(discount),
@@ -180,11 +182,11 @@ export class OrderService {
   async cancelOrder(id: string, businessId: string) {
     const order = await this.getOrderById(id, businessId);
 
-    if ([OrderStatus.DELIVERED, OrderStatus.SHIPPED].includes(order.status)) {
+    if (([OrderStatus.DELIVERED, OrderStatus.SHIPPED] as OrderStatus[]).includes(order.status)) {
       throw new AppError('Cannot cancel an order that is already shipped or delivered', 400);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const orderRepo = new OrderRepository(tx);
 
       // Release all stock reservations
