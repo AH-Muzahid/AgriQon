@@ -21,4 +21,5 @@ const sendResponse = <T>(res: Response, data: IResponse<T>) => {
   });
 };
 
+export { sendResponse };
 export default sendResponse;

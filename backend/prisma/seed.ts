@@ -1,4 +1,4 @@
-import { PrismaClient, Role, OrderStatus, PaymentStatus, MovementType, ProcessingStatus } from '../src/generated/client';
+import { PrismaClient, Role, OrderStatus, PaymentStatus, MovementType, ProcessingStatus, AccountType } from '../src/generated/client';
 import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
@@ -103,7 +103,13 @@ async function main() {
     }
 
     // 8. Create Accounts (Finance)
-    const accountTypes = ['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'];
+    const accountTypes: AccountType[] = [
+      AccountType.ASSET,
+      AccountType.LIABILITY,
+      AccountType.EQUITY,
+      AccountType.REVENUE,
+      AccountType.EXPENSE,
+    ];
     const accounts = [];
     for (const type of accountTypes) {
       const account = await prisma.account.create({
@@ -170,7 +176,7 @@ async function main() {
           data: {
             businessId: business.id,
             inventoryId: inventory.id,
-            type: 'IN',
+            type: MovementType.IN,
             quantity: stock,
             reason: 'Initial Seeding',
           },
