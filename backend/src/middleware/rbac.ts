@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Role } from '../generated/client';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 

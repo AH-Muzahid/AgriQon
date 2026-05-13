@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { env } from '../../config/env';
 import { AppError } from '../errors/AppError';
 import catchAsync from '../shared/utils/catchAsync';
-import { Role } from '@prisma/client';
+import { Role } from '../../generated/client';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -11,6 +11,7 @@ export interface AuthRequest extends Request {
     role: Role;
     email?: string;
     businessId?: string | null;
+    organizationId?: string | null;
   };
 }
 
@@ -47,6 +48,7 @@ export const auth = (...roles: Role[]) => {
       role: decoded.role,
       email: decoded.email,
       businessId: decoded.businessId,
+      organizationId: decoded.organizationId,
     };
 
     // 5. Authorization
