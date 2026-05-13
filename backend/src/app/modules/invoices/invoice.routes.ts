@@ -3,7 +3,7 @@ import { auth } from '../../middleware/auth.middleware';
 import { InvoiceController } from './invoice.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { invoiceQuerySchema, updateInvoiceSchema } from './invoice.validation';
-import { Role } from '@prisma/client';
+import { Role } from '../../../generated/client';
 
 const router = Router();
 
