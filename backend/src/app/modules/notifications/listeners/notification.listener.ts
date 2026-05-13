@@ -12,7 +12,7 @@ import {
 } from '../../../../shared/events/domain-events';
 import { notificationService, NotificationRecipients } from '../notification.service';
 import { logger } from '../../../lib/logger';
-import { prisma } from '../../lib/prisma';
+import { prisma } from '../../../lib/prisma';
 
 /**
  * Helper to resolve staff recipients for a business
@@ -27,8 +27,8 @@ const resolveStaffRecipients = async (businessId: string): Promise<NotificationR
   });
 
   return {
-    userIds: staff.map(s => s.id),
-    emails: staff.map(s => s.email)
+    userIds: staff.map((s: any) => s.id),
+    emails: staff.map((s: any) => s.email)
   };
 };
 

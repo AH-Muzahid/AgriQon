@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
+import { AppError } from '../../errors/AppError';
 import { AuthService } from './auth.service';
 import { UserRepository } from './user.repository';
 
@@ -8,7 +9,11 @@ const userRepository = new UserRepository();
 const authService = new AuthService(userRepository);
 
 const register = catchAsync(async (req: Request, res: Response) => {
-  const result = await authService.register(req.body);
+  const sessionInfo = {
+    ip: req.ip,
+    ua: req.headers['user-agent']
+  };
+  const result = await authService.register(req.body, sessionInfo);
   const { user, accessToken, refreshToken } = result;
 
   // Set cookies
@@ -35,7 +40,11 @@ const register = catchAsync(async (req: Request, res: Response) => {
 });
 
 const login = catchAsync(async (req: Request, res: Response) => {
-  const result = await authService.login(req.body);
+  const sessionInfo = {
+    ip: req.ip,
+    ua: req.headers['user-agent']
+  };
+  const result = await authService.login(req.body, sessionInfo);
   const { user, accessToken, refreshToken } = result;
 
   // Set cookies
@@ -67,7 +76,12 @@ const refresh = catchAsync(async (req: Request, res: Response) => {
     throw new AppError('Refresh token missing', 401);
   }
 
-  const { accessToken, refreshToken: newRefreshToken } = await authService.refreshToken(token);
+  const sessionInfo = {
+    ip: req.ip,
+    ua: req.headers['user-agent']
+  };
+
+  const { accessToken, refreshToken: newRefreshToken } = await authService.refreshToken(token, sessionInfo);
 
   // Update cookies
   res.cookie('refreshToken', newRefreshToken, {

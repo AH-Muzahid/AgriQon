@@ -26,7 +26,14 @@ export class UserRepository {
     });
   }
 
-  async createRefreshToken(data: { userId: string; token: string; expiresAt: Date }) {
+  async createRefreshToken(data: { 
+    userId: string; 
+    token: string; 
+    expiresAt: Date;
+    userAgent?: string;
+    ipAddress?: string;
+    replacedBy?: string;
+  }) {
     return await prisma.refreshToken.create({
       data,
     });
@@ -39,10 +46,13 @@ export class UserRepository {
     });
   }
 
-  async revokeRefreshToken(id: string) {
+  async revokeRefreshToken(id: string, replacedBy?: string) {
     return await prisma.refreshToken.update({
       where: { id },
-      data: { revokedAt: new Date() },
+      data: { 
+        revokedAt: new Date(),
+        replacedBy: replacedBy || undefined
+      },
     });
   }
 

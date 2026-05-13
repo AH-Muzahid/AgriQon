@@ -156,6 +156,8 @@ exports.Prisma.RefreshTokenScalarFieldEnum = {
   id: 'id',
   token: 'token',
   userId: 'userId',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   revokedAt: 'revokedAt',

@@ -109,7 +109,7 @@ export class AccountingService {
       return;
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Debit Accounts Receivable
       await tx.ledgerEntry.create({
         data: {
@@ -162,7 +162,7 @@ export class AccountingService {
       return;
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Debit Cash/Bank
       await tx.ledgerEntry.create({
         data: {

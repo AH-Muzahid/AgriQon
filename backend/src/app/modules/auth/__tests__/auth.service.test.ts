@@ -23,6 +23,7 @@ describe('AuthService', () => {
       findByEmail: jest.fn(),
       findById: jest.fn(),
       create: jest.fn(),
+      createRefreshToken: jest.fn(),
     } as unknown as jest.Mocked<UserRepository>;
     
     authService = new AuthService(mockUserRepo);
@@ -48,7 +49,7 @@ describe('AuthService', () => {
       expect(mockUserRepo.findByEmail).toHaveBeenCalledWith(userData.email);
       expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 12);
       expect(mockUserRepo.create).toHaveBeenCalled();
-      expect(result.token).toBe('test-token');
+      expect(result.accessToken).toBe('test-token');
       expect(result.user.id).toBe('user-1');
     });
 
@@ -74,7 +75,7 @@ describe('AuthService', () => {
       const result = await authService.login(loginData);
 
       expect(bcrypt.compare).toHaveBeenCalledWith(loginData.password, user.password);
-      expect(result.token).toBe('test-token');
+      expect(result.accessToken).toBe('test-token');
       expect(result.user.id).toBe('user-1');
     });
 
