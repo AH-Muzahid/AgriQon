@@ -12,6 +12,9 @@ import { SupplierRoutes } from '../modules/suppliers/supplier.routes';
 import { PurchaseRoutes } from '../modules/purchases/purchase.routes';
 import { AccountingRoutes } from '../modules/accounting/accounting.routes';
 import { LoyaltyRoutes } from '../modules/loyalty/loyalty.routes';
+import { ReviewRoutes } from '../modules/reviews/review.routes';
+import { AuditRoutes } from '../modules/audit/audit.routes';
+import { AiRoutes } from '../modules/ai/ai.routes';
 
 const router = Router();
 
@@ -29,6 +32,9 @@ const moduleRoutes = [
   { path: '/purchases', route: PurchaseRoutes },
   { path: '/accounting', route: AccountingRoutes },
   { path: '/loyalty', route: LoyaltyRoutes },
+  { path: '/reviews', route: ReviewRoutes },
+  { path: '/audit', route: AuditRoutes },
+  { path: '/ai', route: AiRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
