@@ -1,7 +1,7 @@
-import { Prisma, MovementType } from '@prisma/client';
+import { Prisma, MovementType } from '../../../generated/client';
 import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
-import { prisma } from '../../../lib/prisma';
+import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
 
 export class ProductService {
@@ -20,7 +20,7 @@ export class ProductService {
     const { businessId, data } = params;
     const { initialStock, warehouseId, ...productData } = data;
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const productRepo = new ProductRepository(tx);
       
       // 1. Create Product
