@@ -15,6 +15,8 @@ import { LoyaltyRoutes } from '../modules/loyalty/loyalty.routes';
 import { ReviewRoutes } from '../modules/reviews/review.routes';
 import { AuditRoutes } from '../modules/audit/audit.routes';
 import { AiRoutes } from '../modules/ai/ai.routes';
+import { CategoryRoutes } from '../modules/categories/category.routes';
+import { BrandRoutes } from '../modules/brands/brand.routes';
 
 const router = Router();
 
@@ -22,6 +24,8 @@ const moduleRoutes = [
   { path: '/auth', route: AuthRoutes },
   { path: '/business', route: BusinessRoutes },
   { path: '/products', route: ProductRoutes },
+  { path: '/categories', route: CategoryRoutes },
+  { path: '/brands', route: BrandRoutes },
   { path: '/inventory', route: InventoryRoutes },
   { path: '/warehouses', route: WarehouseRoutes },
   { path: '/stock-movements', route: StockMovementRoutes },
