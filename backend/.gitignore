@@ -8,6 +8,17 @@ prisma/migrations
 .env.production
 !.env.example
 
+1. Application Feature & Requirements.md
+2. User Journey & Techniical Flow.md
+3. Data Flow Diagram(DFD).md
+4. Database Schema Planning.md
+5. ERD Diagram & Relationship.md
+full_system_architecture_diagram.md
+
+checkdb.txt
+Postgresql.md
+Stucture and Rules.md
+
 # Logs
 logs
 *.log
