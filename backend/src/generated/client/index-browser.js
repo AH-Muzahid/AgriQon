@@ -152,6 +152,16 @@ exports.Prisma.UserScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.RefreshTokenScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  userId: 'userId',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt',
+  replacedBy: 'replacedBy'
+};
+
 exports.Prisma.CategoryScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
@@ -332,6 +342,18 @@ exports.Prisma.LedgerEntryScalarFieldEnum = {
   credit: 'credit',
   description: 'description',
   reference: 'reference',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  message: 'message',
+  metadata: 'metadata',
+  isRead: 'isRead',
   createdAt: 'createdAt'
 };
 
@@ -536,6 +558,7 @@ exports.Prisma.ModelName = {
   Organization: 'Organization',
   Business: 'Business',
   User: 'User',
+  RefreshToken: 'RefreshToken',
   Category: 'Category',
   Brand: 'Brand',
   Item: 'Item',
@@ -553,6 +576,7 @@ exports.Prisma.ModelName = {
   PurchaseItem: 'PurchaseItem',
   Account: 'Account',
   LedgerEntry: 'LedgerEntry',
+  Notification: 'Notification',
   Invoice: 'Invoice',
   Payment: 'Payment',
   AuditLog: 'AuditLog',

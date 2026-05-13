@@ -60,28 +60,42 @@ model Business {
   webhookEvents     WebhookEvent[]
   loyaltyProgram    LoyaltyProgram?
   loyaltyPoints     LoyaltyPoint[]
+  notifications     Notification[]
 
   @@index([organizationId])
 }
 
 model User {
-  id            String        @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String        @unique
+  email         String         @unique
   password      String?
-  role          Role          @default(USER)
+  role          Role           @default(USER)
   businessId    String?
   deletedAt     DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   aiLogs        AiLog[]
   auditLogs     AuditLog[]
   ledgerEntries LedgerEntry[]
   orders        Order[]
+  refreshTokens RefreshToken[]
   reviews       Review[]
-  business      Business?     @relation(fields: [businessId], references: [id])
+  notifications Notification[]
+  business      Business?      @relation(fields: [businessId], references: [id])
 
   @@index([businessId])
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+  replacedBy String? // For token rotation tracking
 }
 
 model Category {
@@ -381,6 +395,23 @@ model LedgerEntry {
 
   @@index([businessId])
   @@index([accountId])
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  businessId String
+  userId     String
+  type       String
+  title      String
+  message    String
+  metadata   Json?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  business   Business @relation(fields: [businessId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([businessId])
 }
 
 model Invoice {
