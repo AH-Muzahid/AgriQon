@@ -3,7 +3,7 @@ import validateRequest from '../../middleware/validateRequest';
 import { WarehouseValidation } from './warehouse.validation';
 import { WarehouseController } from './warehouse.controller';
 import { auth } from '../../middleware/auth.middleware';
-import { Role } from '@prisma/client';
+import { Role } from '../../../generated/client';
 
 const router = express.Router();
 

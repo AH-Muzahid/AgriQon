@@ -1,5 +1,5 @@
 import { WarehouseRepository } from './warehouse.repository';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../../generated/client';
 
 export class WarehouseService {
   constructor(private warehouseRepo: WarehouseRepository) {}
