@@ -1,4 +1,4 @@
-import { MovementType } from '@prisma/client';
+import { MovementType } from '../../../generated/client';
 import { z } from 'zod';
 
 const adjustStockSchema = z.object({

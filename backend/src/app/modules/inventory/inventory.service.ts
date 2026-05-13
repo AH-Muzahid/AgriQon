@@ -1,4 +1,4 @@
-import { MovementType, Prisma } from '@prisma/client';
+import { MovementType, Prisma } from '../../../generated/client';
 import { InventoryRepository } from './inventory.repository';
 import { AppError } from '../../errors/AppError';
 
