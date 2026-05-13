@@ -21,10 +21,16 @@ model Business {
   id                String              @id @default(uuid())
   organizationId    String
   name              String
+  email             String?
+  phone             String?
+  address           String?
+  website           String?
+  logo              String?
   taxNumber         String?
   currency          String              @default("BDT")
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
+  deletedAt         DateTime?
   accounts          Account[]
   AiLog             AiLog[]
   auditLogs         AuditLog[]
@@ -52,6 +58,8 @@ model Business {
   warehouses        Warehouse[]
   WarehouseTransfer WarehouseTransfer[]
   webhookEvents     WebhookEvent[]
+  loyaltyProgram    LoyaltyProgram?
+  loyaltyPoints     LoyaltyPoint[]
 
   @@index([organizationId])
 }
@@ -247,6 +255,7 @@ model Customer {
   business      Business                 @relation(fields: [businessId], references: [id])
   invoices      Invoice[]
   orders        Order[]
+  loyaltyPointEntries LoyaltyPoint[]
 
   @@index([businessId])
   @@index([searchVector], map: "Customer_search_idx", type: Gin)
@@ -257,8 +266,9 @@ model Order {
   businessId    String
   customerId    String?
   userId        String?
-  status        OrderStatus        @default(PENDING)
-  paymentStatus PaymentStatus      @default(PENDING)
+  status         OrderStatus        @default(PENDING)
+  paymentStatus  PaymentStatus      @default(PENDING)
+  idempotencyKey String?            @unique
   total         Decimal            @db.Decimal(15, 2)
   taxAmount     Decimal            @default(0) @db.Decimal(15, 2)
   discount      Decimal            @default(0) @db.Decimal(15, 2)
@@ -315,7 +325,7 @@ model PurchaseOrder {
   id         String         @id @default(uuid())
   businessId String
   supplierId String
-  status     String         @default("PENDING")
+  status     PurchaseStatus @default(PENDING)
   total      Decimal        @db.Decimal(15, 2)
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
@@ -345,7 +355,7 @@ model Account {
   id            String        @id @default(uuid())
   businessId    String
   name          String
-  type          String
+  type          AccountType
   code          String?
   balance       Decimal       @default(0) @db.Decimal(15, 2)
   business      Business      @relation(fields: [businessId], references: [id])
@@ -522,6 +532,13 @@ enum OrderStatus {
   RETURNED
 }
 
+enum PurchaseStatus {
+  PENDING
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
 enum PaymentStatus {
   PENDING
   PARTIAL
@@ -542,4 +559,37 @@ enum MovementType {
   TRANSFER
   ADJUSTMENT
   RETURN
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+model LoyaltyProgram {
+  id            String   @id @default(uuid())
+  businessId    String   @unique
+  pointsPerUnit Decimal  @default(0.01) @db.Decimal(10, 4)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  business      Business @relation(fields: [businessId], references: [id])
+}
+
+model LoyaltyPoint {
+  id         String    @id @default(uuid())
+  businessId String
+  customerId String
+  points     Int
+  reason     String?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  business   Business  @relation(fields: [businessId], references: [id])
+  customer   Customer  @relation(fields: [customerId], references: [id])
+
+  @@index([businessId])
+  @@index([customerId])
 }
