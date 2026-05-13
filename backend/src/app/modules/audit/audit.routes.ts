@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { AuditController } from './audit.controller';
-import { auth } from '../../../middleware/auth';
+import { auth } from '../../middleware/auth.middleware';
 import { Role } from '../../../generated/client';
 
 const router = Router();

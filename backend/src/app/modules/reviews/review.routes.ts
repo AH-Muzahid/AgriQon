@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { ReviewController } from './review.controller';
 import { ReviewValidation } from './review.validation';
-import { validateRequest } from '../../../middleware/validateRequest';
-import { auth } from '../../../middleware/auth';
+import validateRequest from '../../middleware/validateRequest';
+import { auth } from '../../middleware/auth.middleware';
 import { Role } from '../../../generated/client';
 
 const router = Router();
