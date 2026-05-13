@@ -25,4 +25,31 @@ export class UserRepository {
       data,
     });
   }
+
+  async createRefreshToken(data: { userId: string; token: string; expiresAt: Date }) {
+    return await prisma.refreshToken.create({
+      data,
+    });
+  }
+
+  async findRefreshToken(token: string) {
+    return await prisma.refreshToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+  }
+
+  async revokeRefreshToken(id: string) {
+    return await prisma.refreshToken.update({
+      where: { id },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  async revokeAllRefreshTokensForUser(userId: string) {
+    return await prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
 }

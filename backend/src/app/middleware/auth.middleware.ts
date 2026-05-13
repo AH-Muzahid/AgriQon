@@ -26,8 +26,8 @@ export const auth = (...roles: Role[]) => {
     }
 
     // 2. Fallback to cookie
-    if (!token && req.cookies?.authToken) {
-      token = req.cookies.authToken;
+    if (!token && req.cookies?.accessToken) {
+      token = req.cookies.accessToken;
     }
 
     if (!token) {

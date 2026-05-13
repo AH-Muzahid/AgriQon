@@ -13,4 +13,9 @@ export const env = {
   supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   supabaseJwtSecret: process.env.SUPABASE_JWT_SECRET ?? '',
   googleClientId: process.env.GOOGLE_CLIENT_ID,
+  jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '15m',
+  jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
+  // Email Configs
+  emailFrom: process.env.EMAIL_FROM ?? 'noreply@agriqon.ai',
+  postmarkKey: process.env.POSTMARK_KEY ?? 'mock-key',
 };

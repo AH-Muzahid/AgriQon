@@ -36,7 +36,8 @@ router.delete(
 
 router.post(
   '/',
-  validateRequest(z.object({ body: createProductSchema })), // Wrapped in body as per validateRequest middleware
+  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
+  validateRequest(z.object({ body: createProductSchema })),
   ProductController.createProduct
 );
 
@@ -46,10 +47,15 @@ router.get('/:id', ProductController.getProductById);
 
 router.patch(
   '/:id',
+  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
   validateRequest(z.object({ body: updateProductSchema })),
   ProductController.updateProduct
 );
 
-router.delete('/:id', ProductController.deleteProduct);
+router.delete(
+  '/:id',
+  auth(Role.ADMIN, Role.MANAGER),
+  ProductController.deleteProduct
+);
 
 export const ProductRoutes = router;

@@ -22,8 +22,7 @@ export function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      console.log("Searching for:", searchQuery)
-      // Implementation for actual search logic would go here
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
     }
   }
 

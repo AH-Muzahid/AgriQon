@@ -17,6 +17,7 @@ import { AuditRoutes } from '../modules/audit/audit.routes';
 import { AiRoutes } from '../modules/ai/ai.routes';
 import { CategoryRoutes } from '../modules/categories/category.routes';
 import { BrandRoutes } from '../modules/brands/brand.routes';
+import { NotificationRoutes } from '../modules/notifications/notification.routes';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ const moduleRoutes = [
   { path: '/reviews', route: ReviewRoutes },
   { path: '/audit', route: AuditRoutes },
   { path: '/ai', route: AiRoutes },
+  { path: '/notifications', route: NotificationRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

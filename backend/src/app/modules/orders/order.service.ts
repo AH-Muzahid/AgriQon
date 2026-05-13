@@ -175,8 +175,34 @@ export class OrderService {
   }
 
   async updateOrderStatus(id: string, businessId: string, status: OrderStatus) {
-    await this.getOrderById(id, businessId);
-    return await this.orderRepo.updateStatus(id, businessId, status);
+    const order = await this.getOrderById(id, businessId);
+
+    if (order.status === status) {
+      return order;
+    }
+
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const orderRepo = new OrderRepository(tx);
+      
+      const updatedOrder = await orderRepo.updateStatus(id, businessId, status);
+
+      // Publish Outbox Event for order status change
+      await tx.outboxEvent.create({
+        data: {
+          businessId,
+          aggregateType: 'Order',
+          aggregateId: id,
+          eventType: 'ORDER_STATUS_CHANGED',
+          payload: { 
+            orderId: id, 
+            oldStatus: order.status, 
+            newStatus: status 
+          },
+        },
+      });
+
+      return updatedOrder;
+    });
   }
 
   async cancelOrder(id: string, businessId: string) {

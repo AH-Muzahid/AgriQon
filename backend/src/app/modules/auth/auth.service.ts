@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { env } from '../../../config/env';
 import { AppError } from '../../errors/AppError';
 import { UserRepository } from './user.repository';
@@ -21,9 +22,10 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const token = this.generateToken(user);
+    const accessToken = this.generateAccessToken(user);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
-    return { user, token };
+    return { user, accessToken, refreshToken };
   }
 
   async login(data: LoginDTO) {
@@ -37,12 +39,46 @@ export class AuthService {
       throw new AppError('Invalid email or password', 401);
     }
 
-    const token = this.generateToken(user);
+    const accessToken = this.generateAccessToken(user);
+    const refreshToken = await this.generateRefreshToken(user.id);
 
-    return { user, token };
+    return { user, accessToken, refreshToken };
   }
 
-  private generateToken(user: any) {
+  async refreshToken(token: string) {
+    const storedToken = await this.userRepo.findRefreshToken(token);
+
+    if (!storedToken) {
+      throw new AppError('Invalid refresh token', 401);
+    }
+
+    // Reuse Detection
+    if (storedToken.revokedAt) {
+      await this.userRepo.revokeAllRefreshTokensForUser(storedToken.userId);
+      throw new AppError('Token reuse detected! All sessions revoked for security.', 401);
+    }
+
+    if (storedToken.expiresAt < new Date()) {
+      throw new AppError('Refresh token expired', 401);
+    }
+
+    // Rotation
+    await this.userRepo.revokeRefreshToken(storedToken.id);
+    
+    const accessToken = this.generateAccessToken(storedToken.user);
+    const newRefreshToken = await this.generateRefreshToken(storedToken.userId);
+
+    return { accessToken, refreshToken: newRefreshToken };
+  }
+
+  async logout(token: string) {
+    const storedToken = await this.userRepo.findRefreshToken(token);
+    if (storedToken) {
+      await this.userRepo.revokeRefreshToken(storedToken.id);
+    }
+  }
+
+  private generateAccessToken(user: any) {
     if (!env.jwtSecret) {
       throw new AppError('JWT secret not configured', 500);
     }
@@ -52,9 +88,24 @@ export class AuthService {
         role: user.role,
         email: user.email,
         businessId: user.businessId,
+        organizationId: user.organizationId,
       },
       env.jwtSecret,
-      { expiresIn: '1d' }
+      { expiresIn: env.jwtAccessExpiresIn }
     );
+  }
+
+  private async generateRefreshToken(userId: string) {
+    const token = crypto.randomBytes(40).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+
+    await this.userRepo.createRefreshToken({
+      userId,
+      token,
+      expiresAt,
+    });
+
+    return token;
   }
 }

@@ -2,8 +2,15 @@ import { CustomerRepository } from './customer.repository';
 import { AppError } from '../../errors/AppError';
 import { Prisma } from '../../../generated/client';
 
+import { OrderCreatedPayload, PaymentCompletedPayload } from '../../../shared/events/domain-events';
+import { logger } from '../../lib/logger';
+
 export class CustomerService {
-  constructor(private customerRepo: CustomerRepository) {}
+  private customerRepo: CustomerRepository;
+
+  constructor(customerRepo?: CustomerRepository) {
+    this.customerRepo = customerRepo || new CustomerRepository();
+  }
 
   async getAllCustomers(params: {
     businessId: string;
@@ -45,5 +52,53 @@ export class CustomerService {
     await this.getCustomerById(id, businessId);
     // Rule 14: Soft delete only
     return await this.customerRepo.softDelete(id, businessId);
+  }
+
+  /**
+   * Handle ORDER_CREATED event
+   */
+  async handleOrderCreated(payload: OrderCreatedPayload) {
+    // Currently we just log, but we could update "lastOrderDate" or "totalOrders" here
+    logger.info(`[CustomerService] Handling ORDER_CREATED for order ${payload.orderId}`);
+  }
+
+  /**
+   * Handle PAYMENT_COMPLETED event
+   * Updates loyalty points based on the amount paid
+   */
+  async handlePaymentCompleted(payload: PaymentCompletedPayload) {
+    const { orderId, businessId, customerId, amount } = payload;
+
+    if (!customerId) {
+      logger.debug(`[CustomerService] Skipping loyalty points for order ${orderId}: No customerId`);
+      return;
+    }
+
+    try {
+      const loyaltyProgram = await this.customerRepo.getLoyaltyProgram(businessId);
+
+      if (!loyaltyProgram || !loyaltyProgram.isActive) {
+        logger.debug(`[CustomerService] Skipping loyalty points for business ${businessId}: No active program`);
+        return;
+      }
+
+      const pointsToEarn = Math.floor(Number(amount) * Number(loyaltyProgram.pointsPerUnit));
+
+      if (pointsToEarn > 0) {
+        await this.customerRepo.addLoyaltyPoints({
+          customerId,
+          businessId,
+          points: pointsToEarn,
+          reason: `Earned points for order ${orderId}`,
+        });
+
+        logger.info(`[CustomerService] Added ${pointsToEarn} loyalty points to customer ${customerId}`);
+      }
+    } catch (error: any) {
+      logger.error(`[CustomerService] Error handling PAYMENT_COMPLETED: ${error.message}`, {
+        orderId,
+        customerId,
+      });
+    }
   }
 }

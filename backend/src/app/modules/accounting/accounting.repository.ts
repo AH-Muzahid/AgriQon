@@ -64,4 +64,24 @@ export class AccountingRepository {
       },
     });
   }
+
+  async findAccountByCode(businessId: string, code: string) {
+    return this.prisma.account.findFirst({
+      where: { businessId, code },
+    });
+  }
+
+  async findAccountBySystemType(businessId: string, type: string) {
+    // This is a helper to find default accounts like 'RECEIVABLE', 'CASH', etc.
+    // Assuming we have a way to tag them, or we use standard codes.
+    return this.prisma.account.findFirst({
+      where: { 
+        businessId,
+        OR: [
+          { code: type },
+          { name: { contains: type, mode: 'insensitive' } }
+        ]
+      },
+    });
+  }
 }

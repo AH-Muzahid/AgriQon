@@ -92,4 +92,110 @@ export class AccountingService {
       received: amount,
     };
   }
+
+  /**
+   * Automatic double-entry for new orders
+   * Debit: Accounts Receivable (Asset)
+   * Credit: Sales Revenue (Revenue)
+   */
+  async handleOrderCreated(payload: any) {
+    const { orderId, businessId, total } = payload;
+
+    const receivableAccount = await this.accountingRepository.findAccountBySystemType(businessId, 'RECEIVABLE');
+    const revenueAccount = await this.accountingRepository.findAccountBySystemType(businessId, 'REVENUE');
+
+    if (!receivableAccount || !revenueAccount) {
+      console.warn(`[AccountingService] Skipping Order ${orderId}: Accounts not configured for business ${businessId}`);
+      return;
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      // Debit Accounts Receivable
+      await tx.ledgerEntry.create({
+        data: {
+          businessId,
+          accountId: receivableAccount.id,
+          debit: total,
+          credit: 0,
+          description: `Accounts Receivable for Order #${orderId}`,
+          reference: orderId,
+        },
+      });
+
+      await tx.account.update({
+        where: { id: receivableAccount.id },
+        data: { balance: { increment: total } },
+      });
+
+      // Credit Sales Revenue
+      await tx.ledgerEntry.create({
+        data: {
+          businessId,
+          accountId: revenueAccount.id,
+          debit: 0,
+          credit: total,
+          description: `Sales Revenue for Order #${orderId}`,
+          reference: orderId,
+        },
+      });
+
+      await tx.account.update({
+        where: { id: revenueAccount.id },
+        data: { balance: { increment: total } }, // Revenue credit increases balance
+      });
+    });
+  }
+
+  /**
+   * Automatic double-entry for completed payments
+   * Debit: Cash/Bank (Asset)
+   * Credit: Accounts Receivable (Asset)
+   */
+  async handlePaymentCompleted(payload: any) {
+    const { orderId, businessId, amount, method } = payload;
+
+    const cashAccount = await this.accountingRepository.findAccountBySystemType(businessId, 'CASH');
+    const receivableAccount = await this.accountingRepository.findAccountBySystemType(businessId, 'RECEIVABLE');
+
+    if (!cashAccount || !receivableAccount) {
+      console.warn(`[AccountingService] Skipping Payment for Order ${orderId}: Accounts not configured`);
+      return;
+    }
+
+    return await prisma.$transaction(async (tx) => {
+      // Debit Cash/Bank
+      await tx.ledgerEntry.create({
+        data: {
+          businessId,
+          accountId: cashAccount.id,
+          debit: amount,
+          credit: 0,
+          description: `Payment received via ${method} for Order #${orderId}`,
+          reference: orderId,
+        },
+      });
+
+      await tx.account.update({
+        where: { id: cashAccount.id },
+        data: { balance: { increment: amount } },
+      });
+
+      // Credit Accounts Receivable
+      await tx.ledgerEntry.create({
+        data: {
+          businessId,
+          accountId: receivableAccount.id,
+          debit: 0,
+          credit: amount,
+          description: `Receivable cleared for Order #${orderId}`,
+          reference: orderId,
+        },
+      });
+
+      await tx.account.update({
+        where: { id: receivableAccount.id },
+        data: { balance: { decrement: amount } },
+      });
+    });
+  }
 }

@@ -59,4 +59,39 @@ export class CustomerRepository {
       data: { deletedAt: new Date() },
     });
   }
+
+  async addLoyaltyPoints(params: {
+    customerId: string;
+    businessId: string;
+    points: number;
+    reason: string;
+  }) {
+    const { customerId, businessId, points, reason } = params;
+
+    return await this.prisma.$transaction(async (tx) => {
+      // 1. Create loyalty point history
+      await tx.loyaltyPoint.create({
+        data: {
+          customerId,
+          businessId,
+          points,
+          reason,
+        },
+      });
+
+      // 2. Update customer total points
+      return await tx.customer.update({
+        where: { id: customerId, businessId },
+        data: {
+          loyaltyPoints: { increment: points },
+        },
+      });
+    });
+  }
+
+  async getLoyaltyProgram(businessId: string) {
+    return await this.prisma.loyaltyProgram.findUnique({
+      where: { businessId },
+    });
+  }
 }
