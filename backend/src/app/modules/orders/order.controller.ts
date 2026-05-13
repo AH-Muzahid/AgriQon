@@ -4,7 +4,7 @@ import sendResponse from '../../shared/utils/sendResponse';
 import { AuthRequest } from '../../middleware/auth.middleware';
 import { OrderService } from './order.service';
 import { OrderRepository } from './order.repository';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus } from '../../../generated/client';
 
 const orderRepository = new OrderRepository();
 const orderService = new OrderService(orderRepository);

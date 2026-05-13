@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient, OrderStatus, PaymentStatus } from '@prisma/client';
-import { prisma } from '../../../lib/prisma';
+import { Prisma, PrismaClient, OrderStatus, PaymentStatus } from '../../../generated/client';
+import { prisma } from '../../lib/prisma';
 
 export class OrderRepository {
   private prisma: PrismaClient;
