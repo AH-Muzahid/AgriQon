@@ -1,5 +1,5 @@
-import { Prisma, User } from '@prisma/client';
-import { prisma } from '../../../lib/prisma';
+import { Prisma, User } from '../../../generated/client';
+import { prisma } from '../../lib/prisma';
 
 export class UserRepository {
   async findByEmail(email: string): Promise<User | null> {
