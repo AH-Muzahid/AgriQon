@@ -8,6 +8,10 @@ import { StockMovementRoutes } from '../modules/stock-movements/stock-movement.r
 import { CustomerRoutes } from '../modules/customers/customer.routes';
 import { OrderRoutes } from '../modules/orders/order.routes';
 import { InvoiceRoutes } from '../modules/invoices/invoice.routes';
+import { SupplierRoutes } from '../modules/suppliers/supplier.routes';
+import { PurchaseRoutes } from '../modules/purchases/purchase.routes';
+import { AccountingRoutes } from '../modules/accounting/accounting.routes';
+import { LoyaltyRoutes } from '../modules/loyalty/loyalty.routes';
 
 const router = Router();
 
@@ -21,6 +25,10 @@ const moduleRoutes = [
   { path: '/customers', route: CustomerRoutes },
   { path: '/orders', route: OrderRoutes },
   { path: '/invoices', route: InvoiceRoutes },
+  { path: '/suppliers', route: SupplierRoutes },
+  { path: '/purchases', route: PurchaseRoutes },
+  { path: '/accounting', route: AccountingRoutes },
+  { path: '/loyalty', route: LoyaltyRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
