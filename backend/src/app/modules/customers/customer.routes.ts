@@ -7,7 +7,7 @@ import {
   updateCustomerSchema,
   customerQuerySchema,
 } from './customer.validation';
-import { Role } from '@prisma/client';
+import { Role } from '../../../generated/client';
 
 const router = Router();
 

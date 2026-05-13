@@ -1,6 +1,6 @@
 import { CustomerRepository } from './customer.repository';
 import { AppError } from '../../errors/AppError';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../../generated/client';
 
 export class CustomerService {
   constructor(private customerRepo: CustomerRepository) {}
