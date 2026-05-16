@@ -23,7 +23,10 @@ export class AuthService {
     });
 
     const accessToken = this.generateAccessToken(user);
-    const refreshToken = await this.generateRefreshToken(user.id, sessionInfo);
+    const { token: refreshToken, hashedToken } = this.generateSecureToken();
+    const familyId = crypto.randomBytes(20).toString('hex');
+    
+    await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
 
     return { user, accessToken, refreshToken };
   }
@@ -40,13 +43,17 @@ export class AuthService {
     }
 
     const accessToken = this.generateAccessToken(user);
-    const refreshToken = await this.generateRefreshToken(user.id, sessionInfo);
+    const { token, hashedToken } = this.generateSecureToken();
+    const familyId = crypto.randomBytes(20).toString('hex');
+    
+    await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
 
-    return { user, accessToken, refreshToken };
+    return { user, accessToken, refreshToken: token };
   }
 
   async refreshToken(token: string, sessionInfo?: { ip?: string; ua?: string }) {
-    const storedToken = await this.userRepo.findRefreshToken(token);
+    const hashedToken = this.hashToken(token);
+    const storedToken = await this.userRepo.findRefreshToken(hashedToken);
 
     if (!storedToken) {
       throw new AppError('Invalid refresh token', 401);
@@ -55,9 +62,13 @@ export class AuthService {
     // Reuse Detection
     if (storedToken.revokedAt) {
       // If someone tries to use a revoked token, it's likely a replay attack.
-      // Revoke all tokens for this user for safety.
-      await this.userRepo.revokeAllRefreshTokensForUser(storedToken.userId);
-      throw new AppError('Token reuse detected! Security breach suspected. All sessions revoked.', 401);
+      // Revoke the ENTIRE family for safety.
+      if (storedToken.familyId) {
+        await this.userRepo.revokeTokenFamily(storedToken.familyId);
+      } else {
+        await this.userRepo.revokeAllRefreshTokensForUser(storedToken.userId);
+      }
+      throw new AppError('Token reuse detected! Security breach suspected. Session family revoked.', 401);
     }
 
     if (storedToken.expiresAt < new Date()) {
@@ -66,30 +77,61 @@ export class AuthService {
 
     // Generate new pair
     const accessToken = this.generateAccessToken(storedToken.user);
-    const newRefreshToken = crypto.randomBytes(40).toString('hex');
+    const { token: newRawToken, hashedToken: newHashedToken } = this.generateSecureToken();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
     // Rotation: Revoke old token and link to new one
-    await this.userRepo.revokeRefreshToken(storedToken.id, newRefreshToken);
+    await this.userRepo.revokeRefreshToken(storedToken.id, newHashedToken);
     
-    // Save new token
+    // Save new token in the SAME family
     await this.userRepo.createRefreshToken({
       userId: storedToken.userId,
-      token: newRefreshToken,
+      token: newHashedToken,
+      familyId: storedToken.familyId || undefined,
       expiresAt,
       ipAddress: sessionInfo?.ip,
       userAgent: sessionInfo?.ua,
     });
 
-    return { accessToken, refreshToken: newRefreshToken };
+    return { accessToken, refreshToken: newRawToken };
   }
 
   async logout(token: string) {
-    const storedToken = await this.userRepo.findRefreshToken(token);
+    const hashedToken = this.hashToken(token);
+    const storedToken = await this.userRepo.findRefreshToken(hashedToken);
     if (storedToken) {
       await this.userRepo.revokeRefreshToken(storedToken.id);
     }
+  }
+
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
+
+  private generateSecureToken() {
+    const token = crypto.randomBytes(40).toString('hex');
+    const hashedToken = this.hashToken(token);
+    return { token, hashedToken };
+  }
+
+  private async saveRefreshToken(
+    userId: string, 
+    hashedToken: string, 
+    familyId?: string, 
+    sessionInfo?: { ip?: string; ua?: string }
+  ) {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    
+    await this.userRepo.createRefreshToken({
+      userId,
+      token: hashedToken,
+      familyId,
+      expiresAt,
+      ipAddress: sessionInfo?.ip,
+      userAgent: sessionInfo?.ua,
+    });
   }
 
   private generateAccessToken(user: any) {
@@ -109,19 +151,4 @@ export class AuthService {
     );
   }
 
-  private async generateRefreshToken(userId: string, sessionInfo?: { ip?: string; ua?: string }) {
-    const token = crypto.randomBytes(40).toString('hex');
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
-
-    await this.userRepo.createRefreshToken({
-      userId,
-      token,
-      expiresAt,
-      ipAddress: sessionInfo?.ip,
-      userAgent: sessionInfo?.ua,
-    });
-
-    return token;
-  }
 }

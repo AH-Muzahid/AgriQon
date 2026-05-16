@@ -33,6 +33,7 @@ export class UserRepository {
     userAgent?: string;
     ipAddress?: string;
     replacedBy?: string;
+    familyId?: string;
   }) {
     return await prisma.refreshToken.create({
       data,
@@ -46,6 +47,13 @@ export class UserRepository {
     });
   }
 
+  async updateRefreshTokenUsage(id: string) {
+    return await prisma.refreshToken.update({
+      where: { id },
+      data: { lastUsedAt: new Date() },
+    });
+  }
+
   async revokeRefreshToken(id: string, replacedBy?: string) {
     return await prisma.refreshToken.update({
       where: { id },
@@ -53,6 +61,13 @@ export class UserRepository {
         revokedAt: new Date(),
         replacedBy: replacedBy || undefined
       },
+    });
+  }
+
+  async revokeTokenFamily(familyId: string) {
+    return await prisma.refreshToken.updateMany({
+      where: { familyId, revokedAt: null },
+      data: { revokedAt: new Date() },
     });
   }
 
