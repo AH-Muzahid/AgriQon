@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 import CartProvider from "@/context/cart-context";
+import { WishlistProvider } from "@/context/wishlist-context";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/home/navbar";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -24,8 +26,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>
-            <Navbar />
-            {children}
+            <WishlistProvider>
+              <Navbar />
+              {children}
+              <Toaster position="bottom-right" />
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>
