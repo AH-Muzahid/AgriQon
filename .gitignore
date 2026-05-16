@@ -44,3 +44,10 @@ AGENTS.md
 copilot-instructions.md
 agent-skills/
 skills-lock.json
+
+# Prisma
+backend/src/generated/
+*.tmp*
+query_engine-*.dll.node
+schema_engine-*.exe
+libquery_engine.so.node
