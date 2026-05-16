@@ -120,8 +120,21 @@ class ApiClient {
     return this.client.post('/reviews', data);
   }
 
-  askAI(question: string) {
-    return this.client.post('/ai/ask', { question });
+  generateAiChat(prompt: string) {
+    return this.client.post('/ai/chat', { prompt });
+  }
+
+  // Accounting Reports
+  getTrialBalance(params?: { startDate?: string; endDate?: string }) {
+    return this.client.get('/accounting/reports/trial-balance', { params });
+  }
+
+  getProfitAndLoss(params: { startDate: string; endDate: string }) {
+    return this.client.get('/accounting/reports/profit-loss', { params });
+  }
+
+  getBalanceSheet(params?: { date?: string }) {
+    return this.client.get('/accounting/reports/balance-sheet', { params });
   }
 }
 

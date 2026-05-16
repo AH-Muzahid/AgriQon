@@ -8,7 +8,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'USER' | 'SELLER' | 'ADMIN';
+  role: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER';
   avatarUrl?: string | null;
 }
 
