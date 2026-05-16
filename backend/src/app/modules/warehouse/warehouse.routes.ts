@@ -30,12 +30,14 @@ router.get(
 router.post(
   '/transfers',
   auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  validateRequest(WarehouseValidation.initiateTransferSchema),
   WarehouseTransferController.initiateTransfer
 );
 
 router.patch(
   '/transfers/:id/status',
   auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  validateRequest(WarehouseValidation.updateTransferStatusSchema),
   WarehouseTransferController.updateTransferStatus
 );
 
