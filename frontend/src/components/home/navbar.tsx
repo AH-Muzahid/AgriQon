@@ -4,14 +4,17 @@ import Link from "next/link"
 import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { Input } from "@/components/ui/input"
-import { Menu, X, Search, ShoppingCart, Truck, Headphones, ChevronDown } from "lucide-react"
+import { Menu, X, Search, ShoppingCart, Truck, Headphones, ChevronDown, Heart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
+import { useWishlist } from "@/context/wishlist-context"
 import { useAuth } from "@/context/auth-context"
 import { useRouter } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { cartCount } = useCart()
+  const { wishlistCount } = useWishlist()
   const { user, logout, isAuthenticated } = useAuth()
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -122,14 +125,42 @@ export function Navbar() {
               </div>
 
               <div className="flex items-center gap-4">
+                <Link href="/wishlist" className="relative group hidden sm:block">
+                  <div className="flex items-center justify-center h-11 w-11 bg-gray-50 rounded-full text-gray-600 transition-all group-hover:bg-red-50 group-hover:text-red-500">
+                    <Heart className="size-5" />
+                  </div>
+                  <AnimatePresence>
+                    {wishlistCount > 0 && (
+                      <motion.span 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        key={wishlistCount}
+                        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white border-2 border-white shadow-sm"
+                      >
+                        {wishlistCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </Link>
+
                 <Link href="/cart" className="relative group">
                   <div className="flex items-center justify-center h-11 w-11 bg-[#0a4d3c] rounded-full text-white transition-colors group-hover:bg-[#07382b]">
                     <ShoppingCart className="size-5" />
                   </div>
-                  <span key={cartCount} className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#facc15] text-[11px] font-bold text-[#0a4d3c] border-2 border-white shadow-sm animate-in zoom-in duration-300">
-                    {cartCount}
-                  </span>
-
+                  <AnimatePresence>
+                    {cartCount > 0 && (
+                      <motion.span 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        key={cartCount} 
+                        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#facc15] text-[11px] font-bold text-[#0a4d3c] border-2 border-white shadow-sm"
+                      >
+                        {cartCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </Link>
 
                 <div className="relative" ref={menuRef}>

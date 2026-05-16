@@ -78,6 +78,38 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-semibold mb-2">Sales</h3>
                 <p className="text-gray-600">View your sales and revenue</p>
               </Link>
+              <Link
+                href="/dashboard/ai-assistant"
+                className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-lg shadow p-6 hover:shadow-xl transition transform hover:-translate-y-1"
+              >
+                <h3 className="text-lg font-semibold mb-2 flex items-center">
+                  AgriQon AI
+                  <span className="ml-2 bg-white/20 text-xs px-2 py-0.5 rounded-full">Pro</span>
+                </h3>
+                <p className="text-indigo-100">Get AI-powered market insights and personalized business advice</p>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {(user.role === 'ADMIN' || user.role === 'MANAGER') && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">Management</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Link
+                href="/dashboard/accounting"
+                className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-indigo-600"
+              >
+                <h3 className="text-lg font-semibold mb-2">Financial Accounting</h3>
+                <p className="text-gray-600">General Ledger, Profit & Loss, and Balance Sheet reports</p>
+              </Link>
+              <Link
+                href="/dashboard/users"
+                className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition border-l-4 border-gray-400"
+              >
+                <h3 className="text-lg font-semibold mb-2">User Management</h3>
+                <p className="text-gray-600">Manage platform users and permissions</p>
+              </Link>
             </div>
           </div>
         )}
