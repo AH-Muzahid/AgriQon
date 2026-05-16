@@ -1,6 +1,7 @@
 import { CustomerRepository } from './customer.repository';
 import { AppError } from '../../errors/AppError';
 import { Prisma } from '../../../generated/client';
+import { prisma } from '../../lib/prisma';
 
 import { OrderCreatedPayload, PaymentCompletedPayload } from '../../../shared/events/domain-events';
 import { logger } from '../../lib/logger';
@@ -85,14 +86,31 @@ export class CustomerService {
       const pointsToEarn = Math.floor(Number(amount) * Number(loyaltyProgram.pointsPerUnit));
 
       if (pointsToEarn > 0) {
-        await this.customerRepo.addLoyaltyPoints({
-          customerId,
-          businessId,
-          points: pointsToEarn,
-          reason: `Earned points for order ${orderId}`,
+        await prisma.$transaction(async (tx) => {
+          // 1. Add points to customer history
+          await tx.loyaltyPoint.create({
+            data: {
+              customerId,
+              businessId,
+              points: pointsToEarn,
+              reason: `Earned points for order ${orderId}`,
+            },
+          });
+
+          // 2. Update customer balance
+          await tx.customer.update({
+            where: { id: customerId, businessId },
+            data: { loyaltyPoints: { increment: pointsToEarn } },
+          });
+
+          // 3. Update order with earned points
+          await tx.order.update({
+            where: { id: orderId, businessId },
+            data: { pointsEarned: pointsToEarn },
+          });
         });
 
-        logger.info(`[CustomerService] Added ${pointsToEarn} loyalty points to customer ${customerId}`);
+        logger.info(`[CustomerService] Added ${pointsToEarn} loyalty points to customer ${customerId} for order ${orderId}`);
       }
     } catch (error: any) {
       logger.error(`[CustomerService] Error handling PAYMENT_COMPLETED: ${error.message}`, {

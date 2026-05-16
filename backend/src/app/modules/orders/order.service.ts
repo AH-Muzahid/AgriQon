@@ -1,9 +1,12 @@
 import { OrderStatus, MovementType, Prisma } from '../../../generated/client';
+import { DomainEvents } from '../../../shared/events/domain-events';
 import { prisma } from '../../lib/prisma';
 import { OrderRepository } from './order.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
 import { AppError } from '../../errors/AppError';
+import { AuditService } from '../audit/audit.service';
+import { emitDomainEvent } from '../../../shared/events/domain-events';
 
 // Rule 5: Service Composition
 // OrderService uses InventoryService for stock operations
@@ -26,15 +29,18 @@ interface CreateOrderInput {
   taxAmount?: number;
   idempotencyKey: string;
   dueDate?: Date;
+  pointsToRedeem?: number;
 }
 
 export class OrderService {
   private inventoryService: InventoryService;
+  private auditService: AuditService;
 
   constructor(private orderRepo: OrderRepository) {
     // Rule 5: Compose with InventoryService
     const inventoryRepo = new InventoryRepository();
     this.inventoryService = new InventoryService(inventoryRepo);
+    this.auditService = new AuditService();
   }
 
   async getAllOrders(params: {
@@ -67,7 +73,17 @@ export class OrderService {
    * Rule 13: Idempotency key prevents duplicate orders on retry.
    */
   async createOrder(input: CreateOrderInput) {
-    const { businessId, userId, customerId, items, discount = 0, taxAmount = 0, idempotencyKey, dueDate } = input;
+    const { 
+      businessId, 
+      userId, 
+      customerId, 
+      items, 
+      discount = 0, 
+      taxAmount = 0, 
+      idempotencyKey, 
+      dueDate,
+      pointsToRedeem = 0
+    } = input;
 
     // Rule 13: Check idempotency — prevent duplicate order creation
     if (idempotencyKey) {
@@ -83,11 +99,53 @@ export class OrderService {
       const inventoryRepo = new InventoryRepository(tx);
       const inventoryService = new InventoryService(inventoryRepo);
 
+      // 0. Handle Loyalty Redemption
+      let loyaltyDiscount = 0;
+      if (pointsToRedeem > 0) {
+        if (!customerId) {
+          throw new AppError('Customer ID is required for loyalty redemption', 400);
+        }
+
+        const customer = await tx.customer.findUnique({
+          where: { id: customerId },
+          include: { business: { include: { loyaltyProgram: true } } }
+        });
+
+        if (!customer || !customer.business.loyaltyProgram || !customer.business.loyaltyProgram.isActive) {
+          throw new AppError('No active loyalty program found for this business', 400);
+        }
+
+        if (customer.loyaltyPoints < pointsToRedeem) {
+          throw new AppError(`Insufficient loyalty points. Balance: ${customer.loyaltyPoints}`, 400);
+        }
+
+        loyaltyDiscount = Number(customer.business.loyaltyProgram.redemptionValuePerPoint) * pointsToRedeem;
+        
+        // Deduct points from customer
+        await tx.customer.update({
+          where: { id: customerId },
+          data: { loyaltyPoints: { decrement: pointsToRedeem } }
+        });
+
+        // Create point entry
+        await tx.loyaltyPoint.create({
+          data: {
+            businessId,
+            customerId,
+            points: -pointsToRedeem,
+            reason: `Redeemed for order (Pending)`
+          }
+        });
+      }
+
       // 1. Calculate total
-      const total = items.reduce((sum, item) => {
+      const itemsTotal = items.reduce((sum, item) => {
         const lineTotal = item.unitPrice * item.quantity - (item.discount || 0);
         return sum + lineTotal;
-      }, 0) - discount + taxAmount;
+      }, 0);
+      
+      const totalDiscount = discount + loyaltyDiscount;
+      const total = itemsTotal - totalDiscount + taxAmount;
 
       // 2. Create Order
       const order = await orderRepo.create({
@@ -97,8 +155,9 @@ export class OrderService {
         idempotencyKey,
         status: OrderStatus.PENDING,
         total: new Prisma.Decimal(total),
-        discount: new Prisma.Decimal(discount),
+        discount: new Prisma.Decimal(totalDiscount),
         taxAmount: new Prisma.Decimal(taxAmount),
+        pointsRedeemed: pointsToRedeem,
         items: {
           create: items.map((item) => ({
             businessId,
@@ -110,39 +169,32 @@ export class OrderService {
           })),
         },
       });
-
-      // 3. Reserve Stock via StockMovement (Rule 4: NEVER mutate directly)
-      for (const item of items) {
-        await inventoryService.adjustStock({
-          businessId,
+      // 3. Reserve Stock (Rule 4: Move from Available to Reserved)
+      await inventoryService.reserveStock({
+        businessId,
+        orderId: order.id,
+        items: items.map(item => ({
           itemId: item.itemId,
           warehouseId: item.warehouseId,
-          quantity: -item.quantity, // Outgoing reservation
-          type: MovementType.OUT,
-          reason: `Reserved for Order #${order.id}`,
-          reference: order.id,
-          tx,
-        });
+          quantity: item.quantity,
+        })),
+        tx,
+      });
 
-        // 4. Create StockReservation record
-        const inventory = await inventoryRepo.findByProductAndWarehouse({
+      // 4. Emit Inventory Reserved event (to trigger BullMQ delayed release job)
+      await emitDomainEvent(
+        tx, 
+        DomainEvents.INVENTORY_RESERVED, 
+        {
+          reservationId: `order-${order.id}`,
           businessId,
-          itemId: item.itemId,
-          warehouseId: item.warehouseId,
-        });
-
-        if (inventory) {
-          await tx.stockReservation.create({
-            data: {
-              businessId,
-              inventoryId: inventory.id,
-              orderId: order.id,
-              quantity: item.quantity,
-              expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30-min reservation window
-            },
-          });
-        }
-      }
+          orderId: order.id,
+          items: items.map(i => ({ itemId: i.itemId, quantity: i.quantity }))
+        }, 
+        businessId,
+        'Inventory',
+        order.id
+      );
 
       // 5. Auto-create Invoice (Rule 5: Service Composition)
       const invoiceNumber = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
@@ -160,14 +212,32 @@ export class OrderService {
       });
 
       // 6. Emit domain event to Outbox (Event-Driven, Rule 10)
-      await tx.outboxEvent.create({
-        data: {
+      await emitDomainEvent(
+        tx, 
+        DomainEvents.ORDER_CREATED, 
+        { 
+          orderId: order.id, 
           businessId,
-          aggregateType: 'Order',
-          aggregateId: order.id,
-          eventType: 'ORDER_CREATED',
-          payload: { orderId: order.id, total, customerId },
-        },
+          subtotal: total - taxAmount,
+          taxAmount,
+          total, 
+          customerId,
+          itemCount: items.length
+        }, 
+        businessId,
+        'Order',
+        order.id
+      );
+      
+      // 7. Log Audit (Rule 14: System Auditability)
+      await this.auditService.log({
+        businessId,
+        userId,
+        action: 'CREATE_ORDER',
+        entityType: 'Order',
+        entityId: order.id,
+        newData: order,
+        tx,
       });
 
       return order;
@@ -187,18 +257,25 @@ export class OrderService {
       const updatedOrder = await orderRepo.updateStatus(id, businessId, status);
 
       // Publish Outbox Event for order status change
-      await tx.outboxEvent.create({
-        data: {
-          businessId,
-          aggregateType: 'Order',
-          aggregateId: id,
-          eventType: 'ORDER_STATUS_CHANGED',
-          payload: { 
-            orderId: id, 
-            oldStatus: order.status, 
-            newStatus: status 
-          },
-        },
+      await emitDomainEvent(tx, DomainEvents.ORDER_STATUS_CHANGED, { 
+        orderId: id, 
+        businessId,
+        oldStatus: order.status, 
+        newStatus: status,
+        aggregateType: 'Order',
+        aggregateId: id,
+      }, businessId);
+
+      // Log Audit
+      await this.auditService.log({
+        businessId,
+        userId: (updatedOrder as any).userId, // Use userId from order if available
+        action: 'UPDATE_ORDER_STATUS',
+        entityType: 'Order',
+        entityId: id,
+        previousData: { status: order.status },
+        newData: { status },
+        tx,
       });
 
       return updatedOrder;
@@ -215,44 +292,30 @@ export class OrderService {
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const orderRepo = new OrderRepository(tx);
 
-      // Release all stock reservations
-      const reservations = await tx.stockReservation.findMany({
-        where: { orderId: id, businessId },
-        include: { inventory: true },
-      });
-
       const inventoryRepo = new InventoryRepository(tx);
       const inventoryService = new InventoryService(inventoryRepo);
 
-      for (const reservation of reservations) {
-        // Return stock back (reverse of OUT movement)
-        await inventoryService.adjustStock({
-          businessId,
-          itemId: reservation.inventory.itemId,
-          warehouseId: reservation.inventory.warehouseId,
-          quantity: reservation.quantity, // positive = returning stock
-          type: MovementType.RETURN,
-          reason: `Cancellation of Order #${id}`,
-          reference: id,
-          tx,
-        });
-      }
-
-      // Delete reservations
-      await tx.stockReservation.deleteMany({ where: { orderId: id } });
+      // Release all stock reservations (moves from Reserved back to Available)
+      await inventoryService.releaseOrderReservations(id, businessId, tx);
 
       // Update order status
       const cancelledOrder = await orderRepo.updateStatus(id, businessId, OrderStatus.CANCELLED);
 
       // Emit domain event
-      await tx.outboxEvent.create({
-        data: {
-          businessId,
-          aggregateType: 'Order',
-          aggregateId: id,
-          eventType: 'ORDER_CANCELLED',
-          payload: { orderId: id },
-        },
+      await emitDomainEvent(tx, DomainEvents.ORDER_CANCELLED, { 
+        orderId: id,
+        businessId
+      }, businessId);
+
+      // Log Audit
+      await this.auditService.log({
+        businessId,
+        action: 'CANCEL_ORDER',
+        entityType: 'Order',
+        entityId: id,
+        previousData: { status: order.status },
+        newData: { status: OrderStatus.CANCELLED },
+        tx,
       });
 
       return cancelledOrder;

@@ -1,12 +1,22 @@
+import { AccountingService } from '../accounting/accounting.service';
 import { BusinessRepository } from './business.repository';
 import { CreateBusinessDTO, UpdateBusinessDTO } from './business.validation';
 import { AppError } from '../../errors/AppError';
 
 export class BusinessService {
-  constructor(private businessRepo: BusinessRepository) {}
+  private accountingService: AccountingService;
+
+  constructor(private businessRepo: BusinessRepository) {
+    this.accountingService = new AccountingService();
+  }
 
   async createBusiness(data: CreateBusinessDTO & { organizationId: string }) {
-    return await this.businessRepo.create(data);
+    const business = await this.businessRepo.create(data);
+    
+    // Initialize mandatory accounting accounts
+    await this.accountingService.initializeSystemAccounts(business.id);
+
+    return business;
   }
 
   async getBusinessById(id: string) {
