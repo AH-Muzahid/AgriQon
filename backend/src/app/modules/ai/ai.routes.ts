@@ -17,4 +17,10 @@ router.post(
   AiController.syncItemEmbedding
 );
 
+router.post(
+  '/chat',
+  auth(Role.ADMIN, Role.MANAGER, Role.USER, Role.SELLER),
+  AiController.generateChat
+);
+
 export const AiRoutes = router;

@@ -34,7 +34,23 @@ const syncItemEmbedding = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const generateChat = asyncHandler(async (req: Request, res: Response) => {
+  const { prompt } = req.body;
+  const businessId = (req as any).user.businessId;
+  const userId = (req as any).user.id;
+
+  const result = await aiService.generateChatResponse(businessId, prompt, userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'AI response generated',
+    data: result.response,
+  });
+});
+
 export const AiController = {
   getAiLogs,
   syncItemEmbedding,
+  generateChat,
 };
