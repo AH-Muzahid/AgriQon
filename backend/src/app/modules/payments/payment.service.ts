@@ -5,6 +5,7 @@ import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { PAYMENT_STATUS } from './payment.constants';
+import { DomainEvents } from '../../../shared/events/domain-events';
 
 /**
  * Service orchestrator for Payments.
@@ -100,20 +101,22 @@ const handlePaymentSuccess = async (transactionId: string) => {
     }
 
     // 4. Emit Domain Event (Outbox Pattern)
-    await tx.outboxEvent.create({
-      data: {
+    await emitDomainEvent(
+      tx,
+      DomainEvents.PAYMENT_COMPLETED,
+      {
+        paymentId: payment.id,
+        orderId: payment.orderId,
         businessId: payment.businessId,
-        aggregateType: 'Payment',
-        aggregateId: payment.id,
-        eventType: 'PaymentCompleted',
-        payload: {
-          paymentId: payment.id,
-          orderId: payment.orderId,
-          amount: payment.amount,
-          method: payment.method
-        }
-      }
-    });
+        amount: payment.amount,
+        currency: payment.currency,
+        method: payment.method,
+        transactionId: payment.transactionId
+      },
+      payment.businessId,
+      'Payment',
+      payment.id
+    );
 
     return { success: true, message: 'Payment successfully processed and reconciled.' };
   });
@@ -127,15 +130,117 @@ const verifyAndHandleWebhook = async (gatewayName: string, payload: any) => {
     throw new AppError('Webhook signature verification failed', httpStatus.UNAUTHORIZED);
   }
 
-  if (verificationResult.status === 'SUCCESS') {
-    return await handlePaymentSuccess(verificationResult.transactionId);
+  // 1. Idempotency check — check if we already processed this event
+  if (verificationResult.transactionId) {
+    const existingEvent = await prisma.webhookEvent.findUnique({
+      where: { externalId: verificationResult.transactionId }
+    });
+    if (existingEvent && existingEvent.status === 'PROCESSED') {
+      return { success: true, message: 'Event already processed' };
+    }
   }
 
-  return { success: false, message: `Payment status is ${verificationResult.status}` };
+  // 2. Persist Webhook Event (for audit and DLQ)
+  const webhookEvent = await prisma.webhookEvent.upsert({
+    where: { externalId: verificationResult.transactionId || `unknown-${Date.now()}` },
+    update: { 
+      attempts: { increment: 1 },
+      processingAt: new Date()
+    },
+    create: {
+      provider: gatewayName,
+      externalId: verificationResult.transactionId,
+      payload: payload.body || payload,
+      status: 'PENDING',
+      attempts: 1,
+      processingAt: new Date()
+    }
+  });
+
+  try {
+    if (verificationResult.status === 'SUCCESS') {
+      const result = await handlePaymentSuccess(verificationResult.transactionId);
+      
+      // Mark as PROCESSED
+      await prisma.webhookEvent.update({
+        where: { id: webhookEvent.id },
+        data: { 
+          status: 'PROCESSED',
+          processedAt: new Date()
+        }
+      });
+
+      return result;
+    }
+
+    return { success: false, message: `Payment status is ${verificationResult.status}` };
+  } catch (error) {
+    // Mark as FAILED for DLQ to pick up
+    await prisma.webhookEvent.update({
+      where: { id: webhookEvent.id },
+      data: { 
+        status: 'FAILED',
+        lastError: error instanceof Error ? error.message : String(error),
+        nextAttemptAt: new Date(Date.now() + 5 * 60000) // Retry in 5 mins
+      }
+    });
+    throw error;
+  }
+};
+
+const handleRefund = async (params: { paymentId: string; amount: number; reason?: string }) => {
+  const { paymentId, amount, reason } = params;
+
+  return await runInTransaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { id: paymentId }
+    });
+
+    if (!payment) {
+      throw new AppError('Payment not found', httpStatus.NOT_FOUND);
+    }
+
+    // 1. Record Refund
+    const refund = await tx.refund.create({
+      data: {
+        businessId: payment.businessId,
+        paymentId: payment.id,
+        amount,
+        reason,
+        status: 'COMPLETED'
+      }
+    });
+
+    // 2. Update Payment status if fully refunded (simplified logic)
+    await tx.payment.update({
+      where: { id: paymentId },
+      data: { status: PAYMENT_STATUS.REFUNDED }
+    });
+
+    // 3. Emit Domain Event
+    await emitDomainEvent(
+      tx,
+      DomainEvents.PAYMENT_REFUNDED,
+      {
+        paymentId: payment.id,
+        orderId: payment.orderId,
+        businessId: payment.businessId,
+        amount,
+        reason,
+        transactionId: payment.transactionId
+      },
+      payment.businessId,
+      'Payment',
+      payment.id
+    );
+
+    return refund;
+  });
 };
 
 export const PaymentService = {
   initiatePayment,
   handlePaymentSuccess,
   verifyAndHandleWebhook,
+  handleRefund,
 };

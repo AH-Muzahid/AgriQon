@@ -9,4 +9,7 @@ router.post('/initiate', PaymentController.initiatePayment);
 // Webhook for all payment gateways (e.g., /webhook/stripe, /webhook/sslcommerz)
 router.post('/webhook/:gateway', PaymentController.handleWebhook);
 
+// Route to process a refund
+router.post('/refund', PaymentController.handleRefund);
+
 export const PaymentRoutes = router;
