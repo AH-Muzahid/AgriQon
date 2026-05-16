@@ -15,6 +15,7 @@ export const app = express();
 app.use(helmet());
 app.use(cors({ origin: env.frontendOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
+app.use('/uploads', express.static('uploads'));
 app.use(cookieParser());
 app.use(csurf({ cookie: { key: '_csrf', httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' } }));
 app.use(

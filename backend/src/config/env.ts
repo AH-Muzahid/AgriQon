@@ -18,4 +18,9 @@ export const env = {
   // Email Configs
   emailFrom: process.env.EMAIL_FROM ?? 'noreply@agriqon.ai',
   postmarkKey: process.env.POSTMARK_KEY ?? 'mock-key',
+  // Redis Config
+  redisUrl: process.env.REDIS_URL ?? 'redis://localhost:6379',
+  geminiApiKey: process.env.GEMINI_API_KEY ?? '',
+  openaiApiKey: process.env.OPENAI_API_KEY ?? '',
+  aiProvider: (process.env.AI_PROVIDER as 'gemini' | 'openai') ?? 'gemini',
 };
