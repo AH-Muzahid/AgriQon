@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '../../../generated/client';
+import { MovementType, Prisma, PrismaClient } from '../../../generated/client';
 import { prisma } from '../../lib/prisma';
 
 export class InventoryRepository {
@@ -25,12 +25,13 @@ export class InventoryRepository {
     });
   }
 
-  async findMany(params: { businessId: string; itemId?: string; warehouseId?: string }) {
+  async findMany(params: { businessId: string; itemId?: string; warehouseId?: string; batchId?: string }) {
     return await this.prisma.inventory.findMany({
       where: {
         businessId: params.businessId,
         itemId: params.itemId,
         warehouseId: params.warehouseId,
+        batchId: (params as any).batchId,
       },
       include: {
         item: true,
@@ -66,9 +67,45 @@ export class InventoryRepository {
     });
   }
 
+  async updateStockFields(params: {
+    id: string;
+    businessId: string;
+    availableDelta?: number;
+    reservedDelta?: number;
+    totalDelta?: number;
+    version: number;
+  }) {
+    return await this.prisma.inventory.update({
+      where: {
+        id: params.id,
+        businessId: params.businessId,
+        version: params.version,
+      },
+      data: {
+        availableStock: params.availableDelta ? { increment: params.availableDelta } : undefined,
+        reservedStock: params.reservedDelta ? { increment: params.reservedDelta } : undefined,
+        totalStock: params.totalDelta ? { increment: params.totalDelta } : undefined,
+        version: { increment: 1 },
+      },
+    });
+  }
+
   async createMovement(data: Prisma.StockMovementUncheckedCreateInput) {
     return await this.prisma.stockMovement.create({
       data,
+    });
+  }
+
+  async findReservationById(id: string, businessId: string) {
+    return await this.prisma.stockReservation.findUnique({
+      where: { id, businessId },
+      include: { inventory: true }
+    });
+  }
+
+  async deleteReservation(id: string) {
+    return await this.prisma.stockReservation.delete({
+      where: { id }
     });
   }
 }

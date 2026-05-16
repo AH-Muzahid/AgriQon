@@ -20,4 +20,37 @@ router.post(
   InventoryController.adjustStock
 );
 
+router.get(
+  '/valuation',
+  auth(Role.ADMIN, Role.MANAGER),
+  InventoryController.getValuation
+);
+
+router.get(
+  '/valuation/:itemId',
+  auth(Role.ADMIN, Role.MANAGER),
+  InventoryController.getValuationHistory
+);
+
+// ─── Warehouse Transfers ───────────────────────────────────────────────────
+
+router.get(
+  '/transfers',
+  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  InventoryController.getTransfers
+);
+
+router.post(
+  '/transfers',
+  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  validateRequest(InventoryValidation.initiateTransferSchema),
+  InventoryController.initiateTransfer
+);
+
+router.post(
+  '/transfers/:id/complete',
+  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  InventoryController.completeTransfer
+);
+
 export const InventoryRoutes = router;
