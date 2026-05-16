@@ -42,7 +42,6 @@ model Business {
   inventory         Inventory[]
   invoices          Invoice[]
   products          Item[]
-  ledgerEntries     LedgerEntry[]
   orders            Order[]
   OrderItem         OrderItem[]
   outboxEvents      OutboxEvent[]
@@ -58,9 +57,13 @@ model Business {
   warehouses        Warehouse[]
   WarehouseTransfer WarehouseTransfer[]
   webhookEvents     WebhookEvent[]
+  journalEntries    JournalEntry[]
   loyaltyProgram    LoyaltyProgram?
   loyaltyPoints     LoyaltyPoint[]
   notifications     Notification[]
+  refunds           Refund[]
+  inventoryValuations InventoryValuation[]
+  reportCaches      ReportCache[]
 
   @@index([organizationId])
 }
@@ -77,27 +80,29 @@ model User {
   updatedAt     DateTime       @updatedAt
   aiLogs        AiLog[]
   auditLogs     AuditLog[]
-  ledgerEntries LedgerEntry[]
   orders        Order[]
   refreshTokens RefreshToken[]
   reviews       Review[]
   notifications Notification[]
+  postedJournalEntries JournalEntry[] @relation("JournalPostedBy")
   business      Business?      @relation(fields: [businessId], references: [id])
 
   @@index([businessId])
 }
 
 model RefreshToken {
-  id         String   @id @default(cuid())
-  token      String   @unique
+  id         String    @id @default(cuid())
+  token      String    @unique // Hashed version (SHA-256)
+  familyId   String?   // For grouping related tokens in a rotation lineage
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
   userAgent  String?
   ipAddress  String?
   expiresAt  DateTime
-  createdAt  DateTime @default(now())
+  lastUsedAt DateTime  @default(now())
+  createdAt  DateTime  @default(now())
   revokedAt  DateTime?
-  replacedBy String? // For token rotation tracking
+  replacedBy String?   // For token rotation tracking
 }
 
 model Category {
@@ -137,6 +142,7 @@ model Item {
   unit          String                   @default("kg")
   hasBatches    Boolean                  @default(false)
   isService     Boolean                  @default(false)
+  lowStockThreshold Int                    @default(10)
   searchVector  Unsupported("tsvector")?
   deletedAt     DateTime?
   createdAt     DateTime                 @default(now())
@@ -150,6 +156,9 @@ model Item {
   batches       ProductBatch[]
   purchaseItems PurchaseItem[]
   reviews       Review[]
+  valuations    InventoryValuation[]
+  warehouseTransferItems WarehouseTransferItem[]
+  stockMovements StockMovement[]
 
   @@unique([businessId, sku])
   @@index([categoryId])
@@ -212,16 +221,37 @@ model StockMovement {
   id          String       @id @default(uuid())
   businessId  String
   inventoryId String
+  itemId      String?      // Optional but helpful for quick item-level queries
   type        MovementType
   quantity    Int
+  unitCost    Decimal?     @db.Decimal(15, 2) // Storing cost at time of movement
   reference   String?
   reason      String?
   createdAt   DateTime     @default(now())
   business    Business     @relation(fields: [businessId], references: [id])
   inventory   Inventory    @relation(fields: [inventoryId], references: [id])
+  item        Item?        @relation(fields: [itemId], references: [id])
 
   @@index([businessId])
   @@index([inventoryId])
+  @@index([itemId])
+}
+
+model InventoryValuation {
+  id              String   @id @default(uuid())
+  businessId      String
+  itemId          String
+  valuationDate   DateTime @default(now())
+  quantity        Float
+  unitCost        Decimal  @db.Decimal(18, 2)
+  totalValue      Decimal  @db.Decimal(18, 2)
+  method          String   @default("WAC") // Weighted Average Cost
+  reference       String?  // Reference to purchase/adjustment
+  item            Item     @relation(fields: [itemId], references: [id])
+  business        Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId, itemId])
+  @@index([valuationDate])
 }
 
 model WarehouseTransfer {
@@ -232,11 +262,24 @@ model WarehouseTransfer {
   status        String    @default("PENDING")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  items         WarehouseTransferItem[]
   business      Business  @relation(fields: [businessId], references: [id])
   destination   Warehouse @relation("TransferDest", fields: [destinationId], references: [id])
   source        Warehouse @relation("TransferSource", fields: [sourceId], references: [id])
 
   @@index([businessId])
+}
+
+model WarehouseTransferItem {
+  id         String            @id @default(uuid())
+  transferId String
+  itemId     String
+  batchId    String?
+  quantity   Int
+  transfer   WarehouseTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  item       Item              @relation(fields: [itemId], references: [id])
+
+  @@index([transferId])
 }
 
 model StockReservation {
@@ -288,6 +331,8 @@ model Order {
   total         Decimal            @db.Decimal(15, 2)
   taxAmount     Decimal            @default(0) @db.Decimal(15, 2)
   discount      Decimal            @default(0) @db.Decimal(15, 2)
+  pointsRedeemed Int              @default(0)
+  pointsEarned   Int              @default(0)
   deletedAt     DateTime?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
@@ -373,31 +418,18 @@ model Account {
   name          String
   type          AccountType
   code          String?
+  systemType    String?
   balance       Decimal       @default(0) @db.Decimal(15, 2)
   business      Business      @relation(fields: [businessId], references: [id])
-  ledgerEntries LedgerEntry[]
+  journalLines  JournalLine[]
 
   @@unique([businessId, code])
+  @@unique([systemType, businessId])
+  @@index([businessId, systemType])
   @@index([businessId])
 }
 
-model LedgerEntry {
-  id          String   @id @default(uuid())
-  businessId  String
-  accountId   String
-  userId      String?
-  debit       Decimal  @default(0) @db.Decimal(15, 2)
-  credit      Decimal  @default(0) @db.Decimal(15, 2)
-  description String?
-  reference   String?
-  createdAt   DateTime @default(now())
-  account     Account  @relation(fields: [accountId], references: [id])
-  business    Business @relation(fields: [businessId], references: [id])
-  user        User?    @relation(fields: [userId], references: [id])
 
-  @@index([businessId])
-  @@index([accountId])
-}
 
 model Notification {
   id         String   @id @default(cuid())
@@ -450,9 +482,25 @@ model Payment {
   createdAt      DateTime      @default(now())
   business       Business      @relation(fields: [businessId], references: [id])
   order          Order         @relation(fields: [orderId], references: [id])
+  refunds        Refund[]
 
   @@index([businessId])
   @@index([orderId])
+}
+
+model Refund {
+  id         String   @id @default(uuid())
+  businessId String
+  paymentId  String
+  amount     Decimal  @db.Decimal(15, 2)
+  reason     String?
+  status     String   @default("COMPLETED")
+  createdAt  DateTime @default(now())
+  payment    Payment  @relation(fields: [paymentId], references: [id])
+  business   Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@index([paymentId])
 }
 
 model AuditLog {
@@ -465,6 +513,9 @@ model AuditLog {
   previousData  Json?
   newData       Json?
   changedFields Json?
+  ipAddress     String?
+  userAgent     String?
+  requestId     String?
   createdAt     DateTime @default(now())
   business      Business @relation(fields: [businessId], references: [id])
   user          User?    @relation(fields: [userId], references: [id])
@@ -488,34 +539,30 @@ model AiLog {
   @@index([businessId])
 }
 
-model WebhookEvent {
-  id               String           @id @default(uuid())
-  businessId       String
-  gateway          String
-  eventType        String
-  payload          Json
-  processingStatus ProcessingStatus @default(PENDING)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  business         Business         @relation(fields: [businessId], references: [id])
 
-  @@index([businessId])
-}
 
 model OutboxEvent {
-  id            String   @id @default(uuid())
+  id            String           @id @default(uuid())
   businessId    String
   aggregateType String
   aggregateId   String
   eventType     String
   payload       Json
-  isProcessed   Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  business      Business @relation(fields: [businessId], references: [id])
+  status        ProcessingStatus @default(PENDING)
+  attempts      Int              @default(0)
+  lastError     String?
+  nextAttemptAt DateTime?
+  lockedAt      DateTime?
+  lockId        String?
+  processedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @default(now()) @updatedAt
+  business      Business         @relation(fields: [businessId], references: [id])
 
   @@index([businessId])
+  @@index([status, attempts, nextAttemptAt, createdAt])
+  @@index([createdAt])
 }
-
 model Embedding {
   id         String   @id @default(cuid())
   itemId     String   @unique
@@ -582,6 +629,7 @@ enum PaymentStatus {
 
 enum ProcessingStatus {
   PENDING
+  PROCESSING
   PROCESSED
   FAILED
 }
@@ -592,6 +640,11 @@ enum MovementType {
   TRANSFER
   ADJUSTMENT
   RETURN
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
 }
 
 enum AccountType {
@@ -606,6 +659,7 @@ model LoyaltyProgram {
   id            String   @id @default(uuid())
   businessId    String   @unique
   pointsPerUnit Decimal  @default(0.01) @db.Decimal(10, 4)
+  redemptionValuePerPoint Decimal @default(1.00) @db.Decimal(10, 4)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -625,4 +679,90 @@ model LoyaltyPoint {
 
   @@index([businessId])
   @@index([customerId])
+}
+model WebhookEvent {
+  id             String           @id @default(cuid())
+  businessId     String?
+  provider       String           // e.g., 'stripe', 'sslcommerz'
+  externalId     String?          @unique // e.g., stripe event id for idempotency
+  payload        Json
+  status         ProcessingStatus @default(PENDING)
+  attempts       Int              @default(0)
+  lastError      String?
+  nextAttemptAt  DateTime?
+  processingAt   DateTime?
+  processedAt    DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  business       Business?        @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@index([provider, externalId])
+  @@index([status])
+}
+
+
+model JournalEntry {
+  id          String         @id @default(cuid())
+  businessId  String
+  business    Business       @relation(fields: [businessId], references: [id])
+  date        DateTime       @default(now())
+  description String
+  reference   String?        // Order ID, Purchase ID, etc.
+  source      String         // SALES, PURCHASE, INVENTORY_ADJUSTMENT, PAYMENT
+  isBalanced  Boolean        @default(false)
+  status      JournalStatus  @default(DRAFT)
+  postedAt    DateTime?
+  postedById     String?
+  postedBy       User?          @relation("JournalPostedBy", fields: [postedById], references: [id])
+  eventId        String?        @unique // Source event ID (Outbox/Domain Event)
+  idempotencyKey String?        @unique // External system idempotency key
+  lines          JournalLine[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([businessId, date])
+  @@index([reference])
+}
+
+model JournalLine {
+  id             String       @id @default(cuid())
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  accountId      String
+  account        Account      @relation(fields: [accountId], references: [id])
+  debit          Decimal      @default(0) @db.Decimal(15, 2)
+  credit         Decimal      @default(0) @db.Decimal(15, 2)
+  description    String?
+  createdAt      DateTime     @default(now())
+
+  @@index([accountId])
+  @@index([journalEntryId])
+}
+
+model ReconciliationLog {
+  id         String   @id @default(uuid())
+  businessId String?  // Null if it's a global system check
+  runDate    DateTime @default(now())
+  status     String   // PASS, FAIL, WARNING
+  summary    String
+  results    Json     // Detailed IntegrityCheckResult[]
+  isSystem   Boolean  @default(false)
+
+  @@index([businessId])
+  @@index([runDate])
+}
+
+model ReportCache {
+  id         String   @id @default(uuid())
+  businessId String
+  reportType String   // e.g., 'TRIAL_BALANCE', 'PROFIT_LOSS'
+  parameters Json     // Filter parameters
+  data       Json     // Cached report data
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  business   Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId, reportType])
 }

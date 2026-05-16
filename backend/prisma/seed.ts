@@ -309,14 +309,25 @@ async function main() {
           },
         });
 
-        // Finance: Ledger Entry for payment
-        await prisma.ledgerEntry.create({
+        // Finance: Journal Entry for payment
+        await prisma.journalEntry.create({
           data: {
             businessId: business.id,
-            accountId: accounts.find(a => a.type === 'REVENUE')?.id || accounts[0].id,
-            debit: paymentAmount,
             description: `Payment received for Order ${order.id}`,
-            reference: payment.id,
+            reference: order.id,
+            source: 'SALES',
+            status: 'POSTED',
+            postedAt: new Date(),
+            lines: {
+              create: [
+                {
+                  accountId: accounts.find(a => a.type === AccountType.REVENUE)?.id || accounts[0].id,
+                  debit: paymentAmount,
+                  credit: 0,
+                  description: 'Payment receipt',
+                }
+              ]
+            }
           },
         });
       }
@@ -364,9 +375,8 @@ async function main() {
     await prisma.webhookEvent.create({
       data: {
         businessId: business.id,
-        gateway: 'BKASH',
-        eventType: 'PAYMENT_COMPLETED',
-        payload: { txnId: 'BK123456' },
+        provider: 'BKASH',
+        payload: { txnId: 'BK123456', eventType: 'PAYMENT_COMPLETED' },
       },
     });
 
