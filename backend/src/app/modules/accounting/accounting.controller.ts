@@ -29,14 +29,14 @@ export const AccountingController = {
     });
   }),
 
-  recordTransaction: catchAsync(async (req: AuthRequest, res: Response) => {
+  createJournalEntry: catchAsync(async (req: AuthRequest, res: Response) => {
     const businessId = req.user?.businessId as string;
     const userId = req.user?.id as string;
-    const result = await accountingService.recordTransaction(businessId, userId, req.body);
+    const result = await accountingService.createJournalEntry(businessId, userId, req.body);
     sendResponse(res, {
       statusCode: 201,
       success: true,
-      message: 'Transaction recorded successfully',
+      message: 'Journal entry created successfully',
       data: result,
     });
   }),
@@ -48,6 +48,17 @@ export const AccountingController = {
       statusCode: 200,
       success: true,
       message: 'Ledger entries fetched successfully',
+      data: result,
+    });
+  }),
+
+  reconcileBalances: catchAsync(async (req: AuthRequest, res: Response) => {
+    const businessId = req.user?.businessId as string;
+    const result = await accountingService.reconcileBalances(businessId);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Reconciliation report generated successfully',
       data: result,
     });
   }),
