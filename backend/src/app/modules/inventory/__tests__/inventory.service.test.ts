@@ -2,8 +2,23 @@ import { InventoryService } from '../inventory.service';
 import { InventoryRepository } from '../inventory.repository';
 import { AppError } from '../../../errors/AppError';
 import { MovementType, Prisma } from '../../../../generated/client';
+import { ValuationService } from '../valuation.service';
+import { AuditService } from '../../audit/audit.service';
+import { prisma } from '../../../lib/prisma';
 
 jest.mock('../inventory.repository');
+jest.mock('../valuation.service');
+jest.mock('../../audit/audit.service');
+jest.mock('../../../lib/prisma', () => ({
+  prisma: {
+    item: {
+      findUnique: jest.fn(),
+    },
+    outboxEvent: {
+      create: jest.fn(),
+    },
+  },
+}));
 
 const mockInventoryBase = {
   id: 'inv-1',
