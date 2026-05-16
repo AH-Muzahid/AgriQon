@@ -3,6 +3,7 @@ import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
+import { DomainEvents, emitDomainEvent } from '../../../shared/events/domain-events';
 
 export class ProductService {
   constructor(
@@ -29,7 +30,23 @@ export class ProductService {
         businessId,
       });
 
-      // 2. If initial stock is provided, adjust inventory
+      // 2. Emit Domain Event for Outbox
+      await emitDomainEvent(
+        tx,
+        DomainEvents.PRODUCT_CREATED,
+        {
+          productId: product.id,
+          businessId: product.businessId,
+          title: product.title,
+          sku: product.sku,
+          price: Number(product.price),
+        },
+        businessId,
+        'PRODUCT',
+        product.id
+      );
+
+      // 3. If initial stock is provided, adjust inventory
       if (initialStock !== undefined && initialStock > 0) {
         if (!warehouseId) {
           throw new AppError('warehouseId is required when providing initialStock', 400);
@@ -60,9 +77,30 @@ export class ProductService {
 
   async updateProduct(id: string, businessId: string, data: Prisma.ItemUpdateInput) {
     // Check if product exists
-    await this.getProductById(id, businessId);
+    const existing = await this.getProductById(id, businessId);
     
-    return await this.productRepo.update(id, businessId, data);
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const productRepo = new ProductRepository(tx);
+      const product = await productRepo.update(id, businessId, data);
+
+      // Emit Domain Event for Outbox
+      await emitDomainEvent(
+        tx,
+        DomainEvents.PRODUCT_UPDATED,
+        {
+          productId: product.id,
+          businessId: product.businessId,
+          title: product.title,
+          sku: product.sku || undefined,
+          price: Number(product.price),
+        },
+        businessId,
+        'PRODUCT',
+        product.id
+      );
+
+      return product;
+    });
   }
 
   async deleteProduct(id: string, businessId: string) {

@@ -71,4 +71,16 @@ export const PurchaseController = {
       data: result,
     });
   }),
+
+  pay: catchAsync(async (req: AuthRequest, res: Response) => {
+    const businessId = req.user?.businessId as string;
+    const { id } = req.params;
+    const result = await purchaseService.payPurchase(id, businessId);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Purchase Order paid',
+      data: result,
+    });
+  }),
 };

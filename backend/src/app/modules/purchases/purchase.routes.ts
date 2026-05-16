@@ -44,4 +44,11 @@ router.post(
   PurchaseController.cancel
 );
 
+router.post(
+  '/:id/pay',
+  extractAuth,
+  authorize(Role.ADMIN, Role.MANAGER),
+  PurchaseController.pay
+);
+
 export const PurchaseRoutes = router;

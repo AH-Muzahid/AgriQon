@@ -86,4 +86,11 @@ export class ProductRepository {
 
     return { items, total };
   }
+
+  async updateSearchVector(id: string) {
+    return await this.prisma.$executeRawUnsafe(
+      `UPDATE "Item" SET "searchVector" = to_tsvector('english', coalesce(title, '') || ' ' || coalesce(description, '') || ' ' || coalesce(sku, '')) WHERE id = $1`,
+      id
+    );
+  }
 }

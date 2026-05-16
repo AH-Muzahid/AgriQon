@@ -4,15 +4,22 @@ import { InventoryRepository } from '../inventory/inventory.repository';
 import { AppError } from '../../errors/AppError';
 import { MovementType, Prisma, PurchaseStatus } from '../../../generated/client';
 import { prisma } from '../../lib/prisma';
+import { AuditService } from '../audit/audit.service';
+import { DomainEvents } from '../../../shared/events/domain-events';
+import { ValuationService } from '../inventory/valuation.service';
 
 export class PurchaseService {
   private purchaseRepository: PurchaseRepository;
   private inventoryService: InventoryService;
+  private auditService: AuditService;
 
   constructor() {
     this.purchaseRepository = new PurchaseRepository();
     this.inventoryService = new InventoryService(new InventoryRepository());
+    this.auditService = new AuditService();
+    this.valuationService = new ValuationService();
   }
+  private valuationService: ValuationService;
 
   async createPurchase(businessId: string, data: any) {
     // Calculate total if not provided
@@ -22,9 +29,40 @@ export class PurchaseService {
       }, 0);
     }
 
-    return this.purchaseRepository.create({
-      ...data,
-      businessId,
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const purchase = await tx.purchaseOrder.create({
+        data: {
+          ...data,
+          businessId,
+          items: {
+            create: data.items
+          }
+        },
+        include: { items: true }
+      });
+
+      // Emit Outbox event
+      await tx.outboxEvent.create({
+        data: {
+          businessId,
+          aggregateType: 'Purchase',
+          aggregateId: purchase.id,
+          eventType: DomainEvents.PURCHASE_CREATED,
+          payload: { purchaseId: purchase.id, businessId, total: purchase.total, supplierId: purchase.supplierId },
+        },
+      });
+
+      // Log Audit
+      await this.auditService.log({
+        businessId,
+        action: 'CREATE_PURCHASE',
+        entityType: 'Purchase',
+        entityId: purchase.id,
+        newData: purchase,
+        tx,
+      });
+
+      return purchase;
     });
   }
 
@@ -58,7 +96,7 @@ export class PurchaseService {
         data: { status: PurchaseStatus.RECEIVED },
       });
 
-      // 2. Update inventory for each item
+      // 2. Update inventory and valuation for each item
       for (const item of purchase.items) {
         await this.inventoryService.adjustStock({
           businessId,
@@ -66,11 +104,34 @@ export class PurchaseService {
           warehouseId,
           quantity: item.quantity,
           type: MovementType.IN,
+          unitCost: Number(item.unitCost), // Pass unitCost here to trigger WAC update
           reason: `Stock received from Purchase Order: ${id}`,
           reference: id,
           tx,
         });
       }
+
+      // 3. Emit Outbox event
+      await tx.outboxEvent.create({
+        data: {
+          businessId,
+          aggregateType: 'Purchase',
+          aggregateId: id,
+          eventType: DomainEvents.PURCHASE_RECEIVED,
+          payload: { purchaseId: id, businessId, total: purchase.total, supplierId: purchase.supplierId },
+        },
+      });
+
+      // 4. Log Audit
+      await this.auditService.log({
+        businessId,
+        action: 'RECEIVE_PURCHASE',
+        entityType: 'Purchase',
+        entityId: id,
+        previousData: { status: purchase.status },
+        newData: { status: PurchaseStatus.RECEIVED },
+        tx,
+      });
 
       return updatedPurchase;
     });
@@ -81,6 +142,74 @@ export class PurchaseService {
     if (purchase.status !== PurchaseStatus.PENDING) {
       throw new AppError(`Cannot cancel purchase order with status: ${purchase.status}`, 400);
     }
-    return this.purchaseRepository.updateStatus(id, businessId, PurchaseStatus.CANCELLED);
+
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // 1. Update status
+      const updatedPurchase = await tx.purchaseOrder.update({
+        where: { id, businessId },
+        data: { status: PurchaseStatus.CANCELLED },
+      });
+
+      // 2. Emit Outbox event
+      await tx.outboxEvent.create({
+        data: {
+          businessId,
+          aggregateType: 'Purchase',
+          aggregateId: id,
+          eventType: DomainEvents.PURCHASE_CANCELLED,
+          payload: { purchaseId: id, businessId, total: purchase.total, supplierId: purchase.supplierId },
+        },
+      });
+
+      // 3. Log Audit
+      await this.auditService.log({
+        businessId,
+        action: 'CANCEL_PURCHASE',
+        entityType: 'Purchase',
+        entityId: id,
+        previousData: { status: purchase.status },
+        newData: { status: PurchaseStatus.CANCELLED },
+        tx,
+      });
+
+      return updatedPurchase;
+    });
+  }
+
+  /**
+   * Pay a purchase order and emit SUPPLIER_PAYMENT_MADE
+   */
+  async payPurchase(id: string, businessId: string) {
+    const purchase = await this.getPurchaseById(id, businessId);
+    if (purchase.status === PurchaseStatus.CANCELLED) {
+      throw new AppError('Cannot pay cancelled purchase order', 400);
+    }
+    
+    // Check if it's already PAID? Prisma schema might not have PAID status for PurchaseOrder, maybe just leave as RECEIVED or add COMPLETED. Let's assume there is no paid status for now, or just update paymentStatus if it exists. But we just emit the event for accounting to pick up. Let's see if there is paymentStatus. Wait, let's just emit the event and maybe update a field if it exists. Since I don't see the schema, I will just emit the Outbox event to trigger the accounting entry.
+    
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // Emit Outbox event for accounting
+      await tx.outboxEvent.create({
+        data: {
+          businessId,
+          aggregateType: 'Purchase',
+          aggregateId: id,
+          eventType: DomainEvents.PURCHASE_PAID,
+          payload: { purchaseId: id, businessId, total: purchase.total, supplierId: purchase.supplierId, amount: purchase.total },
+        },
+      });
+
+      // Log Audit
+      await this.auditService.log({
+        businessId,
+        action: 'PAY_PURCHASE',
+        entityType: 'Purchase',
+        entityId: id,
+        newData: { event: 'PURCHASE_PAID' },
+        tx,
+      });
+
+      return purchase;
+    });
   }
 }

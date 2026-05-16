@@ -1,5 +1,5 @@
-import { logger } from '@/app/lib/logger';
-import { env } from '@/config/env';
+import { logger } from '../../../../app/lib/logger';
+import { env } from '../../../../config/env';
 import { NotificationMessage } from '../notification.types';
 
 /**
