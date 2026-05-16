@@ -1,0 +1,29 @@
+services:
+  # Redis service for BullMQ and Caching
+  redis:
+    image: redis:7-alpine
+    container_name: agriqon-redis
+    restart: always
+    ports:
+      - "6380:6379"
+    command: redis-server --requirepass strongredispassword
+    volumes:
+      - redis_data:/data
+
+  # PostgreSQL with pgvector support for AI Embeddings
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: agriqon-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: strongpostgrespassword
+      POSTGRES_DB: agriqon_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  redis_data:
+  postgres_data:
