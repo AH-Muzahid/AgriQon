@@ -1,8 +1,6 @@
 import { registerInvoiceListeners } from '../../app/modules/invoices/listeners/payment-completed.listener';
 import { registerInventoryListeners } from '../../app/modules/inventory/listeners/payment-completed.listener';
 import { registerNotificationListeners } from '../../app/modules/notifications/listeners/notification.listener';
-import { registerAccountingListeners } from '../../app/modules/accounting/listeners/accounting.listener';
-import { registerCustomerListeners } from '../../app/modules/customers/listeners/customer.listener';
 import { outboxProcessor } from './outbox.processor';
 // Import other listeners here as they are created
 
@@ -12,8 +10,6 @@ export const bootstrapEventListeners = () => {
   registerInvoiceListeners();
   registerInventoryListeners();
   registerNotificationListeners();
-  registerAccountingListeners();
-  registerCustomerListeners();
 
   console.log('[EventBus] Event listeners registered successfully.');
 

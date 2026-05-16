@@ -1,5 +1,6 @@
 import { Prisma, WebhookEvent, OutboxEvent } from '../../../generated/client';
 import { prisma } from '../../lib/prisma';
+import { outboxProcessor } from '../../../shared/events/outbox.processor';
 
 export class EventRepository {
   private prisma: Prisma.TransactionClient;
@@ -29,18 +30,23 @@ export class EventRepository {
   async updateWebhookStatus(id: string, status: any): Promise<WebhookEvent> {
     return this.prisma.webhookEvent.update({
       where: { id },
-      data: { processingStatus: status },
+      data: { status },
     });
   }
 
   // Outbox Events
   async createOutboxEvent(data: Prisma.OutboxEventUncheckedCreateInput): Promise<OutboxEvent> {
-    return this.prisma.outboxEvent.create({ data });
+    const event = await this.prisma.outboxEvent.create({ data });
+    
+    // Trigger the outbox processor to handle the new event immediately
+    outboxProcessor.trigger();
+    
+    return event;
   }
 
   async findUnprocessedOutboxEvents(): Promise<OutboxEvent[]> {
     return this.prisma.outboxEvent.findMany({
-      where: { isProcessed: false },
+      where: { status: 'PENDING' },
       take: 100,
     });
   }
@@ -48,7 +54,11 @@ export class EventRepository {
   async markOutboxAsProcessed(id: string): Promise<OutboxEvent> {
     return this.prisma.outboxEvent.update({
       where: { id },
-      data: { isProcessed: true },
+      data: {
+        status: 'PROCESSED',
+        processedAt: new Date()
+      },
     });
   }
 }
+

@@ -32,6 +32,7 @@ export const DomainEvents = {
   // ─── Inventory Events ──────────────────────────────────────────────────
   INVENTORY_RESERVED:      'domain.inventory.reserved',
   INVENTORY_RELEASED:      'domain.inventory.released',
+  INVENTORY_DEDUCTED:      'domain.inventory.deducted',
   INVENTORY_LOW_STOCK:     'domain.inventory.low_stock',
 
   // ─── Customer Events ───────────────────────────────────────────────────
@@ -40,6 +41,19 @@ export const DomainEvents = {
   // ─── Loyalty Events ────────────────────────────────────────────────────
   LOYALTY_POINTS_EARNED:   'domain.loyalty.points_earned',
   LOYALTY_POINTS_REDEEMED: 'domain.loyalty.points_redeemed',
+
+  // ─── Purchase (Procurement) Events ─────────────────────────────────────
+  PURCHASE_CREATED:        'domain.purchase.created',
+  PURCHASE_RECEIVED:       'domain.purchase.received',
+  PURCHASE_CANCELLED:      'domain.purchase.cancelled',
+  PURCHASE_PAID:           'domain.purchase.paid',
+
+  // ─── Warehouse Events ──────────────────────────────────────────────────
+  WAREHOUSE_TRANSFER_COMPLETED: 'domain.warehouse.transfer_completed',
+
+  // ─── Product Events ────────────────────────────────────────────────────
+  PRODUCT_CREATED:         'domain.product.created',
+  PRODUCT_UPDATED:         'domain.product.updated',
 } as const;
 
 export type DomainEventName = typeof DomainEvents[keyof typeof DomainEvents];
@@ -54,6 +68,8 @@ export interface OrderCreatedPayload {
   customerEmail?: string;
   customerPhone?: string;
   customerName?: string;
+  subtotal: number;
+  taxAmount: number;
   total: number;
   currency?: string;
   itemCount: number;
@@ -103,6 +119,15 @@ export interface PaymentFailedPayload {
   customerPhone?: string;
 }
 
+export interface PaymentRefundedPayload {
+  paymentId: string;
+  orderId: string;
+  businessId: string;
+  amount: number;
+  reason?: string;
+  transactionId?: string;
+}
+
 export interface InvoiceOverduePayload {
   invoiceId: string;
   invoiceNumber: string;
@@ -122,6 +147,27 @@ export interface InventoryLowStockPayload {
   threshold: number;
 }
 
+export interface InventoryReservedPayload {
+  reservationId: string;
+  businessId: string;
+  orderId?: string;
+  items: Array<{ itemId: string; quantity: number }>;
+}
+
+export interface InventoryReleasedPayload {
+  reservationId: string;
+  orderId?: string;
+  reason?: string;
+}
+
+export interface InventoryDeductedPayload {
+  businessId: string;
+  itemId: string;
+  orderId: string;
+  quantity: number;
+  costPrice: number; // For COGS calculation
+}
+
 export interface CustomerRegisteredPayload {
   customerId: string;
   businessId: string;
@@ -137,3 +183,81 @@ export interface LoyaltyPointsEarnedPayload {
   totalPoints: number;
   customerEmail?: string;
 }
+
+export interface PurchaseCreatedPayload {
+  purchaseId: string;
+  businessId: string;
+  supplierId: string;
+  total: number;
+}
+
+export interface PurchaseReceivedPayload {
+  purchaseId: string;
+  businessId: string;
+  supplierId: string;
+  total: number;
+}
+
+export interface PurchasePaidPayload {
+  purchaseId: string;
+  businessId: string;
+  supplierId: string;
+  amount: number;
+}
+
+export interface WarehouseTransferCompletedPayload {
+  transferId: string;
+  businessId: string;
+  sourceWarehouseId: string;
+  destinationWarehouseId: string;
+  totalValue: number;
+}
+
+export interface ProductCreatedPayload {
+  productId: string;
+  businessId: string;
+  title: string;
+  sku?: string;
+  price: number;
+}
+
+export interface ProductUpdatedPayload {
+  productId: string;
+  businessId: string;
+  title: string;
+  sku?: string;
+  price: number;
+}
+
+// ─── Event Dispatch Utility ───────────────────────────────────────────────
+
+import { prisma } from '../../app/lib/prisma';
+import { outboxProcessor } from './outbox.processor';
+
+/**
+ * Persists a Domain Event to the Outbox table.
+ * MUST be called within a Prisma transaction to ensure atomicity.
+ */
+export const emitDomainEvent = async (
+  tx: any, // Prisma Transaction Client
+  eventType: DomainEventName,
+  payload: any,
+  businessId: string,
+  aggregateType: string,
+  aggregateId: string
+) => {
+  await tx.outboxEvent.create({
+    data: {
+      eventType,
+      payload: payload as any,
+      businessId,
+      aggregateType,
+      aggregateId,
+      status: 'PENDING',
+    },
+  });
+
+  // Signal the processor to wake up and check for new events
+  // This is a "best effort" optimization; the poller will catch it regardless.
+  setImmediate(() => outboxProcessor.trigger());
+};
