@@ -134,6 +134,27 @@ export class AuthService {
     });
   }
 
+  async oauthCallback(data: { email: string; name: string; provider: string; role?: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER' }, sessionInfo?: { ip?: string; ua?: string }) {
+    let user = await this.userRepo.findByEmail(data.email);
+    
+    if (!user) {
+      // Create new user if they don't exist
+      user = await this.userRepo.create({
+        email: data.email,
+        name: data.name,
+        role: data.role || 'USER', // Use role passed in callback, otherwise default
+      });
+    }
+
+    const accessToken = this.generateAccessToken(user);
+    const { token, hashedToken } = this.generateSecureToken();
+    const familyId = crypto.randomBytes(20).toString('hex');
+    
+    await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
+
+    return { user, accessToken, refreshToken: token };
+  }
+
   private generateAccessToken(user: any) {
     if (!env.jwtSecret) {
       throw new AppError('JWT secret not configured', 500);

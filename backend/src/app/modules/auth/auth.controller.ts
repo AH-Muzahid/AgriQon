@@ -123,9 +123,64 @@ const logout = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const oauthCallback = catchAsync(async (req: Request, res: Response) => {
+  const sessionInfo = {
+    ip: req.ip,
+    ua: req.headers['user-agent']
+  };
+  const result = await authService.oauthCallback(req.body, sessionInfo);
+  const { user, accessToken, refreshToken } = result;
+
+  // Set cookies
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User authenticated with OAuth successfully',
+    data: { user, accessToken },
+  });
+});
+
+const getMe = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    throw new AppError('Unauthorized', 401);
+  }
+
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  // Remove sensitive fields
+  const { password, ...safeUser } = user as any;
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User profile retrieved successfully',
+    data: safeUser,
+  });
+});
+
 export const AuthController = {
   register,
   login,
   refresh,
   logout,
+  oauthCallback,
+  getMe,
 };
