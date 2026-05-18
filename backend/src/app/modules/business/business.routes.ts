@@ -14,6 +14,11 @@ router.get(
 );
 
 router.get(
+  '/public',
+  BusinessController.getAllBusinesses
+);
+
+router.get(
   '/',
   auth(Role.ADMIN, Role.MANAGER),
   BusinessController.getBusinessesByOrganization

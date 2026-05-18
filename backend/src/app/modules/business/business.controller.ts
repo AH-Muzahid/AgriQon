@@ -82,10 +82,22 @@ const getBusinessesByOrganization = catchAsync(async (req: AuthRequest, res: Res
   });
 });
 
+const getAllBusinesses = catchAsync(async (req: Request, res: Response) => {
+  const result = await businessService.getAllBusinesses();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Businesses retrieved successfully',
+    data: result,
+  });
+});
+
 export const BusinessController = {
   createBusiness,
   getMyBusiness,
   updateBusiness,
   deleteBusiness,
   getBusinessesByOrganization,
+  getAllBusinesses,
 };

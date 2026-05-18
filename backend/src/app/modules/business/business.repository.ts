@@ -20,6 +20,12 @@ export class BusinessRepository {
     });
   }
 
+  async findAll(): Promise<Business[]> {
+    return await prisma.business.findMany({
+      where: { deletedAt: null },
+    });
+  }
+
   async update(id: string, data: Prisma.BusinessUncheckedUpdateInput): Promise<Business> {
     return await prisma.business.update({
       where: { id },

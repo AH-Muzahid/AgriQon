@@ -31,6 +31,10 @@ export class BusinessService {
     return await this.businessRepo.findAllByOrganization(organizationId);
   }
 
+  async getAllBusinesses() {
+    return await this.businessRepo.findAll();
+  }
+
   async updateBusiness(id: string, data: UpdateBusinessDTO) {
     await this.getBusinessById(id); // Ensure exists and not deleted
     return await this.businessRepo.update(id, data);
