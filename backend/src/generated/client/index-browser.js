@@ -155,10 +155,12 @@ exports.Prisma.UserScalarFieldEnum = {
 exports.Prisma.RefreshTokenScalarFieldEnum = {
   id: 'id',
   token: 'token',
+  familyId: 'familyId',
   userId: 'userId',
   userAgent: 'userAgent',
   ipAddress: 'ipAddress',
   expiresAt: 'expiresAt',
+  lastUsedAt: 'lastUsedAt',
   createdAt: 'createdAt',
   revokedAt: 'revokedAt',
   replacedBy: 'replacedBy'
@@ -191,6 +193,7 @@ exports.Prisma.ItemScalarFieldEnum = {
   unit: 'unit',
   hasBatches: 'hasBatches',
   isService: 'isService',
+  lowStockThreshold: 'lowStockThreshold',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -229,11 +232,25 @@ exports.Prisma.StockMovementScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
   inventoryId: 'inventoryId',
+  itemId: 'itemId',
   type: 'type',
   quantity: 'quantity',
+  unitCost: 'unitCost',
   reference: 'reference',
   reason: 'reason',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.InventoryValuationScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  itemId: 'itemId',
+  valuationDate: 'valuationDate',
+  quantity: 'quantity',
+  unitCost: 'unitCost',
+  totalValue: 'totalValue',
+  method: 'method',
+  reference: 'reference'
 };
 
 exports.Prisma.WarehouseTransferScalarFieldEnum = {
@@ -244,6 +261,14 @@ exports.Prisma.WarehouseTransferScalarFieldEnum = {
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.WarehouseTransferItemScalarFieldEnum = {
+  id: 'id',
+  transferId: 'transferId',
+  itemId: 'itemId',
+  batchId: 'batchId',
+  quantity: 'quantity'
 };
 
 exports.Prisma.StockReservationScalarFieldEnum = {
@@ -280,6 +305,8 @@ exports.Prisma.OrderScalarFieldEnum = {
   total: 'total',
   taxAmount: 'taxAmount',
   discount: 'discount',
+  pointsRedeemed: 'pointsRedeemed',
+  pointsEarned: 'pointsEarned',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -332,19 +359,8 @@ exports.Prisma.AccountScalarFieldEnum = {
   name: 'name',
   type: 'type',
   code: 'code',
+  systemType: 'systemType',
   balance: 'balance'
-};
-
-exports.Prisma.LedgerEntryScalarFieldEnum = {
-  id: 'id',
-  businessId: 'businessId',
-  accountId: 'accountId',
-  userId: 'userId',
-  debit: 'debit',
-  credit: 'credit',
-  description: 'description',
-  reference: 'reference',
-  createdAt: 'createdAt'
 };
 
 exports.Prisma.NotificationScalarFieldEnum = {
@@ -386,6 +402,16 @@ exports.Prisma.PaymentScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.RefundScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  paymentId: 'paymentId',
+  amount: 'amount',
+  reason: 'reason',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.AuditLogScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
@@ -396,6 +422,9 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   previousData: 'previousData',
   newData: 'newData',
   changedFields: 'changedFields',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  requestId: 'requestId',
   createdAt: 'createdAt'
 };
 
@@ -410,17 +439,6 @@ exports.Prisma.AiLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.WebhookEventScalarFieldEnum = {
-  id: 'id',
-  businessId: 'businessId',
-  gateway: 'gateway',
-  eventType: 'eventType',
-  payload: 'payload',
-  processingStatus: 'processingStatus',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.OutboxEventScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
@@ -428,8 +446,15 @@ exports.Prisma.OutboxEventScalarFieldEnum = {
   aggregateId: 'aggregateId',
   eventType: 'eventType',
   payload: 'payload',
-  isProcessed: 'isProcessed',
-  createdAt: 'createdAt'
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  nextAttemptAt: 'nextAttemptAt',
+  lockedAt: 'lockedAt',
+  lockId: 'lockId',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.EmbeddingScalarFieldEnum = {
@@ -455,6 +480,7 @@ exports.Prisma.LoyaltyProgramScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
   pointsPerUnit: 'pointsPerUnit',
+  redemptionValuePerPoint: 'redemptionValuePerPoint',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -468,6 +494,70 @@ exports.Prisma.LoyaltyPointScalarFieldEnum = {
   reason: 'reason',
   expiresAt: 'expiresAt',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.WebhookEventScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  provider: 'provider',
+  externalId: 'externalId',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  nextAttemptAt: 'nextAttemptAt',
+  processingAt: 'processingAt',
+  processedAt: 'processedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.JournalEntryScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  date: 'date',
+  description: 'description',
+  reference: 'reference',
+  source: 'source',
+  isBalanced: 'isBalanced',
+  status: 'status',
+  postedAt: 'postedAt',
+  postedById: 'postedById',
+  eventId: 'eventId',
+  idempotencyKey: 'idempotencyKey',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.JournalLineScalarFieldEnum = {
+  id: 'id',
+  journalEntryId: 'journalEntryId',
+  accountId: 'accountId',
+  debit: 'debit',
+  credit: 'credit',
+  description: 'description',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ReconciliationLogScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  runDate: 'runDate',
+  status: 'status',
+  summary: 'summary',
+  results: 'results',
+  isSystem: 'isSystem'
+};
+
+exports.Prisma.ReportCacheScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  reportType: 'reportType',
+  parameters: 'parameters',
+  data: 'data',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -489,15 +579,322 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.OrganizationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.BusinessOrderByRelevanceFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  address: 'address',
+  website: 'website',
+  logo: 'logo',
+  taxNumber: 'taxNumber',
+  currency: 'currency'
+};
+
+exports.Prisma.UserOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  password: 'password',
+  businessId: 'businessId'
+};
+
+exports.Prisma.RefreshTokenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  token: 'token',
+  familyId: 'familyId',
+  userId: 'userId',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
+  replacedBy: 'replacedBy'
+};
+
+exports.Prisma.CategoryOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  parentId: 'parentId'
+};
+
+exports.Prisma.BrandOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name'
+};
+
+exports.Prisma.ItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  categoryId: 'categoryId',
+  brandId: 'brandId',
+  title: 'title',
+  description: 'description',
+  sku: 'sku',
+  barcode: 'barcode',
+  unit: 'unit'
+};
+
+exports.Prisma.ProductBatchOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  itemId: 'itemId',
+  batchNumber: 'batchNumber'
+};
+
+exports.Prisma.WarehouseOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  location: 'location'
+};
+
+exports.Prisma.InventoryOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  itemId: 'itemId',
+  warehouseId: 'warehouseId',
+  batchId: 'batchId'
+};
+
+exports.Prisma.StockMovementOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  inventoryId: 'inventoryId',
+  itemId: 'itemId',
+  reference: 'reference',
+  reason: 'reason'
+};
+
+exports.Prisma.InventoryValuationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  itemId: 'itemId',
+  method: 'method',
+  reference: 'reference'
+};
+
+exports.Prisma.WarehouseTransferOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  sourceId: 'sourceId',
+  destinationId: 'destinationId',
+  status: 'status'
+};
+
+exports.Prisma.WarehouseTransferItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  transferId: 'transferId',
+  itemId: 'itemId',
+  batchId: 'batchId'
+};
+
+exports.Prisma.StockReservationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  inventoryId: 'inventoryId',
+  orderId: 'orderId'
+};
+
+exports.Prisma.CustomerOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  email: 'email',
+  phone: 'phone',
+  address: 'address'
+};
+
+exports.Prisma.OrderOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  customerId: 'customerId',
+  userId: 'userId',
+  idempotencyKey: 'idempotencyKey'
+};
+
+exports.Prisma.OrderItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  orderId: 'orderId',
+  itemId: 'itemId'
+};
+
+exports.Prisma.SupplierOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  contact: 'contact',
+  email: 'email',
+  phone: 'phone'
+};
+
+exports.Prisma.PurchaseOrderOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  supplierId: 'supplierId'
+};
+
+exports.Prisma.PurchaseItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  purchaseOrderId: 'purchaseOrderId',
+  itemId: 'itemId'
+};
+
+exports.Prisma.AccountOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  code: 'code',
+  systemType: 'systemType'
 };
 
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.NotificationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  message: 'message'
+};
+
+exports.Prisma.InvoiceOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  customerId: 'customerId',
+  orderId: 'orderId',
+  invoiceNumber: 'invoiceNumber'
+};
+
+exports.Prisma.PaymentOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  orderId: 'orderId',
+  method: 'method',
+  transactionId: 'transactionId',
+  idempotencyKey: 'idempotencyKey'
+};
+
+exports.Prisma.RefundOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  paymentId: 'paymentId',
+  reason: 'reason',
+  status: 'status'
+};
+
+exports.Prisma.AuditLogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  userId: 'userId',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  requestId: 'requestId'
+};
+
+exports.Prisma.AiLogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  userId: 'userId',
+  type: 'type',
+  prompt: 'prompt',
+  response: 'response'
+};
+
+exports.Prisma.OutboxEventOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  aggregateType: 'aggregateType',
+  aggregateId: 'aggregateId',
+  eventType: 'eventType',
+  lastError: 'lastError',
+  lockId: 'lockId'
+};
+
+exports.Prisma.EmbeddingOrderByRelevanceFieldEnum = {
+  id: 'id',
+  itemId: 'itemId',
+  text: 'text',
+  businessId: 'businessId'
+};
+
+exports.Prisma.ReviewOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  comment: 'comment',
+  userId: 'userId',
+  itemId: 'itemId'
+};
+
+exports.Prisma.LoyaltyProgramOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId'
+};
+
+exports.Prisma.LoyaltyPointOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  customerId: 'customerId',
+  reason: 'reason'
+};
+
+exports.Prisma.WebhookEventOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  provider: 'provider',
+  externalId: 'externalId',
+  lastError: 'lastError'
+};
+
+exports.Prisma.JournalEntryOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  description: 'description',
+  reference: 'reference',
+  source: 'source',
+  postedById: 'postedById',
+  eventId: 'eventId',
+  idempotencyKey: 'idempotencyKey'
+};
+
+exports.Prisma.JournalLineOrderByRelevanceFieldEnum = {
+  id: 'id',
+  journalEntryId: 'journalEntryId',
+  accountId: 'accountId',
+  description: 'description'
+};
+
+exports.Prisma.ReconciliationLogOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  status: 'status',
+  summary: 'summary'
+};
+
+exports.Prisma.ReportCacheOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  reportType: 'reportType'
 };
 exports.Role = exports.$Enums.Role = {
   USER: 'USER',
@@ -552,8 +949,14 @@ exports.AccountType = exports.$Enums.AccountType = {
 
 exports.ProcessingStatus = exports.$Enums.ProcessingStatus = {
   PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
   PROCESSED: 'PROCESSED',
   FAILED: 'FAILED'
+};
+
+exports.JournalStatus = exports.$Enums.JournalStatus = {
+  DRAFT: 'DRAFT',
+  POSTED: 'POSTED'
 };
 
 exports.Prisma.ModelName = {
@@ -568,7 +971,9 @@ exports.Prisma.ModelName = {
   Warehouse: 'Warehouse',
   Inventory: 'Inventory',
   StockMovement: 'StockMovement',
+  InventoryValuation: 'InventoryValuation',
   WarehouseTransfer: 'WarehouseTransfer',
+  WarehouseTransferItem: 'WarehouseTransferItem',
   StockReservation: 'StockReservation',
   Customer: 'Customer',
   Order: 'Order',
@@ -577,18 +982,22 @@ exports.Prisma.ModelName = {
   PurchaseOrder: 'PurchaseOrder',
   PurchaseItem: 'PurchaseItem',
   Account: 'Account',
-  LedgerEntry: 'LedgerEntry',
   Notification: 'Notification',
   Invoice: 'Invoice',
   Payment: 'Payment',
+  Refund: 'Refund',
   AuditLog: 'AuditLog',
   AiLog: 'AiLog',
-  WebhookEvent: 'WebhookEvent',
   OutboxEvent: 'OutboxEvent',
   Embedding: 'Embedding',
   Review: 'Review',
   LoyaltyProgram: 'LoyaltyProgram',
-  LoyaltyPoint: 'LoyaltyPoint'
+  LoyaltyPoint: 'LoyaltyPoint',
+  WebhookEvent: 'WebhookEvent',
+  JournalEntry: 'JournalEntry',
+  JournalLine: 'JournalLine',
+  ReconciliationLog: 'ReconciliationLog',
+  ReportCache: 'ReportCache'
 };
 
 /**
