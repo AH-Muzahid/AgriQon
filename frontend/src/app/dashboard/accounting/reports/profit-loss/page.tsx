@@ -57,8 +57,8 @@ export default function ProfitAndLossReport() {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.getProfitAndLoss({ startDate, endDate });
-      setData(response.data.data);
+      const response = await apiClient.get<ProfitLossData>('/accounting/reports/profit-loss', { params: { startDate, endDate } });
+      setData(response.data);
     } catch (err: unknown) {
       const axiosError = err as { response?: { data?: { message?: string } } };
       setError(axiosError.response?.data?.message || 'Failed to fetch report');

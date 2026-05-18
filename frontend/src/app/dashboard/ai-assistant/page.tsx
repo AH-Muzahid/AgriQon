@@ -76,16 +76,33 @@ export default function AiAssistantPage() {
     try {
       const response = await apiClient.generateAiChat(promptValue);
       
-      // The API now returns { data: string, source: string } if updated
-      // If not updated yet, fallback to just data
-      const content = typeof response.data === 'string' ? response.data : response.data.content;
-      const source = response.data.source || 'business';
+      const responseData = response.data as unknown;
+      
+      let content = '';
+      let rawSource = 'business';
+      
+      if (typeof responseData === 'string') {
+        content = responseData;
+      } else if (responseData && typeof responseData === 'object') {
+        const dataObj = responseData as Record<string, unknown>;
+        content = typeof dataObj.content === 'string' ? dataObj.content : '';
+        rawSource = typeof dataObj.source === 'string' ? dataObj.source : 'business';
+      }
+      
+      let source: 'vector' | 'business' | 'general' = 'business';
+      if (rawSource === 'vector-search' || rawSource === 'vector') {
+        source = 'vector';
+      } else if (rawSource === 'business-info' || rawSource === 'business') {
+        source = 'business';
+      } else {
+        source = 'general';
+      }
 
       const assistantMessage: Message = {
         role: 'assistant',
         content: content,
         timestamp: new Date(),
-        contextSource: source as "business" | "vector" | "general",
+        contextSource: source,
       };
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {

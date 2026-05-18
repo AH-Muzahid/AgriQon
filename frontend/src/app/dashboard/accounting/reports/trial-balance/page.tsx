@@ -43,8 +43,8 @@ export default function TrialBalanceReport() {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.getTrialBalance({ startDate, endDate });
-      setData(response.data.data);
+      const response = await apiClient.get<TrialBalanceData>('/accounting/reports/trial-balance', { params: { startDate, endDate } });
+      setData(response.data);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to fetch report';
       setError(errorMsg);

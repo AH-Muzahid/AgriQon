@@ -43,8 +43,8 @@ export default function BalanceSheetReport() {
     try {
       setLoading(true);
       setError(null);
-      const response = await apiClient.getBalanceSheet({ date });
-      setData(response.data.data);
+      const response = await apiClient.get<BalanceSheetData>('/accounting/reports/balance-sheet', { params: { date } });
+      setData(response.data);
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : 'Failed to fetch report';
       setError(errorMsg);

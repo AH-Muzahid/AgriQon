@@ -6,7 +6,10 @@ import { WishlistProvider } from "@/context/wishlist-context";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/home/navbar";
+import { Footer } from "@/components/home/footer";
 import { Toaster } from "react-hot-toast";
+import { AiAssistant } from "@/components/ui/ai-assistant";
+
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -28,8 +31,13 @@ export default function RootLayout({
           <CartProvider>
             <WishlistProvider>
               <Navbar />
-              {children}
+              <div className="flex-1">
+                {children}
+              </div>
+              <Footer />
               <Toaster position="bottom-right" />
+              <AiAssistant />
+
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

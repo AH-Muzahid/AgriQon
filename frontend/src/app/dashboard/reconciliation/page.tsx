@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   CheckCircle, 
   AlertTriangle, 
@@ -11,14 +11,14 @@ import {
   Activity,
   ArrowRight
 } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, ApiResultsResponse } from '@/lib/api-client';
 
 interface IntegrityResult {
   module: string;
   checkName: string;
   status: 'PASS' | 'FAIL' | 'WARNING';
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
 export default function ReconciliationPage() {
@@ -31,7 +31,7 @@ export default function ReconciliationPage() {
     try {
       // In a real app, we'd get the current businessId from context/auth
       const businessId = 'current-business-id'; 
-      const response = await apiClient.get(`/reconciliation/${businessId}`);
+      const response = await apiClient.get<unknown, ApiResultsResponse<IntegrityResult[]>>(`/reconciliation/${businessId}`);
       if (response.success) {
         setResults(response.results);
         setLastCheck(new Date());
@@ -177,7 +177,7 @@ export default function ReconciliationPage() {
         <div className="relative z-10">
           <h3 className="text-2xl font-bold mb-2 text-indigo-100 italic">Self-Healing Infrastructure</h3>
           <p className="text-indigo-200 max-w-xl">
-            Our reconciliation engine doesn't just find errors—it maps data drift to specific transactions, 
+            Our reconciliation engine doesn&apos;t just find errors—it maps data drift to specific transactions, 
             allowing for automated correction of rounding errors and minor ledger variances.
           </p>
         </div>
