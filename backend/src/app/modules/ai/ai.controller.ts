@@ -45,7 +45,10 @@ const generateChat = asyncHandler(async (req: Request, res: Response) => {
     statusCode: 200,
     success: true,
     message: 'AI response generated',
-    data: result.response,
+    data: {
+      content: result.response,
+      source: result.contextSource,
+    },
   });
 });
 
