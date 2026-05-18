@@ -5,7 +5,7 @@ import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { PAYMENT_STATUS } from './payment.constants';
-import { DomainEvents } from '../../../shared/events/domain-events';
+import { DomainEvents, emitDomainEvent } from '../../../shared/events/domain-events';
 
 /**
  * Service orchestrator for Payments.

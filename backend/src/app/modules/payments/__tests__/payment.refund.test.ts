@@ -79,6 +79,7 @@ describe('PaymentService.handleRefund', () => {
           reason: 'Customer request',
           transactionId: mockPayment.transactionId,
         },
+        status: 'PENDING',
       },
     });
 

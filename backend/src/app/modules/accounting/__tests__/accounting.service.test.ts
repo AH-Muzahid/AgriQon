@@ -4,13 +4,16 @@ import { AuditService } from '../../audit/audit.service';
 
 jest.mock('../accounting.repository');
 jest.mock('../../audit/audit.service');
-jest.mock('../../../lib/prisma', () => ({
-  prisma: {
+jest.mock('../../inventory/inventory.service');
+jest.mock('../../../lib/prisma', () => {
+  const mockPrisma: any = {
     journalLine: {
       aggregate: jest.fn()
-    }
-  }
-}));
+    },
+    $transaction: jest.fn((callback: any) => callback(mockPrisma)),
+  };
+  return { prisma: mockPrisma };
+});
 
 describe('AccountingService', () => {
   let accountingService: AccountingService;
@@ -60,6 +63,7 @@ describe('AccountingService', () => {
         description: 'Refund for Order #order_1: Faulty item',
         reference: 'pay_1',
         source: 'REFUND',
+        eventId: 'REFUND_pay_1',
         status: 'POSTED',
         lines: [
           {
