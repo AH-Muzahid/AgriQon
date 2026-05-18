@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/client"
+  provider        = "prisma-client-js"
+  output          = "../src/generated/client"
+  previewFeatures = ["fullTextSearchPostgres"]
 }
 
 datasource db {
@@ -560,7 +561,9 @@ model OutboxEvent {
   business      Business         @relation(fields: [businessId], references: [id])
 
   @@index([businessId])
-  @@index([status, attempts, nextAttemptAt, createdAt])
+  // Partial index managed manually in migration 20260516105900_optimize_outbox_index
+  // @@index([status, attempts, nextAttemptAt, createdAt], map: "idx_outbox_pending")
+  // WHERE status = 'PENDING' OR status = 'FAILED'
   @@index([createdAt])
 }
 model Embedding {
@@ -574,6 +577,7 @@ model Embedding {
   item       Item     @relation(fields: [itemId], references: [id])
 
   @@index([businessId])
+  @@index([createdAt])
 }
 
 model Review {
@@ -698,7 +702,9 @@ model WebhookEvent {
 
   @@index([businessId])
   @@index([provider, externalId])
-  @@index([status])
+  // Partial index managed manually in migration 20260516105900_optimize_outbox_index
+  // @@index([status], map: "idx_webhook_pending")
+  // WHERE status = 'PENDING' OR status = 'FAILED'
 }
 
 
