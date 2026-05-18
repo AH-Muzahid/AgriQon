@@ -86,7 +86,7 @@ export class CustomerService {
       const pointsToEarn = Math.floor(Number(amount) * Number(loyaltyProgram.pointsPerUnit));
 
       if (pointsToEarn > 0) {
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
           // 1. Add points to customer history
           await tx.loyaltyPoint.create({
             data: {

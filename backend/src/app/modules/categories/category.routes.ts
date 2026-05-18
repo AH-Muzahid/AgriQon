@@ -9,13 +9,11 @@ const router = express.Router();
 
 router.get(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.USER, Role.SELLER),
   CategoryController.getAllCategories
 );
 
 router.get(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.USER, Role.SELLER),
   CategoryController.getCategoryById
 );
 

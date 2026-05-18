@@ -257,14 +257,19 @@ export class OrderService {
       const updatedOrder = await orderRepo.updateStatus(id, businessId, status);
 
       // Publish Outbox Event for order status change
-      await emitDomainEvent(tx, DomainEvents.ORDER_STATUS_CHANGED, { 
-        orderId: id, 
+      await emitDomainEvent(
+        tx, 
+        DomainEvents.ORDER_STATUS_CHANGED, 
+        { 
+          orderId: id, 
+          businessId,
+          oldStatus: order.status, 
+          newStatus: status,
+        }, 
         businessId,
-        oldStatus: order.status, 
-        newStatus: status,
-        aggregateType: 'Order',
-        aggregateId: id,
-      }, businessId);
+        'Order',
+        id
+      );
 
       // Log Audit
       await this.auditService.log({
@@ -302,10 +307,17 @@ export class OrderService {
       const cancelledOrder = await orderRepo.updateStatus(id, businessId, OrderStatus.CANCELLED);
 
       // Emit domain event
-      await emitDomainEvent(tx, DomainEvents.ORDER_CANCELLED, { 
-        orderId: id,
-        businessId
-      }, businessId);
+      await emitDomainEvent(
+        tx, 
+        DomainEvents.ORDER_CANCELLED, 
+        { 
+          orderId: id,
+          businessId
+        }, 
+        businessId,
+        'Order',
+        id
+      );
 
       // Log Audit
       await this.auditService.log({
