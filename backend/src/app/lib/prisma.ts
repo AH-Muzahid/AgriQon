@@ -14,9 +14,9 @@ const prismaClientSingleton = () => {
     ],
   });
 
-  // Rule 5: Log slow queries (>100ms)
+  // Rule 5: Log slow queries (>500ms for remote DB)
   basePrisma.$on('query' as any, (e: any) => {
-    if (e.duration > 100) {
+    if (e.duration > 500) {
       logger.warn(`Slow Query: ${e.query} - Duration: ${e.duration}ms`);
     }
   });

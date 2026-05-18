@@ -17,7 +17,25 @@ app.use(cors({ origin: env.frontendOrigin, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static('uploads'));
 app.use(cookieParser());
-app.use(csurf({ cookie: { key: '_csrf', httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' } }));
+const csrfProtection = csurf({
+  cookie: {
+    key: '_csrf',
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: process.env.NODE_ENV === 'production',
+  },
+});
+
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (
+    req.path.startsWith('/api/v1/auth') ||
+    req.path === '/health' ||
+    req.headers.authorization?.startsWith('Bearer ')
+  ) {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

@@ -89,7 +89,7 @@ const updateTransferStatus = async (id: string, status: string): Promise<Warehou
           sourceWarehouseId: transfer.sourceId,
           destinationWarehouseId: transfer.destinationId,
           totalValue
-        }, tx);
+        }, undefined, tx);
       }
 
       // 3. Update status

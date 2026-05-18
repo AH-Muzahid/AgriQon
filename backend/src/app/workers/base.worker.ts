@@ -1,6 +1,6 @@
 import { prisma } from '../lib/prisma';
-import { ProcessingStatus } from '../../../generated/client';
-import { crypto } from 'node:crypto';
+import { ProcessingStatus, Prisma } from '../../generated/client';
+import * as crypto from 'node:crypto';
 
 export abstract class BaseWorker {
   protected isRunning = false;
@@ -125,7 +125,7 @@ export abstract class BaseWorker {
     // Prisma doesn't support SKIP LOCKED natively in its high-level API yet, 
     // so we use a robust status-based selection with a lockId for ownership.
     
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const now = new Date();
       
       const events = await tx.outboxEvent.findMany({
