@@ -12,6 +12,11 @@ export class OutboxProcessor {
   private BACKOFF_STEP = 5000;
   private wakeUpResolver?: (value: unknown) => void;
 
+  private lastRescueTime = 0;
+  private lastCleanupTime = 0;
+  private RESCUE_INTERVAL = 5 * 60 * 1000; // 5 minutes
+  private CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+
   /**
    * Starts the outbox processor polling mechanism.
    */
@@ -51,8 +56,18 @@ export class OutboxProcessor {
 
     while (this.isRunning) {
       try {
-        // 0. Rescue stuck events (status=PROCESSING for too long)
-        await this.rescueStuckEvents();
+        const now = Date.now();
+
+        // 0. Maintenance tasks (only run periodically)
+        if (now - this.lastRescueTime > this.RESCUE_INTERVAL) {
+          await this.rescueStuckEvents();
+          this.lastRescueTime = now;
+        }
+
+        if (now - this.lastCleanupTime > this.CLEANUP_INTERVAL) {
+          await this.cleanupProcessedEvents();
+          this.lastCleanupTime = now;
+        }
 
         // 1. Process current batch
         const eventsProcessed = await this.processOutboxEvents();
@@ -86,22 +101,48 @@ export class OutboxProcessor {
    * Resets events stuck in PROCESSING status due to previous processor crashes.
    */
   private async rescueStuckEvents() {
-    const lockTimeout = 5 * 60 * 1000; // 5 minutes
-    const threshold = new Date(Date.now() - lockTimeout);
+    try {
+      const lockTimeout = 10 * 60 * 1000; // 10 minutes
+      const threshold = new Date(Date.now() - lockTimeout);
 
-    const rescued = await prisma.outboxEvent.updateMany({
-      where: {
-        status: ProcessingStatus.PROCESSING,
-        createdAt: { lt: threshold }
-      },
-      data: {
-        status: ProcessingStatus.PENDING,
-        lastError: 'RESCUED: Processing timeout exceeded'
+      const rescued = await prisma.outboxEvent.updateMany({
+        where: {
+          status: ProcessingStatus.PROCESSING,
+          updatedAt: { lt: threshold }
+        },
+        data: {
+          status: ProcessingStatus.PENDING,
+          lastError: 'RESCUED: Processing timeout exceeded'
+        }
+      });
+
+      if (rescued.count > 0) {
+        console.warn(`[OutboxProcessor] Rescued ${rescued.count} stuck events.`);
       }
-    });
+    } catch (error) {
+      console.error('[OutboxProcessor] Rescue error:', error);
+    }
+  }
 
-    if (rescued.count > 0) {
-      console.warn(`[OutboxProcessor] Rescued ${rescued.count} stuck events.`);
+  /**
+   * Deletes old processed events to prevent table bloat.
+   */
+  private async cleanupProcessedEvents() {
+    try {
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      
+      const deleted = await prisma.outboxEvent.deleteMany({
+        where: {
+          status: ProcessingStatus.PROCESSED,
+          processedAt: { lt: oneDayAgo }
+        }
+      });
+
+      if (deleted.count > 0) {
+        console.log(`[OutboxProcessor] Cleaned up ${deleted.count} old processed events.`);
+      }
+    } catch (error) {
+      console.error('[OutboxProcessor] Cleanup error:', error);
     }
   }
 
@@ -116,11 +157,10 @@ export class OutboxProcessor {
 
     try {
       // 1. Atomic "Claim" of events using FOR UPDATE SKIP LOCKED
-      // This is the gold standard for preventing race conditions in distributed systems.
-      const batchSize = 20;
+      const batchSize = 50;
       const events: any[] = await prisma.$queryRaw`
         UPDATE "OutboxEvent"
-        SET "status" = 'PROCESSING'
+        SET "status" = 'PROCESSING', "updatedAt" = NOW()
         WHERE "id" IN (
           SELECT "id" 
           FROM "OutboxEvent" 
@@ -139,7 +179,6 @@ export class OutboxProcessor {
       for (const event of events) {
         try {
           // 2. Dispatch to appropriate BullMQ Queues
-          // We pass the event ID to ensure downstream idempotency
           await this.dispatchToQueues(event.id, event.eventType, event.payload);
 
           // 3. Mark as PROCESSED
