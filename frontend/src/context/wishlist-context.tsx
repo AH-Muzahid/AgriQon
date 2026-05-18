@@ -3,18 +3,20 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { toast } from "react-hot-toast"
 
-interface WishlistItem {
+export interface WishlistItem {
   id: string
   name: string
   price: number
   image: string
   category?: string
+  vendor?: string
 }
 
 interface WishlistContextType {
   wishlist: WishlistItem[]
   addToWishlist: (item: WishlistItem) => void
   removeFromWishlist: (id: string) => void
+  toggleWishlist: (item: WishlistItem) => void
   isInWishlist: (id: string) => boolean
   wishlistCount: number
 }
@@ -23,28 +25,34 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([])
+  const [isMounted, setIsMounted] = useState(false)
 
-  // Load wishlist from localStorage on mount
   useEffect(() => {
     const savedWishlist = localStorage.getItem("agriqon_wishlist")
     if (savedWishlist) {
       try {
-        setWishlist(JSON.parse(savedWishlist))
+        const parsed = JSON.parse(savedWishlist)
+        queueMicrotask(() => setWishlist(parsed))
       } catch (e) {
         console.error("Failed to parse wishlist from localStorage", e)
       }
     }
+    const timer = setTimeout(() => {
+      setIsMounted(true)
+    }, 0)
+    return () => clearTimeout(timer)
   }, [])
 
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("agriqon_wishlist", JSON.stringify(wishlist))
-  }, [wishlist])
+    if (isMounted) {
+      localStorage.setItem("agriqon_wishlist", JSON.stringify(wishlist))
+    }
+  }, [wishlist, isMounted])
 
   const addToWishlist = (item: WishlistItem) => {
     setWishlist((prev) => {
       if (prev.find((i) => i.id === item.id)) {
-        toast.success("Already in wishlist!")
         return prev
       }
       toast.success("Added to wishlist!")
@@ -57,6 +65,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     toast.success("Removed from wishlist")
   }
 
+  const toggleWishlist = (item: WishlistItem) => {
+    if (wishlist.some(i => i.id === item.id)) {
+      removeFromWishlist(item.id)
+    } else {
+      addToWishlist(item)
+    }
+  }
+
   const isInWishlist = (id: string) => {
     return wishlist.some((item) => item.id === id)
   }
@@ -67,6 +83,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
         wishlist,
         addToWishlist,
         removeFromWishlist,
+        toggleWishlist,
         isInWishlist,
         wishlistCount: wishlist.length,
       }}

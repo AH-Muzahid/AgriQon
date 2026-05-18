@@ -1,224 +1,267 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
-import { useCart } from "@/context/cart-context";
 import { 
-  ArrowLeft, 
   CreditCard, 
-  Truck, 
   ShieldCheck, 
-  CheckCircle2, 
-  ChevronRight,
+  ChevronRight, 
+  ArrowLeft,
+  ShoppingBag,
   MapPin,
-  Phone,
-  User,
-  ShoppingBag
+  Lock,
+  Loader2
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import Image from "next/image";
+import { useCart } from "@/context/cart-context";
+import { apiClient } from "@/lib/api-client";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
-  const { cart, totalPrice, cartCount, clearCart } = useCart();
-  const [isOrdered, setIsOrdered] = useState(false);
+  const { cart, totalPrice, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
+  const [step] = useState(1);
+  const router = useRouter();
 
-  const shippingCost = cartCount > 0 ? 50 : 0;
-  const grandTotal = totalPrice + shippingCost;
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    address: "",
+    city: "",
+    phone: "",
+    cardNumber: "4242 4242 4242 4242",
+    expiry: "12/25",
+    cvv: "123"
+  });
 
-  const handleOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    // Simulate order processing
-    setTimeout(() => {
-      setLoading(false);
-      setIsOrdered(true);
-      clearCart();
-    }, 2000);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  if (isOrdered) {
-    return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 animate-in fade-in duration-700">
-        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-8 shadow-inner">
-          <CheckCircle2 className="w-12 h-12 text-[#0a4d3c]" />
-        </div>
-        <h1 className="text-4xl font-black text-gray-900 mb-4 text-center">Order Placed Successfully!</h1>
-        <p className="text-gray-500 mb-10 text-center max-w-md text-lg">
-          Thank you for shopping with <span className="text-[#0a4d3c] font-bold">AgriQon</span>. 
-          Your fresh groceries are on their way to your doorstep.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
-          <Link
-            href="/"
-            className="flex-1 bg-[#0a4d3c] text-white px-8 py-4 rounded-2xl font-bold hover:bg-[#07382b] transition-all text-center shadow-lg shadow-emerald-900/10 active:scale-95"
-          >
-            Continue Shopping
-          </Link>
-          <button className="flex-1 bg-white border-2 border-gray-100 text-gray-700 px-8 py-4 rounded-2xl font-bold hover:bg-gray-50 transition-all active:scale-95">
-            Track Order
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    
+    setLoading(true);
+    try {
+      // Simulate multiple order creations if needed or one batch
+      // Based on the API client, it takes itemId, quantity, totalPrice
+      // Usually, it should be one order with multiple items, but let's check OrderData
+      // interface OrderData { itemId: string; quantity: number; totalPrice: number; }
+      
+      for (const item of cart) {
+        await apiClient.createOrder({
+          itemId: item.id,
+          quantity: item.quantity,
+          totalPrice: item.price * item.quantity
+        });
+      }
 
-  if (cartCount === 0 && !isOrdered) {
+      toast.success("Order placed successfully!");
+      clearCart();
+      router.push("/order-success");
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      toast.error("Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (cart.length === 0 && !loading) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center px-4">
-        <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag className="w-12 h-12 text-gray-300" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#f8fafc] px-4">
+        <div className="size-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 mb-6">
+          <ShoppingBag className="size-10" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">No items to checkout</h1>
-        <Link
-          href="/"
-          className="text-[#0a4d3c] font-bold flex items-center gap-2 hover:underline mt-4"
+        <h2 className="text-3xl font-black text-[#0a4d3c] mb-2">Your cart is empty</h2>
+        <p className="text-gray-500 font-medium mb-8">Add some fresh harvest items before checking out.</p>
+        <Link 
+          href="/shop" 
+          className="bg-[#0a4d3c] text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-emerald-900/20 hover:bg-emerald-900 transition-all"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Go back to shop
+          Explore Shop
         </Link>
       </div>
     );
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 bg-gray-50/30">
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap pb-2">
-        <Link href="/cart" className="hover:text-[#0a4d3c] transition-colors">Cart</Link>
-        <ChevronRight className="w-4 h-4 shrink-0" />
-        <span className="font-bold text-[#0a4d3c]">Checkout</span>
-        <ChevronRight className="w-4 h-4 shrink-0" />
-        <span>Payment</span>
-      </div>
+    <div className="min-h-screen bg-[#f8fafc] pt-32 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4 mb-12">
+          <Link href="/shop" className="size-12 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-[#0a4d3c] transition-colors shadow-sm">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-black text-[#0a4d3c]">Secure Checkout</h1>
+            <p className="text-gray-500 font-medium">Step {step} of 2: {step === 1 ? "Shipping & Payment" : "Review"}</p>
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Checkout Form */}
-        <div className="lg:col-span-7 space-y-8">
-          <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 rounded-lg">
-                <Truck className="w-5 h-5 text-[#0a4d3c]" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          {/* Form Area */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Delivery Info */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-50">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="size-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                  <MapPin className="size-5" />
+                </div>
+                <h3 className="text-xl font-black text-[#0a4d3c]">Delivery Information</h3>
               </div>
-              Shipping Information
-            </h2>
-            
-            <form id="checkout-form" onSubmit={handleOrder} className="space-y-6">
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <User className="w-4 h-4 opacity-50" /> Full Name
-                  </label>
-                  <Input required placeholder="Muzahid Ahmed" className="rounded-xl h-12 bg-gray-50 border-transparent focus:bg-white transition-all" />
+                  <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">Full Name</label>
+                  <input 
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="John Doe" 
+                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-6 font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <Phone className="w-4 h-4 opacity-50" /> Phone Number
-                  </label>
-                  <Input required type="tel" placeholder="+880 1XXX-XXXXXX" className="rounded-xl h-12 bg-gray-50 border-transparent focus:bg-white transition-all" />
+                  <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">Phone Number</label>
+                  <input 
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+971 50 123 4567" 
+                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-6 font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                  />
+                </div>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">Address Line</label>
+                  <input 
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    placeholder="Street, Building, Apartment" 
+                    className="w-full bg-gray-50 border-none rounded-2xl py-4 px-6 font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                  />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 opacity-50" /> Full Address
-                </label>
-                <Input required placeholder="House #, Street name, Area, City" className="rounded-xl h-12 bg-gray-50 border-transparent focus:bg-white transition-all" />
+            {/* Payment Info */}
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-50">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="size-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                  <CreditCard className="size-5" />
+                </div>
+                <h3 className="text-xl font-black text-[#0a4d3c]">Payment Method</h3>
               </div>
 
-              <div className="pt-4">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-3">
-                   <div className="p-2 bg-emerald-50 rounded-lg">
-                    <CreditCard className="w-5 h-5 text-[#0a4d3c]" />
+              <div className="space-y-6">
+                <div className="p-6 rounded-3xl border-2 border-[#0a4d3c] bg-emerald-50/30 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                      <CreditCard className="size-6 text-[#0a4d3c]" />
+                    </div>
+                    <div>
+                      <p className="font-black text-[#0a4d3c]">Credit / Debit Card</p>
+                      <p className="text-xs font-bold text-emerald-600/70">Safe & Encrypted</p>
+                    </div>
                   </div>
-                  Payment Method
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <label className="relative flex items-center gap-4 p-4 rounded-2xl border-2 border-[#0a4d3c] bg-emerald-50/50 cursor-pointer transition-all">
-                    <input type="radio" name="payment" defaultChecked className="accent-[#0a4d3c] size-5" />
-                    <div>
-                      <p className="font-bold text-[#0a4d3c]">Cash on Delivery</p>
-                      <p className="text-xs text-gray-500">Pay when you receive</p>
-                    </div>
-                  </label>
-                  <label className="relative flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 cursor-not-allowed opacity-60">
-                    <input type="radio" name="payment" disabled className="size-5" />
-                    <div>
-                      <p className="font-bold text-gray-700">Online Payment</p>
-                      <p className="text-xs text-gray-500">Coming soon</p>
-                    </div>
-                  </label>
+                  <div className="size-6 rounded-full border-4 border-[#0a4d3c] bg-[#0a4d3c] relative">
+                    <div className="absolute inset-0 m-auto size-2 bg-white rounded-full"></div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2 space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">Card Number</label>
+                    <input 
+                      name="cardNumber"
+                      value={formData.cardNumber}
+                      onChange={handleInputChange}
+                      className="w-full bg-gray-50 border-none rounded-2xl py-4 px-6 font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-gray-400 px-1">CVV</label>
+                    <input 
+                      name="cvv"
+                      value={formData.cvv}
+                      onChange={handleInputChange}
+                      className="w-full bg-gray-50 border-none rounded-2xl py-4 px-6 font-bold text-gray-700 focus:ring-2 focus:ring-emerald-500/20 transition-all" 
+                    />
+                  </div>
                 </div>
               </div>
-            </form>
-          </section>
-
-          <div className="flex items-center gap-3 p-6 bg-[#0a4d3c]/5 rounded-2xl border border-[#0a4d3c]/10 text-[#0a4d3c]">
-            <ShieldCheck className="w-6 h-6 shrink-0" />
-            <p className="text-sm font-medium">
-              Your security is our priority. We use industry-standard encryption to protect your data.
-            </p>
+            </div>
           </div>
-        </div>
 
-        {/* Order Summary Sidebar */}
-        <div className="lg:col-span-5">
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 sticky top-24">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
-            
-            <div className="space-y-4 max-h-[40vh] overflow-y-auto mb-8 pr-2 custom-scrollbar">
-              {cart.map((item) => (
-                <div key={item.id} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex gap-4 items-center">
-                    <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center text-xs font-bold text-gray-400">
-                      IMG
+          {/* Summary Sidebar */}
+          <div className="lg:col-span-4">
+            <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-50 sticky top-32">
+              <h3 className="text-xl font-black text-[#0a4d3c] mb-8">Order Summary</h3>
+              
+              <div className="space-y-4 mb-8 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
+                {cart.map(item => (
+                  <div key={item.id} className="flex items-center gap-4">
+                    <div className="relative size-16 rounded-2xl overflow-hidden shrink-0 bg-gray-50">
+                      <Image src={item.image} alt={item.name} fill className="object-cover" />
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
-                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-black text-[#0a4d3c] line-clamp-1">{item.name}</h4>
+                      <p className="text-xs font-bold text-gray-400">Qty: {item.quantity}</p>
                     </div>
+                    <span className="text-sm font-black text-[#0a4d3c]">{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
-                  <p className="text-sm font-bold text-gray-900">৳{(item.price * item.quantity).toFixed(0)}</p>
+                ))}
+              </div>
+
+              <div className="space-y-4 border-t border-gray-50 pt-6">
+                <div className="flex justify-between text-sm font-bold text-gray-500">
+                  <span>Subtotal</span>
+                  <span>{totalPrice.toFixed(2)} AED</span>
                 </div>
-              ))}
+                <div className="flex justify-between text-sm font-bold text-gray-500">
+                  <span>Delivery</span>
+                  <span className="text-emerald-600 font-black">FREE</span>
+                </div>
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                  <span className="text-lg font-black text-[#0a4d3c]">Total</span>
+                  <span className="text-2xl font-black text-emerald-600">{totalPrice.toFixed(2)} AED</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleCheckout}
+                disabled={loading}
+                className="w-full mt-10 bg-[#0a4d3c] text-white py-5 rounded-[1.5rem] font-black text-lg shadow-2xl shadow-emerald-900/20 hover:bg-emerald-900 transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-70"
+              >
+                {loading ? (
+                  <Loader2 className="size-6 animate-spin" />
+                ) : (
+                  <>
+                    Confirm Order
+                    <ChevronRight className="size-5" />
+                  </>
+                )}
+              </button>
+
+              <div className="mt-6 flex items-center justify-center gap-2 text-gray-400">
+                <Lock className="size-3" />
+                <span className="text-[10px] font-black uppercase tracking-widest">SSL Secure Payment</span>
+              </div>
             </div>
 
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between text-gray-600">
-                <span>Subtotal</span>
-                <span className="font-bold text-gray-900">৳{totalPrice.toFixed(0)}</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Shipping Fee</span>
-                <span className="font-bold text-gray-900">৳{shippingCost.toFixed(0)}</span>
-              </div>
-              <div className="h-px bg-gray-100 my-4" />
-              <div className="flex justify-between text-xl font-black text-gray-900">
-                <span>Total</span>
-                <span className="text-[#0a4d3c]">৳{grandTotal.toFixed(0)}</span>
+            <div className="mt-8 bg-emerald-50 rounded-3xl p-6 border border-emerald-100 flex items-start gap-4">
+              <ShieldCheck className="size-6 text-emerald-600 shrink-0" />
+              <div>
+                <p className="text-xs font-black text-emerald-800 uppercase tracking-wider mb-1">AgriQon Guarantee</p>
+                <p className="text-[11px] font-medium text-emerald-700/70 leading-relaxed">
+                  Your purchase is protected. If you&apos;re not satisfied with the freshness, we&apos;ll refund you instantly.
+                </p>
               </div>
             </div>
-
-            <button
-              form="checkout-form"
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#0a4d3c] text-white py-5 rounded-2xl font-black text-xl hover:bg-[#07382b] transition-all shadow-xl shadow-emerald-900/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                "Confirm Order"
-              )}
-            </button>
-            
-            <p className="text-center text-xs text-gray-400 mt-6">
-              By confirming, you agree to our Terms of Service and Privacy Policy.
-            </p>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

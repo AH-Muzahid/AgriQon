@@ -3,31 +3,30 @@
 import Link from "next/link"
 import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { Input } from "@/components/ui/input"
+
 import { Menu, X, Search, ShoppingCart, Truck, Headphones, ChevronDown, Heart } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useWishlist } from "@/context/wishlist-context"
 import { useAuth } from "@/context/auth-context"
-import { useRouter } from "next/navigation"
+
 import { motion, AnimatePresence } from "framer-motion"
+
+import { SmartSearch } from "@/components/ui/smart-search"
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
   const { user, logout, isAuthenticated } = useAuth()
   const [profileOpen, setProfileOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const router = useRouter()
+
   const menuRef = useRef<HTMLDivElement | null>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-    }
-  }
+  // Remove handleSearch since SmartSearch handles its own logic now
+  // const [searchQuery, setSearchQuery] = useState("") 
+  // const handleSearch = ...
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -37,6 +36,18 @@ export function Navbar() {
     }
     document.addEventListener('click', handleClick)
     return () => document.removeEventListener('click', handleClick)
+  }, [])
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault()
+        setIsSearchOpen(true)
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
   }, [])
 
   // Keyboard navigation for dropdown
@@ -72,6 +83,8 @@ export function Navbar() {
 
   return (
     <header className="w-full bg-white font-sans relative">
+      <SmartSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      
       {/* Announcement Bar */}
       <div className="w-full bg-[#0a4d3c] text-white text-sm py-2 text-center font-medium">
         Welcome offer — <span className="text-[#facc15]">20% off</span> your first grocery order.
@@ -100,16 +113,16 @@ export function Navbar() {
             </Link>
 
             <div className="flex-1 hidden lg:flex items-center max-w-3xl px-6">
-              <form onSubmit={handleSearch} className="relative w-full group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400 group-focus-within:text-[#0a4d3c] transition-colors" />
-                <Input 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for farm fresh groceries..." 
-                  className="w-full pl-12 bg-gray-50 border-transparent rounded-full h-[46px] text-[15px] focus-visible:ring-[#0a4d3c] focus:bg-white focus:border-gray-100 transition-all shadow-sm focus:shadow-md" 
-                />
-                <button type="submit" className="sr-only">Search</button>
-              </form>
+              <button 
+                onClick={() => setIsSearchOpen(true)}
+                className="w-full flex items-center gap-3 px-4 bg-gray-50 hover:bg-gray-100 border-transparent rounded-full h-[46px] text-[15px] text-gray-400 transition-all shadow-sm hover:shadow-md group"
+              >
+                <Search className="size-5 text-gray-400 group-hover:text-[#0a4d3c] transition-colors" />
+                <span>Search for farm fresh groceries...</span>
+                <span className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[10px] font-bold text-gray-400">
+                  <span className="text-[8px]">⌘</span>K
+                </span>
+              </button>
             </div>
 
             {/* Right actions */}
@@ -210,10 +223,10 @@ export function Navbar() {
                   ) : (
                     <div className="flex gap-2">
                       <Link href="/auth/login">
-                         <div className="h-11 w-11 bg-[#facc15] text-[#0a4d3c] rounded-full flex items-center justify-center overflow-hidden">
-                           {/* Using a placeholder avatar for non-authenticated visual match if required, otherwise show an icon */}
-                           <Image src="https://i.pravatar.cc/150?img=47" alt="User Avatar" width={44} height={44} className="h-full w-full object-cover" />
-                         </div>
+                        <div className="h-11 w-11 bg-[#facc15] text-[#0a4d3c] rounded-full flex items-center justify-center overflow-hidden">
+                          {/* Using a placeholder avatar for non-authenticated visual match if required, otherwise show an icon */}
+                          <Image src="https://i.pravatar.cc/150?img=47" alt="User Avatar" width={44} height={44} className="h-full w-full object-cover" />
+                        </div>
                       </Link>
                     </div>
                   )}
@@ -253,15 +266,13 @@ export function Navbar() {
 
       {/* Mobile Search Bar (visible only on small screens) */}
       <div className="lg:hidden px-4 py-3 border-b border-gray-100 bg-white">
-        <form onSubmit={handleSearch} className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
-          <Input 
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search groceries..." 
-            className="w-full pl-12 bg-gray-50 border-transparent rounded-full h-11 text-sm focus-visible:ring-[#0a4d3c]" 
-          />
-        </form>
+        <button 
+          onClick={() => setIsSearchOpen(true)}
+          className="w-full flex items-center gap-3 px-4 bg-gray-50 border-transparent rounded-full h-11 text-sm text-gray-400"
+        >
+          <Search className="size-5 text-gray-400" />
+          <span>Search groceries...</span>
+        </button>
       </div>
 
       {/* Mobile menu */}

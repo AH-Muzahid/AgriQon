@@ -1,39 +1,70 @@
+"use client";
+
 import Image from "next/image";
-import deliveryBannerImg from "../../../public/images/delevary-banar.png";
+import { motion } from "framer-motion";
+import { Zap, ShieldCheck, MapPin } from "lucide-react";
 
 export function DeliveryBanner() {
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-8 my-10">
-      <div className="max-w-7xl mx-auto relative h-[260px] md:h-[480px] rounded-2xl ">
-        {/* Background Image */}
-        <div className="relative h-full w-full pointer-events-none overflow-hidden rounded-2xl">
+    <section className="w-full px-4 sm:px-6 lg:px-8 my-16">
+      <div className="max-w-7xl mx-auto relative overflow-hidden rounded-[40px] bg-emerald-950 shadow-2xl">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
           <Image
-            src={deliveryBannerImg}
-            alt="Delivery Scooter"
+            src="/images/delevary-banar.png"
+            alt="Eco-friendly delivery"
             fill
-            className="object-cover"
-            sizes="100vw"
+            className="object-cover opacity-60 scale-105 transition-transform duration-[20s] hover:scale-100"
             priority
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-950 via-emerald-950/80 to-transparent" />
         </div>
 
         {/* Content Overlay */}
-        <div className="relative z-10 h-full flex flex-col justify-center pt-3 md:pt-6 lg:pt-12 px-3 md:px-16 lg:px-24 w-full">
-          <div className="flex flex-col gap-2 md:gap-4">
-            <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-white leading-tight">
-              Get <span className="text-[#facc15]">20% Off</span> on <br />
-              Your First Delivery!
-            </h1>
-            <p className="text-sm md:text-lg text-emerald-50/90 font-medium max-w-md">
-              Fresh groceries, Halal certified, <br className=" md:hidden" /> delivered straight to your door.
+        <div className="relative z-10 min-h-[400px] md:min-h-[500px] flex flex-col justify-center px-8 md:px-16 lg:px-24 py-12">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+            className="max-w-2xl"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#facc15] text-[#0a4d3c] text-xs font-black uppercase tracking-widest mb-6">
+              <Zap className="size-3 fill-[#0a4d3c]" />
+              Limited Time Offer
+            </div>
+
+            <h2 className="text-4xl md:text-6xl font-black text-white leading-[1] mb-6 tracking-tighter">
+              Freshness Delivered<br />
+              <span className="text-[#facc15]">Zero Emissions.</span>
+            </h2>
+            
+            <p className="text-emerald-50/70 text-lg md:text-xl font-medium mb-10 max-w-lg leading-relaxed">
+              Get <span className="text-white font-bold">20% OFF</span> your first 3 deliveries. 
+              Farm-to-table in under 2 hours, powered by our new electric fleet.
             </p>
-          </div>
-          
-          <div className="mt-3 md:mt-5">
-            <button className="bg-[#facc15] text-[#0a4d3c] text-sm md:text-lg font-bold px-6 md:px-8 py-1.5 md:py-2 rounded-full hover:bg-white hover:scale-105 transition-all duration-300 shadow-xl shadow-black/10">
-              Order now
+            
+            <div className="flex flex-wrap items-center gap-6 mb-10">
+              <div className="flex items-center gap-2 text-white/80">
+                <ShieldCheck className="size-5 text-[#facc15]" />
+                <span className="text-sm font-bold">Halal Certified</span>
+              </div>
+              <div className="flex items-center gap-2 text-white/80">
+                <MapPin className="size-5 text-[#facc15]" />
+                <span className="text-sm font-bold">Real-time Tracking</span>
+              </div>
+            </div>
+
+            <button className="group relative bg-[#facc15] text-[#0a4d3c] px-10 py-4 rounded-full font-black text-lg transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-[#facc15]/20">
+              Claim Your Discount
+              <div className="absolute inset-0 bg-white/20 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300" />
             </button>
-          </div>
+          </motion.div>
+        </div>
+
+        {/* Floating Decorative Elements */}
+        <div className="absolute top-10 right-10 opacity-20 hidden lg:block">
+          <div className="size-40 border-8 border-white/20 rounded-full animate-pulse" />
         </div>
       </div>
     </section>

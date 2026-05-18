@@ -12,14 +12,11 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
-  wishlist: string[];
   cartCount: number;
-  wishlistCount: number;
   totalPrice: number;
   addToCart: (item: CartItem) => void;
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
-  toggleWishlist: (id: string) => void;
   clearCart: () => void;
 }
 
@@ -27,7 +24,6 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_KEY = "agriqon_cart_v1";
-const WISHLIST_KEY = "agriqon_wishlist_v1";
 
 function safeParseJson<T>(value: string | null): T | null {
   if (!value) return null;
@@ -40,7 +36,6 @@ function safeParseJson<T>(value: string | null): T | null {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [wishlist, setWishlist] = useState<string[]>([]);
 
   // Read localStorage once on mount.
   useEffect(() => {
@@ -50,14 +45,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (parsedCart) {
       queueMicrotask(() => setCart(parsedCart));
     }
-
-    const parsedWishlist = safeParseJson<string[]>(
-      typeof window !== "undefined" ? localStorage.getItem(WISHLIST_KEY) : null
-    );
-    if (parsedWishlist) {
-      queueMicrotask(() => setWishlist(parsedWishlist));
-    }
-
   }, []);
 
   // Persist cart.
@@ -68,15 +55,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // ignore write errors (e.g., storage disabled)
     }
   }, [cart]);
-
-  // Persist wishlist.
-  useEffect(() => {
-    try {
-      localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
-    } catch {
-      // ignore write errors
-    }
-  }, [wishlist]);
 
   function addToCart(item: CartItem) {
     setCart((prev) => {
@@ -101,10 +79,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setCart((prev) => prev.filter((p) => p.id !== id));
   }
 
-  function toggleWishlist(id: string) {
-    setWishlist((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
-  }
-
   function clearCart() {
     setCart([]);
   }
@@ -112,17 +86,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value: CartContextType = useMemo(
     () => ({
       cart,
-      wishlist,
       cartCount: cart.reduce((s, it) => s + it.quantity, 0),
-      wishlistCount: wishlist.length,
       totalPrice: cart.reduce((s, it) => s + it.price * it.quantity, 0),
       addToCart,
       updateQuantity,
       removeFromCart,
-      toggleWishlist,
       clearCart,
     }),
-    [cart, wishlist]
+    [cart]
   );
 
 

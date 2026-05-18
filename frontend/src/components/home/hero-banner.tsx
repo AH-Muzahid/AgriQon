@@ -1,77 +1,132 @@
+"use client";
+
+import React from "react";
 import Image from "next/image";
+import { motion } from "framer-motion";
+import { ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
+
 export function HeroBanner() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8  pt-2 md:pt-4 pb-4 md:pb-8">
-      <div className="relative w-full max-w-7xl mx-auto overflow-hidden rounded-[32px] bg-[#0e3b2e] text-white">
-        {/* Background decorative patterns */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          {/* We use a repeating SVG pattern or absolute positioned SVGs to mimic the line art.
-              For simplicity in this implementation, we will use a pseudo-element pattern or a few SVG icons scattered. */}
-          <div className="absolute top-10 left-[40%] text-white/20">
-            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-          </div>
-          <div className="absolute bottom-20 left-[35%] text-white/20 transform -rotate-12">
-            <svg width="80" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-            </svg>
-          </div>
-          <div className="absolute top-20 right-[10%] text-white/20 transform rotate-45">
-             <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-             </svg>
-          </div>
-        </div>
+    <section className="relative w-full h-[600px] md:h-[700px] lg:h-[800px] overflow-hidden bg-[#0a4d3c]">
+      {/* Background Image with Parallax-like effect */}
+      <motion.div 
+        initial={{ scale: 1.1, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 1.5, ease: "easeOut" }}
+        className="absolute inset-0 z-0"
+      >
+        <Image
+          src="/images/hero.png"
+          alt="Premium Farm Fresh"
+          fill
+          className="object-cover object-center brightness-[0.7] contrast-[1.1]"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a4d3c]/90 via-[#0a4d3c]/40 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a4d3c] via-transparent to-transparent z-10" />
+      </motion.div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between min-h-[480px]">
-          {/* Left Content */}
-          <div className="w-full md:w-[55%] px-8 md:px-16 py-12 md:py-20 flex flex-col justify-center">
-            <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold leading-[1.1] mb-6 tracking-tight">
-              Your Trusted Source<br />
-              for <span className="text-[#a4d45c]">Fresh & Healthy</span><br />
-              Foods
-            </h1>
-            <p className="text-gray-300 text-base md:text-lg max-w-md mb-8 leading-relaxed">
-              Experience the convenience of hassle-free shopping with quick delivery for all your favorite products.
-            </p>
-            
-            <div className="flex flex-wrap items-center gap-4">
-              <Link 
-                href="/shop" 
-                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#a4d45c] text-[#0e3b2e] font-semibold hover:bg-[#8ebb4f] transition-colors"
-              >
-                Shop Now
-              </Link>
-              <Link 
-                href="/offers" 
-                className="inline-flex items-center justify-center px-8 py-3.5 rounded-full border border-[#a4d45c] text-white font-medium hover:bg-white/5 transition-colors"
-              >
-                Explore Offers
-              </Link>
-            </div>
-          </div>
+      {/* Content */}
+      <div className="relative z-20 max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+        <div className="max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#facc15] text-[#0a4d3c] text-xs font-black uppercase tracking-widest mb-8 shadow-xl shadow-yellow-500/20"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0a4d3c] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0a4d3c]"></span>
+            </span>
+            <Sparkles className="size-3" />
+            AI-Powered Freshness
+          </motion.div>
 
-          {/* Right Content - Image */}
-          <div className="w-full md:w-[45%] relative h-[300px] md:h-[500px] self-end hidden md:block">
-            {/* Using a placeholder for the lady with groceries, but styling it to fit seamlessly */}
-            <div className="absolute bottom-0 right-0 w-[120%] h-[110%] z-20 overflow-visible flex items-end">
-              <Image 
-                src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1000&auto=format&fit=crop" 
-                alt="Woman holding fresh groceries" 
-                width={800} 
-                height={600}
-                className="object-contain object-bottom w-full h-full transform translate-x-12"
-                priority
-              />
-            </div>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.8 }}
+            className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter leading-[0.85] mb-8"
+          >
+            Nature Meets <br />
+            <span className="text-[#facc15] italic">Intelligence.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+            className="text-emerald-50/80 text-lg md:text-2xl font-medium max-w-xl mb-12 leading-relaxed"
+          >
+            AgriQon uses advanced semantic discovery to connect you with the finest organic produce, harvested at peak perfection.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.8 }}
+            className="flex flex-wrap gap-4"
+          >
+            <Link 
+              href="/shop"
+              className="group relative inline-flex items-center gap-3 bg-[#facc15] text-[#0a4d3c] px-10 py-6 rounded-2xl font-black text-xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-yellow-500/40"
+            >
+              Start Shopping
+              <ArrowRight className="size-6 transition-transform group-hover:translate-x-1" />
+            </Link>
             
-            {/* Custom bottom curve (simulated with CSS for the card effect) */}
-            {/* <div className="absolute bottom-0 left-0 right-0 h-16 bg-white transform translate-y-1/2 rotate-[2deg] scale-110 z-30"></div> */}
-          </div>
+            <Link 
+              href="/farmers"
+              className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl text-white border border-white/20 px-10 py-6 rounded-2xl font-black text-xl transition-all hover:bg-white/20 active:scale-95"
+            >
+              Meet Farmers
+            </Link>
+          </motion.div>
         </div>
       </div>
-    </div>
+
+      {/* Scroll Indicator */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2, duration: 1 }}
+        className="absolute bottom-12 left-12 z-20 flex flex-col items-start gap-4"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-px bg-white/20" />
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">AgriQon Excellence</span>
+        </div>
+      </motion.div>
+
+      {/* Floating Card */}
+      <div className="absolute top-1/2 right-12 -translate-y-1/2 hidden xl:block z-20">
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.3, duration: 1 }}
+          className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-[3rem] shadow-2xl max-w-xs"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="size-14 rounded-2xl bg-[#facc15] flex items-center justify-center text-[#0a4d3c]">
+                <ShoppingBag className="size-7" />
+              </div>
+              <div>
+                <p className="text-white font-black text-2xl leading-none">Fresh</p>
+                <p className="text-emerald-100/40 text-xs font-bold uppercase tracking-wider mt-1">Guaranteed</p>
+              </div>
+            </div>
+            <div className="h-px bg-white/10" />
+            <p className="text-emerald-50/60 text-sm leading-relaxed">
+              Our AI monitors harvest cycles in real-time to ensure only the freshest produce reaches your table.
+            </p>
+          </div>
+        </motion.div>
+      </div>
+    </section>
   );
 }
+
+export default HeroBanner;

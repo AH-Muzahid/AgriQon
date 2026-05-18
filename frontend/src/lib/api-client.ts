@@ -1,141 +1,95 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-// Type definitions for API payloads
-interface ItemData {
-  title: string;
-  description: string;
-  price: number;
-  category: string;
-  imageUrl?: string;
-}
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
 
-interface OrderData {
-  itemId: string;
-  quantity: number;
-  totalPrice: number;
-}
+// Create the base axios instance
+const instance = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-interface ReviewData {
-  itemId: string;
-  rating: number;
-  comment: string;
-}
-
-class ApiClient {
-  public client: AxiosInstance;
-  private token: string | null = null;
-
-  constructor() {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
-    this.client = axios.create({
-      baseURL,
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    // Read CSRF token from cookie and inject into header
-    this.client.interceptors.request.use(
-      (config) => {
-        const csrfToken = this.getCSRFToken();
-        if (csrfToken) {
-          config.headers['X-CSRF-TOKEN'] = csrfToken;
-        }
-        config.withCredentials = true;
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-  }
-
-  private getCSRFToken(): string | null {
-    const match = document.cookie.match(/_csrf=([^;]+)/);
-    if (match) return decodeURIComponent(match[1]);
-
-    const meta = document.querySelector('meta[name="csrf-token"]');
-    if (meta) return meta.getAttribute('content');
-
-    return null;
-  }
-
-  setToken(token: string | null) {
-    this.token = token;
+// Add interceptor to include auth token if available
+instance.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     if (token) {
-      this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      delete this.client.defaults.headers.common['Authorization'];
+      config.headers.Authorization = `Bearer ${token}`;
     }
   }
+  return config;
+});
 
-  register(data: { email: string; password: string; name: string; role: 'USER' | 'SELLER' }) {
-    return this.client.post('/auth/register', data);
+// Add response interceptor for error handling
+instance.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    const message = error.response?.data?.message || 'Something went wrong';
+    return Promise.reject(new Error(message));
   }
+);
 
-  login(data: { email: string; password: string }) {
-    return this.client.post('/auth/login', data);
-  }
-
-  logout() {
-    return this.client.post('/auth/logout');
-  }
-
-  getItems(params?: { category?: string; page?: number }) {
-    return this.client.get('/items', { params });
-  }
-
-  getItem(id: string) {
-    return this.client.get(`/items/${id}`);
-  }
-
-  createItem(data: ItemData) {
-    return this.client.post('/items', data);
-  }
-
-  updateItem(id: string, data: Partial<ItemData>) {
-    return this.client.put(`/items/${id}`, data);
-  }
-
-  deleteItem(id: string) {
-    return this.client.delete(`/items/${id}`);
-  }
-
-  getOrders() {
-    return this.client.get('/orders');
-  }
-
-  getOrder(id: string) {
-    return this.client.get(`/orders/${id}`);
-  }
-
-  createOrder(data: OrderData) {
-    return this.client.post('/orders', data);
-  }
-
-  getReviews(itemId: string) {
-    return this.client.get('/reviews', { params: { itemId } });
-  }
-
-  createReview(data: ReviewData) {
-    return this.client.post('/reviews', data);
-  }
-
-  generateAiChat(prompt: string) {
-    return this.client.post('/ai/chat', { prompt });
-  }
-
-  // Accounting Reports
-  getTrialBalance(params?: { startDate?: string; endDate?: string }) {
-    return this.client.get('/accounting/reports/trial-balance', { params });
-  }
-
-  getProfitAndLoss(params: { startDate: string; endDate: string }) {
-    return this.client.get('/accounting/reports/profit-loss', { params });
-  }
-
-  getBalanceSheet(params?: { date?: string }) {
-    return this.client.get('/accounting/reports/balance-sheet', { params });
-  }
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data: T;
+  message?: string;
+  results?: unknown; // Replaced any with unknown to satisfy linter
 }
 
-export const apiClient = new ApiClient();
+// More specific for results which is used in some pages
+export interface ApiResultsResponse<T = unknown> extends ApiResponse<T> {
+  results: T;
+}
+
+export interface ChatResponse {
+  content: string;
+  source: string;
+}
+
+export interface ApiClient extends AxiosInstance {
+  // Override axios methods to return data directly (as handled by our interceptor)
+  get<T = unknown, R = ApiResponse<T>, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  post<T = unknown, R = ApiResponse<T>, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  put<T = unknown, R = ApiResponse<T>, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+  delete<T = unknown, R = ApiResponse<T>, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
+  patch<T = unknown, R = ApiResponse<T>, D = unknown>(url: string, data?: D, config?: AxiosRequestConfig<D>): Promise<R>;
+
+  client: AxiosInstance;
+  setToken: (token: string | null) => void;
+  login: <T = unknown>(data: unknown) => Promise<ApiResponse<T>>;
+  register: <T = unknown>(data: unknown) => Promise<ApiResponse<T>>;
+  logout: () => Promise<ApiResponse>;
+  getItems: <T = unknown>(params?: unknown) => Promise<ApiResponse<T>>;
+  getProduct: <T = unknown>(id: string) => Promise<ApiResponse<T>>;
+  getReviews: <T = unknown>(itemId: string) => Promise<ApiResponse<T>>;
+  getCategories: <T = unknown>() => Promise<ApiResponse<T>>;
+  createOrder: <T = unknown>(data: unknown) => Promise<ApiResponse<T>>;
+  generateAiChat: (prompt: string) => Promise<ApiResponse<ChatResponse>>;
+}
+
+export const apiClient = instance as ApiClient;
+
+// Self-reference to support apiClient.client.get() usage
+apiClient.client = instance;
+
+apiClient.setToken = (token: string | null) => {
+  if (token) {
+    localStorage.setItem('token', token);
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
+    delete apiClient.defaults.headers.common['Authorization'];
+  }
+};
+
+apiClient.login = (data: unknown) => apiClient.post('/auth/login', data);
+apiClient.register = (data: unknown) => apiClient.post('/auth/register', data);
+apiClient.logout = () => apiClient.post('/auth/logout');
+apiClient.getItems = (params?: unknown) => apiClient.get('/products', { params });
+apiClient.getProduct = (id: string) => apiClient.get(`/products/${id}`);
+apiClient.getReviews = (itemId: string) => apiClient.get(`/reviews/item/${itemId}`);
+apiClient.getCategories = () => apiClient.get('/categories');
+apiClient.createOrder = (data: unknown) => apiClient.post('/orders', data);
+apiClient.generateAiChat = (prompt: string) => apiClient.post('/ai/chat', { prompt });

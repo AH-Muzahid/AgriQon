@@ -82,12 +82,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function login(email: string, password: string): Promise<User> {
     setIsLoading(true);
     try {
-      const response = await apiClient.login({ email, password });
-      const { user: userData, token } = response.data;
+      const response = await apiClient.login<{ user: User; token?: string; accessToken?: string }>({ email, password });
+      const { user: userData, token, accessToken } = response.data;
+      const actualToken = token || accessToken;
 
-      if (token) {
-        localStorage.setItem('authToken', token);
-        apiClient.setToken(token);
+      if (actualToken) {
+        localStorage.setItem('authToken', actualToken);
+        apiClient.setToken(actualToken);
       }
 
       setUser(userData);
@@ -106,12 +107,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ): Promise<User> {
     setIsLoading(true);
     try {
-      const response = await apiClient.register({ email, password, name, role });
-      const { user: userData, token } = response.data;
+      const response = await apiClient.register<{ user: User; token?: string; accessToken?: string }>({ email, password, name, role });
+      const { user: userData, token, accessToken } = response.data;
+      const actualToken = token || accessToken;
 
-      if (token) {
-        localStorage.setItem('authToken', token);
-        apiClient.setToken(token);
+      if (actualToken) {
+        localStorage.setItem('authToken', actualToken);
+        apiClient.setToken(actualToken);
       }
 
       setUser(userData);
