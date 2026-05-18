@@ -4,7 +4,7 @@ import { prisma } from '../../../lib/prisma';
 jest.mock('../../../lib/prisma', () => ({
   prisma: {
     item: {
-      findUnique: jest.fn(),
+      findFirst: jest.fn(),
       update: jest.fn(),
     },
     inventoryValuation: {
@@ -34,10 +34,10 @@ describe('ValuationService', () => {
       // Existing: 10 units @ $50 = $500
       // New: 10 units @ $100 = $1000
       // Total: 20 units @ ($500 + $1000)/20 = $75
-      (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.item.findFirst as jest.Mock).mockResolvedValue({
         id: 'item-1',
         costPrice: 50,
-        inventory: [{ availableStock: 10 }],
+        inventory: [{ totalStock: 10, availableStock: 10 }],
       });
 
       const result = await valuationService.updateWAC(params);
@@ -57,10 +57,10 @@ describe('ValuationService', () => {
     });
 
     it('should set new WAC to unitCost if existing stock is zero', async () => {
-      (prisma.item.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.item.findFirst as jest.Mock).mockResolvedValue({
         id: 'item-1',
         costPrice: 0,
-        inventory: [{ availableStock: 0 }],
+        inventory: [{ totalStock: 0, availableStock: 0 }],
       });
 
       const result = await valuationService.updateWAC(params);
@@ -69,7 +69,7 @@ describe('ValuationService', () => {
     });
 
     it('should throw error if item not found', async () => {
-      (prisma.item.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.item.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(valuationService.updateWAC(params)).rejects.toThrow('Item item-1 not found');
     });
