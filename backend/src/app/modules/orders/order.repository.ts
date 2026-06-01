@@ -55,6 +55,49 @@ export class OrderRepository {
     });
   }
 
+  async findByUserId(params: {
+    userId: string;
+    status?: OrderStatus;
+    skip: number;
+    take: number;
+  }) {
+    const { userId, status, skip, take } = params;
+
+    const where: Prisma.OrderWhereInput = {
+      userId,
+      deletedAt: null,
+      ...(status && { status }),
+    };
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          items: { include: { item: true } },
+          payments: true,
+          invoice: true,
+        },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return { items, total };
+  }
+
+  async findByIdForUser(id: string, userId: string) {
+    return await this.prisma.order.findFirst({
+      where: { id, userId, deletedAt: null },
+      include: {
+        items: { include: { item: true } },
+        payments: true,
+        invoice: true,
+      },
+    });
+  }
+
   async create(data: Prisma.OrderUncheckedCreateInput) {
     return await this.prisma.order.create({
       data,

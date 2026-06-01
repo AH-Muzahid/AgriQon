@@ -1,10 +1,14 @@
 import { Response } from 'express';
+import { z } from 'zod';
+import crypto from 'crypto';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
 import { AuthRequest } from '../../middleware/auth.middleware';
 import { OrderService } from './order.service';
 import { OrderRepository } from './order.repository';
-import { OrderStatus } from '../../../generated/client';
+import { OrderStatus, Role } from '../../../generated/client';
+import { prisma } from '../../lib/prisma';
+import { AppError } from '../../errors/AppError';
 
 const orderRepository = new OrderRepository();
 const orderService = new OrderService(orderRepository);
@@ -88,10 +92,44 @@ const cancelOrder = catchAsync(async (req: AuthRequest, res: Response) => {
   });
 });
 
+const getCustomerOrders = catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 10;
+  const status = req.query.status as OrderStatus | undefined;
+
+  const result = await orderService.getCustomerOrders({ userId, status, page, limit });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Customer orders fetched successfully',
+    meta: result.meta,
+    data: result.items,
+  });
+});
+
+const getCustomerOrderById = catchAsync(async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const { id } = req.params;
+
+  const result = await orderService.getOrderByIdForUser(id, userId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Customer order fetched successfully',
+    data: result,
+  });
+});
+
 export const OrderController = {
   getAllOrders,
   getOrderById,
   createOrder,
   updateOrderStatus,
   cancelOrder,
+  getCustomerOrders,
+  getCustomerOrderById,
 };
+

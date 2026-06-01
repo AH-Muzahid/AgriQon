@@ -67,6 +67,34 @@ export class OrderService {
     return order;
   }
 
+  async getCustomerOrders(params: {
+    userId: string;
+    status?: OrderStatus;
+    page: number;
+    limit: number;
+  }) {
+    const skip = (params.page - 1) * params.limit;
+    const { items, total } = await this.orderRepo.findByUserId({
+      userId: params.userId,
+      status: params.status,
+      skip,
+      take: params.limit,
+    });
+
+    return {
+      items,
+      meta: { page: params.page, limit: params.limit, total },
+    };
+  }
+
+  async getOrderByIdForUser(id: string, userId: string) {
+    const order = await this.orderRepo.findByIdForUser(id, userId);
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+    return order;
+  }
+
   /**
    * Rule 3: CRITICAL WORKFLOW — full atomic transaction.
    * Rule 4: NEVER mutate inventory directly — use StockMovements via InventoryService.

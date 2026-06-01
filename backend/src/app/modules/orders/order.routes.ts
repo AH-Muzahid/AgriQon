@@ -7,6 +7,10 @@ import { Role } from '../../../generated/client';
 
 const router = Router();
 
+// Customer/Consumer Routes (Role.USER)
+router.get('/customer', auth(Role.USER), validateRequest(orderQuerySchema), OrderController.getCustomerOrders);
+router.get('/customer/:id', auth(Role.USER), OrderController.getCustomerOrderById);
+
 // All order routes require auth
 router.use(auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.SELLER));
 
@@ -15,7 +19,7 @@ router.get('/:id', OrderController.getOrderById);
 
 router.post(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER),
+  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.SELLER),
   validateRequest(createOrderSchema),
   OrderController.createOrder
 );
@@ -29,7 +33,7 @@ router.patch(
 
 router.patch(
   '/:id/cancel',
-  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER),
+  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.SELLER),
   OrderController.cancelOrder
 );
 
