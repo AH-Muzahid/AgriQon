@@ -20,7 +20,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 interface Product {
-  _id: string;
+  id?: string;
+  _id?: string;
   title: string;
   description: string;
   price: number;
@@ -85,7 +86,7 @@ function ShopPageContent() {
 
   const handleAddToCart = (product: Product) => {
     addToCart({
-      id: product._id,
+      id: product.id || product._id || "",
       name: product.title,
       price: product.price,
       quantity: 1,
@@ -229,7 +230,7 @@ function ShopPageContent() {
               <AnimatePresence>
                 {products.map((product: Product, idx) => (
                   <motion.div
-                    key={product._id}
+                    key={product.id || product._id}
                     layout
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
