@@ -8,9 +8,9 @@ const create = async (data: any): Promise<Category> => {
   });
 };
 
-const findMany = async (businessId: string): Promise<Category[]> => {
+const findMany = async (businessId?: string): Promise<Category[]> => {
   return await prisma.category.findMany({
-    where: { businessId },
+    where: businessId ? { businessId } : {},
     include: {
       children: true,
     },

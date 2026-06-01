@@ -7,7 +7,7 @@ const createCategory = async (data: any): Promise<Category> => {
   return await CategoryRepository.create(data);
 };
 
-const getAllCategories = async (businessId: string): Promise<Category[]> => {
+const getAllCategories = async (businessId?: string): Promise<Category[]> => {
   return await CategoryRepository.findMany(businessId);
 };
 

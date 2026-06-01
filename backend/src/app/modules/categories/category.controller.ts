@@ -19,8 +19,8 @@ const createCategory = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllCategories = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
-  const result = await CategoryService.getAllCategories(businessId!);
+  const businessId = (req.query.businessId as string) || (req.user?.businessId ?? undefined);
+  const result = await CategoryService.getAllCategories(businessId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
