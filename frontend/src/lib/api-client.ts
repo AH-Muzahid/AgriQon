@@ -105,3 +105,6 @@ apiClient.getReviews = (itemId: string) => apiClient.get(`/reviews/item/${itemId
 apiClient.getCategories = () => apiClient.get('/categories');
 apiClient.createOrder = (data: unknown) => apiClient.post('/orders', data);
 apiClient.generateAiChat = (prompt: string) => apiClient.post('/ai/chat', { prompt });
+apiClient.getCustomers = (params?: unknown) => apiClient.get('/customers', { params });
+apiClient.createCustomer = (data: unknown) => apiClient.post('/customers', data);
+apiClient.collectCustomerDue = (id: string, amount: number) => apiClient.post(`/customers/${id}/collect-due`, { amount });
