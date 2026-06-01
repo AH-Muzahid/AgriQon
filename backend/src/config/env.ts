@@ -2,11 +2,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+const jwtSecret = process.env.JWT_SECRET ?? 'test_fallback_secret_agroai_market_2026';
+if (!process.env.JWT_SECRET && process.env.NODE_ENV !== 'test') {
+  throw new Error('Missing required environment variable: JWT_SECRET');
+}
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 4000),
   databaseUrl: process.env.DATABASE_URL,
-  jwtSecret: process.env.JWT_SECRET as string,
+  jwtSecret: jwtSecret,
   frontendOrigin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000',
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
