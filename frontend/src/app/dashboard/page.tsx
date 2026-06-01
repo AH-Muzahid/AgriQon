@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/auth-context';
+import { apiClient } from '@/lib/api-client';
 import {
   LayoutDashboard,
   Package,
@@ -46,6 +47,7 @@ interface Product {
   status: 'সচল' | 'কম স্টক' | 'স্টক আউট';
   image: string;
   rating?: number;
+  warehouseId?: string;
 }
 
 interface CartItem {
@@ -103,81 +105,6 @@ export default function DashboardHub() {
 
   // State Management
   const [activeTab, setActiveTab] = useState<'home' | 'pos' | 'products' | 'customers' | 'reports' | 'assistant' | 'consumer'>('home');
-  const [products, setProducts] = useState<Product[]>([]);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('guest');
-
-  const refreshData = async () => {
-    try {
-      const warehousesRes = await apiClient.get('/warehouses');
-      const warehousesList = (warehousesRes.data || []) as any[];
-      const defaultWarehouseId = warehousesList[0]?.id || '';
-
-      const invRes = await apiClient.getInventory();
-      const inventoryList = (invRes.data || []) as any[];
-
-      const itemsRes = await apiClient.getItems();
-      const itemsList = (itemsRes.data || []) as any[];
-
-      const catsRes = await apiClient.getCategories();
-      const catsList = (catsRes.data || []) as any[];
-      const catMap = new Map(catsList.map(c => [c.id, c.name]));
-
-      const mappedProducts: Product[] = itemsList.map(item => {
-        const itemInv = inventoryList.filter(inv => inv.itemId === item.id);
-        const totalStock = itemInv.reduce((sum, inv) => sum + (inv.availableStock || 0), 0);
-        const warehouseId = itemInv[0]?.warehouseId || defaultWarehouseId;
-        const categoryName = catMap.get(item.categoryId) || item.category?.name || 'সবজি';
-        return {
-          id: item.id,
-          name: item.title,
-          category: categoryName,
-          sku: item.sku || '',
-          stock: totalStock,
-          unit: item.unit || 'কেজি',
-          price: Number(item.price),
-          status: totalStock <= 0 ? 'স্টক আউট' : totalStock < 10 ? 'কম স্টক' : 'সচল',
-          image: '🥬',
-          rating: 4.5,
-          warehouseId
-        };
-      });
-      setProducts(mappedProducts);
-
-      const custRes = await apiClient.getCustomers();
-      const customersList = (custRes.data || []) as any[];
-
-      const invoicesRes = await apiClient.get('/invoices');
-      const invoicesList = (invoicesRes.data || []) as any[];
-
-      const mappedCustomers: Customer[] = customersList.map(cust => {
-        const custInvoices = invoicesList.filter(inv => inv.customerId === cust.id);
-        const totalDue = custInvoices.reduce((sum, inv) => sum + Number(inv.dueAmount || 0), 0);
-        const totalSpent = custInvoices.reduce((sum, inv) => sum + Number(inv.totalAmount || 0), 0);
-        const creditLimit = 15000;
-        const limitUtil = creditLimit > 0 ? (totalDue / creditLimit) * 100 : 0;
-        const risk = limitUtil >= 80 ? 'উচ্চ' : limitUtil > 40 ? 'মাঝারি' : 'কম';
-        const segment = totalDue > 5000 ? 'বাকিদার' : totalSpent > 10000 ? 'নিয়মিত' : 'নতুন';
-        return {
-          id: cust.id,
-          name: cust.name,
-          phone: cust.phone || '',
-          due: totalDue,
-          spent: totalSpent,
-          points: cust.loyaltyPoints || 0,
-          segment: segment as any,
-          risk: risk as any,
-          creditLimit
-        };
-      });
-      setCustomers(mappedCustomers);
-    } catch (e) { console.error(e); }
-  };
-
-  useEffect(() => {
-    refreshData();
-  }, []);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -200,9 +127,9 @@ export default function DashboardHub() {
   }, []);
   
   // Dynamic business data
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('guest');
   
   // POS Cart State
@@ -236,91 +163,247 @@ export default function DashboardHub() {
   // Real-time calculations of debtor dues from CRM state
   const dueAmount = customers.reduce((sum, c) => sum + c.due, 0);
 
+  // Load data on mount and provide refresh function
+  const refreshData = async () => {
+    try {
+      // 1. Fetch Warehouses to determine default warehouse id
+      const warehousesRes = await apiClient.get('/warehouses');
+      const warehousesList = (warehousesRes.data || []) as any[];
+      const defaultWarehouseId = warehousesList[0]?.id || '';
+
+      // 2. Fetch inventory
+      const invRes = await apiClient.getInventory();
+      const inventoryList = (invRes.data || []) as any[];
+
+      // 3. Fetch products list
+      const itemsRes = await apiClient.getItems();
+      const itemsList = (itemsRes.data || []) as any[];
+
+      // 4. Fetch categories
+      const catsRes = await apiClient.getCategories();
+      const catsList = (catsRes.data || []) as any[];
+      const catMap = new Map(catsList.map(c => [c.id, c.name]));
+
+      // 5. Match inventory to products to calculate stocks
+      const mappedProducts: Product[] = itemsList.map(item => {
+        const itemInv = inventoryList.filter(inv => inv.itemId === item.id);
+        const totalStock = itemInv.reduce((sum, inv) => sum + (inv.availableStock || 0), 0);
+        const warehouseId = itemInv[0]?.warehouseId || defaultWarehouseId;
+        const categoryName = catMap.get(item.categoryId) || item.category?.name || 'সবজি';
+
+        // Emojis mapping
+        let emoji = '🥬';
+        const name = item.title.toLowerCase();
+        if (name.includes('আম') || name.includes('mango')) emoji = '🥭';
+        else if (name.includes('টমেটো') || name.includes('tomato')) emoji = '🍅';
+        else if (name.includes('ডিম') || name.includes('egg')) emoji = '🥚';
+        else if (name.includes('শসা') || name.includes('cucumber')) emoji = '🥒';
+        else if (name.includes('মরিচ') || name.includes('chili')) emoji = '🌶️';
+        else if (name.includes('আলু') || name.includes('potato')) emoji = '🥔';
+        else if (name.includes('কুমড়া') || name.includes('pumpkin')) emoji = '🎃';
+        else if (name.includes('ধান') || name.includes('চাল') || name.includes('rice')) emoji = '🌾';
+
+        return {
+          id: item.id,
+          name: item.title,
+          category: categoryName,
+          sku: item.sku || '',
+          stock: totalStock,
+          unit: item.unit || 'কেজি',
+          price: Number(item.price),
+          status: totalStock <= 0 ? 'স্টক আউট' : totalStock < 10 ? 'কম স্টক' : 'সচল',
+          image: emoji,
+          rating: 4.5,
+          warehouseId
+        };
+      });
+
+      setProducts(mappedProducts);
+
+      // 6. Fetch Customers
+      const custRes = await apiClient.getCustomers();
+      const customersList = (custRes.data || []) as any[];
+
+      // 7. Fetch Invoices to calculate spent and due amounts
+      const invoicesRes = await apiClient.get('/invoices');
+      const invoicesList = (invoicesRes.data || []) as any[];
+
+      const mappedCustomers: Customer[] = customersList.map(cust => {
+        const custInvoices = invoicesList.filter(inv => inv.customerId === cust.id);
+        const totalDue = custInvoices.reduce((sum, inv) => sum + Number(inv.dueAmount || 0), 0);
+        const totalSpent = custInvoices.reduce((sum, inv) => sum + Number(inv.totalAmount || 0), 0);
+
+        const creditLimit = 15000;
+        const limitUtil = creditLimit > 0 ? (totalDue / creditLimit) * 100 : 0;
+        const risk = limitUtil >= 80 ? 'উচ্চ' : limitUtil > 40 ? 'মাঝারি' : 'কম';
+        const segment = totalDue > 5000 ? 'বাকিদার' : totalSpent > 10000 ? 'নিয়মিত' : 'নতুন';
+
+        return {
+          id: cust.id,
+          name: cust.name,
+          phone: cust.phone || '',
+          due: totalDue,
+          spent: totalSpent,
+          points: cust.loyaltyPoints || 0,
+          segment: segment as any,
+          risk: risk as any,
+          creditLimit
+        };
+      });
+
+      setCustomers(mappedCustomers);
+
+      // 8. Fetch Orders
+      const ordersRes = await apiClient.get('/orders');
+      const ordersList = (ordersRes.data || []) as any[];
+
+      const mappedOrders: Order[] = ordersList.map(order => {
+        const custName = order.customer?.name || 'গেস্ট ক্রেতা';
+        const orderTime = new Date(order.createdAt).toLocaleTimeString('bn-BD', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        let status: 'ডেলিভারি' | 'প্রসেসিং' | 'পেন্ডিং' = 'পেন্ডিং';
+        if (order.status === 'DELIVERED') status = 'ডেলিভারি';
+        else if (order.status === 'CONFIRMED' || order.status === 'SHIPPED') status = 'প্রসেসিং';
+
+        return {
+          id: `#INV-${order.id.slice(-6).toUpperCase()}`,
+          realId: order.id,
+          customer: custName,
+          amount: Number(order.total),
+          status,
+          time: orderTime
+        };
+      });
+
+      setOrders(mappedOrders);
+    } catch (error) {
+      console.error('Failed to sync state from database:', error);
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
+
   // Add Product Action
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProduct.name || !newProduct.stock || !newProduct.price) {
       toast.error('দয়া করে সব তথ্য পূরণ করুন');
       return;
     }
-    const created: Product = {
-      id: String(products.length + 1),
-      name: newProduct.name,
-      category: newProduct.category,
-      sku: `${newProduct.category.toUpperCase()}-00${products.length + 1}`,
-      stock: parseFloat(newProduct.stock),
-      unit: newProduct.unit,
-      price: parseFloat(newProduct.price),
-      status: parseFloat(newProduct.stock) < 10 ? 'কম স্টক' : 'সচল',
-      image: newProduct.image,
-      rating: 4.5
-    };
-    setProducts([created, ...products]);
-    setShowAddProductModal(false);
-    setNewProduct({ name: '', category: 'সবজি', stock: '', unit: 'কেজি', price: '', image: '🥬' });
-    toast.success('পণ্যটি সফলভাবে যোগ করা হয়েছে!');
+
+    try {
+      // Find category in category list or use default
+      const catsRes = await apiClient.getCategories();
+      const catsList = (catsRes.data || []) as any[];
+      let category = catsList.find(c => c.name === newProduct.category);
+      if (!category) {
+        category = catsList[0] || { id: null };
+      }
+
+      // Fetch warehouses to get default warehouse
+      const warehousesRes = await apiClient.get('/warehouses');
+      const warehousesList = (warehousesRes.data || []) as any[];
+      const defaultWarehouseId = warehousesList[0]?.id;
+
+      if (!defaultWarehouseId) {
+        toast.error('কোনো গুদাম (Warehouse) পাওয়া যায়নি। দয়া করে গুদাম তৈরি করুন।');
+        return;
+      }
+
+      await apiClient.post('/products', {
+        title: newProduct.name,
+        categoryId: category.id,
+        price: parseFloat(newProduct.price),
+        costPrice: parseFloat(newProduct.price) * 0.6,
+        unit: newProduct.unit,
+        sku: `${newProduct.category.toUpperCase()}-${Date.now().toString().slice(-6)}`,
+        initialStock: parseFloat(newProduct.stock),
+        warehouseId: defaultWarehouseId
+      });
+
+      toast.success('পণ্যটি সফলভাবে যোগ করা হয়েছে!');
+      setShowAddProductModal(false);
+      setNewProduct({ name: '', category: 'সবজি', stock: '', unit: 'কেজি', price: '', image: '🥬' });
+      refreshData();
+    } catch (err: any) {
+      console.error(err);
+      toast.error('পণ্য যোগ করতে ব্যর্থ হয়েছে: ' + err.message);
+    }
   };
 
   // CRM Customer Addition
-  const handleAddCustomer = (newCust: Omit<Customer, 'id' | 'segment' | 'risk' | 'points'>) => {
-    const isPhoneExists = customers.some(c => c.phone === newCust.phone);
-    if (isPhoneExists) {
-      toast.error('এই মোবাইল নাম্বার দিয়ে ইতিমধ্যে কাস্টমার রেজিস্টার করা আছে!');
-      return;
+  const handleAddCustomer = async (newCust: Omit<Customer, 'id' | 'segment' | 'risk' | 'points'>) => {
+    try {
+      const isPhoneExists = customers.some(c => c.phone === newCust.phone);
+      if (isPhoneExists) {
+        toast.error('এই মোবাইল নাম্বার দিয়ে ইতিমধ্যে কাস্টমার রেজিস্টার করা আছে!');
+        return;
+      }
+
+      await apiClient.createCustomer({
+        name: newCust.name,
+        phone: newCust.phone
+      });
+
+      toast.success(`${newCust.name} সফলভাবে রেজিস্টার হয়েছেন!`);
+      refreshData();
+    } catch (err: any) {
+      console.error(err);
+      toast.error('কাস্টমার যুক্ত করতে ব্যর্থ হয়েছে: ' + err.message);
     }
-    
-    const limitUtil = (newCust.due / newCust.creditLimit) * 100;
-    const risk = limitUtil >= 80 ? 'উচ্চ' : limitUtil > 40 ? 'মাঝারি' : 'কম';
-    const segment = newCust.due > 0 ? 'বাকিদার' : 'নতুন';
-
-    const created: Customer = {
-      id: String(customers.length + 1),
-      name: newCust.name,
-      phone: newCust.phone,
-      due: newCust.due,
-      spent: newCust.spent,
-      points: Math.floor(newCust.spent / 100),
-      segment: segment as any,
-      risk: risk as any,
-      creditLimit: newCust.creditLimit
-    };
-
-    setCustomers([...customers, created]);
-    toast.success(`${newCust.name} সফলভাবে রেজিস্টার হয়েছেন!`);
   };
 
   // CRM Collect Dues callback
-  const handleCollectDue = (customerId: string, amount: number) => {
-    setCustomers(prev =>
-      prev.map(c => {
-        if (c.id === customerId) {
-          const nextDue = Math.max(0, c.due - amount);
-          const limitUtil = (nextDue / c.creditLimit) * 100;
-          const nextRisk = limitUtil >= 80 ? 'উচ্চ' : limitUtil > 40 ? 'মাঝারি' : 'কম';
-          const nextSegment = nextDue > 5000 ? 'বাকিদার' : c.spent > 10000 ? 'নিয়মিত' : 'নতুন';
+  const handleCollectDue = async (customerId: string, amount: number) => {
+    try {
+      const invoicesRes = await apiClient.get('/invoices', { params: { customerId } });
+      const invoicesList = (invoicesRes.data || []) as any[];
+      const activeInvoices = invoicesList
+        .filter(inv => Number(inv.dueAmount) > 0)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()); // FIFO
 
-          return {
-            ...c,
-            due: nextDue,
-            risk: nextRisk as any,
-            segment: nextSegment as any,
-            points: c.points + Math.floor(amount / 20) // 1 point per 20 BDT paid back
-          };
-        }
-        return c;
-      })
-    );
-    
-    // Add transaction order history mockup record
-    const targetCust = customers.find(c => c.id === customerId);
-    const collectOrder: Order = {
-      id: `#REC-10${orders.length + 50}`,
-      customer: targetCust ? targetCust.name : 'কাস্টমার',
-      amount: amount,
-      status: 'ডেলিভারি',
-      time: 'বাকি আদায় (আজ)'
-    };
-    setOrders([collectOrder, ...orders]);
+      if (activeInvoices.length === 0) {
+        toast.error('কাস্টমারের কোনো বকেয়া পাওনা পাওয়া যায়নি!');
+        return;
+      }
+
+      let remainingAmount = amount;
+
+      for (const invoice of activeInvoices) {
+        if (remainingAmount <= 0) break;
+
+        const due = Number(invoice.dueAmount);
+        const payForThisInvoice = Math.min(remainingAmount, due);
+
+        const newPaidAmount = Number(invoice.paidAmount) + payForThisInvoice;
+
+        await apiClient.patch(`/invoices/${invoice.id}`, {
+          paidAmount: newPaidAmount
+        });
+
+        const orderId = invoice.orderId;
+        await apiClient.post('/payments/initiate', {
+          invoiceId: orderId,
+          amount: payForThisInvoice,
+          gateway: 'CASH',
+          currency: 'BDT',
+          metadata: { reason: 'CRM due payment collection' }
+        });
+
+        remainingAmount -= payForThisInvoice;
+      }
+
+      toast.success(`সফলভাবে ৳${amount} বকেয়া আদায় সম্পন্ন হয়েছে!`);
+      refreshData();
+    } catch (err: any) {
+      console.error(err);
+      toast.error('বকেয়া পরিশোধ করতে ব্যর্থ হয়েছে: ' + err.message);
+    }
   };
 
   // Cart operations for POS
@@ -352,7 +435,7 @@ export default function DashboardHub() {
   };
 
   // Integrated Checkout Loop
-  const checkoutCart = (
+  const checkoutCart = async (
     paymentMethod: string,
     customerId: string = 'guest',
     discountAmount: number = 0,
@@ -366,95 +449,72 @@ export default function DashboardHub() {
       return;
     }
 
-    // Process product stock reduction
-    const updatedProducts = products.map(p => {
-      const cartItem = cart.find(item => item.product.id === p.id);
-      if (cartItem) {
-        const nextStock = Math.max(0, p.stock - cartItem.quantity);
+    try {
+      const itemsPayload = cart.map(item => {
         return {
-          ...p,
-          stock: nextStock,
-          status: nextStock <= 0 ? 'স্টক আউট' : nextStock < 10 ? 'কম স্টক' : 'সচল' as any
+          itemId: item.product.id,
+          warehouseId: item.product.warehouseId || '',
+          quantity: item.quantity,
+          unitPrice: item.product.price,
+          discount: 0,
+          tax: 0
         };
+      });
+
+      const idempotencyKey = `pos-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+
+      const orderRes = await apiClient.createOrder({
+        customerId: customerId === 'guest' ? undefined : customerId,
+        items: itemsPayload,
+        discount: discountAmount,
+        taxAmount,
+        idempotencyKey
+      });
+
+      const orderData = orderRes.data as any;
+
+      if (paymentMethod !== 'বাকি') {
+        const paymentRes = await apiClient.post('/payments/initiate', {
+          invoiceId: orderData.id,
+          amount: grandTotal,
+          gateway: paymentMethod === 'নগদ ক্যাশ' ? 'CASH' : paymentMethod.toUpperCase(),
+          currency: 'BDT'
+        });
+
+        const paymentData = paymentRes.data as any;
+
+        await apiClient.post(`/payments/webhook/${paymentMethod === 'নগদ ক্যাশ' ? 'CASH' : paymentMethod.toLowerCase()}`, {
+          transactionId: paymentData.transactionId,
+          status: 'SUCCESS'
+        });
       }
-      return p;
-    });
-    setProducts(updatedProducts);
 
-    // Sync records for CRM customer profile
-    if (customerId !== 'guest') {
-      setCustomers(prev =>
-        prev.map(c => {
-          if (c.id === customerId) {
-            const nextDue = paymentMethod === 'বাকি' ? c.due + grandTotal : c.due;
-            const nextSpent = c.spent + (grandTotal - taxAmount);
-            const addedPoints = Math.floor(grandTotal / 100);
-            const nextPoints = c.points + addedPoints;
-
-            // Recalculate credit risks and segments dynamically
-            const limitUtil = (nextDue / c.creditLimit) * 100;
-            const nextRisk = limitUtil >= 80 ? 'উচ্চ' : limitUtil > 40 ? 'মাঝারি' : 'কম';
-            const nextSegment = nextDue > 5000 ? 'বাকিদার' : nextSpent > 10000 ? 'নিয়মিত' : 'নতুন';
-
-            return {
-              ...c,
-              due: nextDue,
-              spent: nextSpent,
-              points: nextPoints,
-              risk: nextRisk as any,
-              segment: nextSegment as any
-            };
-          }
-          return c;
-        })
-      );
-    }
-
-    // Add to Orders history
-    const customerObj = customers.find(c => c.id === customerId);
-    const newOrder: Order = {
-      id: `#INV-10${33 + orders.length}`,
-      customer: customerObj ? customerObj.name : 'গেস্ট ক্রেতা',
-      amount: grandTotal,
-      status: 'ডেলিভারি',
-      time: 'আজ এই মাত্র'
-    };
-    setOrders([newOrder, ...orders]);
-    
-    // Success alerts
-    if (paymentMethod === 'বাকি') {
-      toast.success(`${customerObj?.name}-এর বকেয়া খাতায় ৳${grandTotal} যোগ করা হয়েছে!`);
-    } else {
-      toast.success(`${paymentMethod}-এর মাধ্যমে ৳${grandTotal} পেমেন্ট সম্পন্ন হয়েছে!`);
+      toast.success('অর্ডারটি সফলভাবে সম্পন্ন হয়েছে!');
+      refreshData();
+    } catch (err: any) {
+      console.error(err);
+      toast.error('চেকআউট ব্যর্থ হয়েছে: ' + err.message);
     }
   };
 
   // AI assistant responses
-  const handleSendMessage = (text: string) => {
+  const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
     const userMsg: Message = { role: 'user', content: text };
     setChatMessages(prev => [...prev, userMsg]);
     setChatInput('');
     setAiIsTyping(true);
 
-    setTimeout(() => {
-      let reply = 'দুঃখিত ভাই, আমি বিষয়টি বুঝতে পারছি না। আবার বলবেন কি?';
-      const cleanText = text.toLowerCase();
-
-      if (cleanText.includes('বিক্রি') || cleanText.includes('কত')) {
-        reply = `রহিম ভাই, আজকে আপনার মোট বিক্রি হয়েছে ৳ ${todaySales.toLocaleString()}। গতকালের চেয়ে এটি ১২.৫% বেশি।`;
-      } else if (cleanText.includes('স্টক') || cleanText.includes('কম')) {
-        const lowItems = products.filter(p => p.stock < 10).map(p => p.name).join(', ');
-        reply = `ভাই, বর্তমানে ৩টি পণ্য কম স্টক অবস্থায় আছে: ${lowItems}। জলদি স্টক আপডেট করার পরামর্শ দিচ্ছি।`;
-      } else if (cleanText.includes('বাকি') || cleanText.includes('টাকা')) {
-        reply = `আপনার গ্রাহকদের কাছে মোট বাকি টাকা রয়েছে ৳ ${dueAmount.toLocaleString()} (মোট ${customers.filter(c => c.due > 0).length} জন বাকিদার)।`;
-      } else if (cleanText.includes('বেশি বিক্রি') || cleanText.includes('জনপ্রিয়')) {
-        reply = `এই সপ্তাহে সবচেয়ে বেশি বিক্রি হয়েছে "আম্রপালি আম" (১২০ কেজি, মোট মূল্য ৳ ৯,৬০০)।`;
-      }
-
-      setChatMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+    try {
+      const res = await apiClient.generateAiChat(text);
+      const aiReply = res.data.content || 'দুঃখিত ভাই, আমি বিষয়টি বুঝতে পারছি না। আবার বলবেন কি?';
+      setChatMessages(prev => [...prev, { role: 'assistant', content: aiReply }]);
+    } catch (err: any) {
+      console.error(err);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'সার্ভার সংযোগে ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।' }]);
+    } finally {
       setAiIsTyping(false);
-    }, 900);
+    }
   };
 
   return (
