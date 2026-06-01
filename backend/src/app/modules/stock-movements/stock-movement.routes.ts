@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
   StockMovementController.getMovements
 );
 
