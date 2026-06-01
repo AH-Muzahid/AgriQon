@@ -144,6 +144,34 @@ export default function DashboardHub() {
         };
       });
       setProducts(mappedProducts);
+
+      const custRes = await apiClient.getCustomers();
+      const customersList = (custRes.data || []) as any[];
+
+      const invoicesRes = await apiClient.get('/invoices');
+      const invoicesList = (invoicesRes.data || []) as any[];
+
+      const mappedCustomers: Customer[] = customersList.map(cust => {
+        const custInvoices = invoicesList.filter(inv => inv.customerId === cust.id);
+        const totalDue = custInvoices.reduce((sum, inv) => sum + Number(inv.dueAmount || 0), 0);
+        const totalSpent = custInvoices.reduce((sum, inv) => sum + Number(inv.totalAmount || 0), 0);
+        const creditLimit = 15000;
+        const limitUtil = creditLimit > 0 ? (totalDue / creditLimit) * 100 : 0;
+        const risk = limitUtil >= 80 ? 'উচ্চ' : limitUtil > 40 ? 'মাঝারি' : 'কম';
+        const segment = totalDue > 5000 ? 'বাকিদার' : totalSpent > 10000 ? 'নিয়মিত' : 'নতুন';
+        return {
+          id: cust.id,
+          name: cust.name,
+          phone: cust.phone || '',
+          due: totalDue,
+          spent: totalSpent,
+          points: cust.loyaltyPoints || 0,
+          segment: segment as any,
+          risk: risk as any,
+          creditLimit
+        };
+      });
+      setCustomers(mappedCustomers);
     } catch (e) { console.error(e); }
   };
 
