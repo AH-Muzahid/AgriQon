@@ -43,15 +43,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } = await supabase.auth.getSession();
 
         // If we have a Supabase session, set token first so apiClient sends auth header.
+        // If we have a Supabase session, do NOT use Supabase access_token directly
+        // (it may be signed with a different algorithm). The proper flow is to
+        // exchange the idToken with the backend via /auth/oauth-callback which
+        // will issue a backend-signed token. The callback page performs that
+        // exchange after OAuth redirect; here we log for debugging and rely on
+        // backend cookies/localStorage to be present instead.
         if (session?.access_token) {
-          apiClient.setToken(session.access_token);
+          if (process.env.NODE_ENV !== 'production') {
+            console.debug('[Auth init] Supabase session present; skipping direct token set (will rely on backend exchange).', { supabaseUser: session.user?.email });
+          }
         }
 
-        // If token exists in localStorage (legacy or non-supabase auth), prefer it.
-        const stored = localStorage.getItem('authToken');
-        if (stored) {
-          apiClient.setToken(stored);
-        }
+        // Do not rely on localStorage for tokens. Backend sets httpOnly cookies
+        // which are sent automatically (`withCredentials: true`).
 
         if (!cancelled) {
           try {
@@ -83,14 +88,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await apiClient.login<{ user: User; token?: string; accessToken?: string }>({ email, password });
+      // apiClient response interceptor unwraps axios response and returns `response.data`.
       const { user: userData, token, accessToken } = response.data;
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[Auth] login response received', { url: '/auth/login', hasUser: !!userData, hasToken: !!(token || accessToken) });
+      }
       const actualToken = token || accessToken;
 
-      if (actualToken) {
-        localStorage.setItem('authToken', actualToken);
-        apiClient.setToken(actualToken);
-      }
-
+      // Backend sets cookies for the session; rely on cookie-based auth and
+      // populate the frontend user state from backend response.
       setUser(userData);
       console.log('[Auth] login successful, user set:', userData);
       return userData;
@@ -108,13 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       const response = await apiClient.register<{ user: User; token?: string; accessToken?: string }>({ email, password, name, role });
+      // apiClient response interceptor unwraps axios response and returns `response.data`.
       const { user: userData, token, accessToken } = response.data;
-      const actualToken = token || accessToken;
-
-      if (actualToken) {
-        localStorage.setItem('authToken', actualToken);
-        apiClient.setToken(actualToken);
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[Auth] register response received', { url: '/auth/register', hasUser: !!userData, hasToken: !!(token || accessToken) });
       }
+      const actualToken = token || accessToken;
 
       setUser(userData);
       return userData;
@@ -129,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const supabase = createClient();
       await supabase.auth.signOut();
       await apiClient.logout();
-      localStorage.removeItem('authToken');
+      // Clear any client-side state; backend clears cookies via /auth/logout.
       apiClient.setToken(null);
       setUser(null);
     } finally {
@@ -157,13 +162,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signUpWithGoogle(role: 'USER' | 'SELLER') {
     setIsLoading(true);
     try {
+      // Store intended role in sessionStorage and let the redirect URI be static.
+      // Avoid adding query params to redirectTo to prevent OAuth state mismatches.
       sessionStorage.setItem('googleAuthRole', role);
 
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

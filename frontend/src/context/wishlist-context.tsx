@@ -32,7 +32,8 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     if (savedWishlist) {
       try {
         const parsed = JSON.parse(savedWishlist)
-        queueMicrotask(() => setWishlist(parsed))
+        const coerced = parsed.map((item: any) => ({ ...item, price: Number(item.price) }))
+        queueMicrotask(() => setWishlist(coerced))
       } catch (e) {
         console.error("Failed to parse wishlist from localStorage", e)
       }
@@ -51,12 +52,13 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   }, [wishlist, isMounted])
 
   const addToWishlist = (item: WishlistItem) => {
+    const coercedItem = { ...item, price: Number(item.price) };
     setWishlist((prev) => {
-      if (prev.find((i) => i.id === item.id)) {
+      if (prev.find((i) => i.id === coercedItem.id)) {
         return prev
       }
       toast.success("Added to wishlist!")
-      return [...prev, item]
+      return [...prev, coercedItem]
     })
   }
 

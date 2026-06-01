@@ -8,6 +8,8 @@ const instance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Allow sending and receiving cookies for auth (backend sets refresh/access cookies)
+  withCredentials: true,
 });
 
 // Add interceptor to include auth token if available
@@ -18,6 +20,13 @@ instance.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+  // Debug: show which requests include auth header (do not log token value)
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      const hasAuth = !!config.headers?.Authorization;
+      console.debug('[api-client] Request', { method: config.method, url: config.url, hasAuth });
+    } catch {}
+  }
   return config;
 });
 
@@ -26,6 +35,9 @@ instance.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const message = error.response?.data?.message || 'Something went wrong';
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[api-client] Response error', { url: error.config?.url, status: error.response?.status, message });
+    }
     return Promise.reject(new Error(message));
   }
 );

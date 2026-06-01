@@ -43,7 +43,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       typeof window !== "undefined" ? localStorage.getItem(CART_KEY) : null
     );
     if (parsedCart) {
-      queueMicrotask(() => setCart(parsedCart));
+      const coercedCart = parsedCart.map(item => ({ ...item, price: Number(item.price) }));
+      queueMicrotask(() => setCart(coercedCart));
     }
   }, []);
 
@@ -57,12 +58,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart]);
 
   function addToCart(item: CartItem) {
+    const coercedItem = { ...item, price: Number(item.price) };
     setCart((prev) => {
-      const found = prev.find((p) => p.id === item.id);
+      const found = prev.find((p) => p.id === coercedItem.id);
       if (found) {
-        return prev.map((p) => (p.id === item.id ? { ...p, quantity: p.quantity + item.quantity } : p));
+        return prev.map((p) => (p.id === coercedItem.id ? { ...p, quantity: p.quantity + coercedItem.quantity } : p));
       }
-      return [...prev, item];
+      return [...prev, coercedItem];
     });
   }
 
@@ -87,7 +89,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     () => ({
       cart,
       cartCount: cart.reduce((s, it) => s + it.quantity, 0),
-      totalPrice: cart.reduce((s, it) => s + it.price * it.quantity, 0),
+      totalPrice: cart.reduce((s, it) => s + Number(it.price) * it.quantity, 0),
       addToCart,
       updateQuantity,
       removeFromCart,
