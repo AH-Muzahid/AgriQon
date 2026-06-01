@@ -90,8 +90,8 @@ export default function WishlistPage() {
 
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-xs text-gray-400 line-through">AED {((item.price || 0) * 1.2).toFixed(2)}</span>
-                        <span className="text-xl font-black text-gray-900">AED {item.price?.toFixed(2)}</span>
+                        <span className="text-xs text-gray-400 line-through">AED {((Number(item.price) || 0) * 1.2).toFixed(2)}</span>
+                        <span className="text-xl font-black text-gray-900">AED {Number(item.price || 0).toFixed(2)}</span>
                       </div>
                       <Button
                         onClick={() => handleMoveToCart(item)}

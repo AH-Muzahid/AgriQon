@@ -16,6 +16,8 @@ import Image from "next/image";
 import { apiClient } from "@/lib/api-client";
 import { useCart } from "@/context/cart-context";
 import { toast } from "react-hot-toast";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 interface Product {
   _id: string;
@@ -28,23 +30,31 @@ interface Product {
 }
 
 const categories = [
-  "All",
-  "Vegetables",
-  "Fruits",
-  "Dairy & Eggs",
-  "Organic Honey",
-  "Meat & Poultry",
-  "Grains",
-  "Seeds & Nuts"
+  { label: "All", value: "All" },
+  { label: "Mango & Fruits", value: "Fruits" },
+  { label: "Vegetables", value: "Vegetables" },
+  { label: "Dairy & Eggs", value: "Dairy & Eggs" },
+  { label: "Organic Honey", value: "Organic Honey" },
+  { label: "Meat & Poultry", value: "Meat & Poultry" },
+  { label: "Grains", value: "Grains" },
+  { label: "Seeds & Nuts", value: "Seeds & Nuts" },
 ];
 
-export default function ShopPage() {
+function ShopPageContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const category = searchParams.get("category") || "All";
+    const isKnownCategory = categories.some((item) => item.value === category);
+    setActiveCategory(isKnownCategory ? category : "All");
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -67,6 +77,11 @@ export default function ShopPage() {
 
     fetchProducts();
   }, [activeCategory]);
+
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+    router.push(category === "All" ? "/shop" : `/shop?category=${encodeURIComponent(category)}`);
+  };
 
   const handleAddToCart = (product: Product) => {
     addToCart({
@@ -110,15 +125,15 @@ export default function ShopPage() {
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
             {categories.map((cat) => (
               <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
+                key={cat.value}
+                onClick={() => handleCategoryChange(cat.value)}
                 className={`px-6 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all ${
-                  activeCategory === cat 
+                  activeCategory === cat.value 
                     ? "bg-[#0a4d3c] text-white shadow-lg shadow-emerald-900/20" 
                     : "bg-gray-50 text-gray-500 hover:bg-gray-100"
                 }`}
               >
-                {cat}
+                {cat.label}
               </button>
             ))}
           </div>
@@ -291,7 +306,7 @@ export default function ShopPage() {
               </p>
               <button 
                 onClick={() => {
-                  setActiveCategory("All");
+                  handleCategoryChange("All");
                 }}
                 className="mt-8 text-emerald-600 font-black hover:underline underline-offset-4"
               >
@@ -302,5 +317,13 @@ export default function ShopPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#f8fafc]" />}>
+      <ShopPageContent />
+    </Suspense>
   );
 }

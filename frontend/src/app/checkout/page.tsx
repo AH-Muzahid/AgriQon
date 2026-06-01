@@ -209,7 +209,7 @@ export default function CheckoutPage() {
                       <h4 className="text-sm font-black text-[#0a4d3c] line-clamp-1">{item.name}</h4>
                       <p className="text-xs font-bold text-gray-400">Qty: {item.quantity}</p>
                     </div>
-                    <span className="text-sm font-black text-[#0a4d3c]">{(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="text-sm font-black text-[#0a4d3c]">{(Number(item.price) * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -217,7 +217,7 @@ export default function CheckoutPage() {
               <div className="space-y-4 border-t border-gray-50 pt-6">
                 <div className="flex justify-between text-sm font-bold text-gray-500">
                   <span>Subtotal</span>
-                  <span>{totalPrice.toFixed(2)} AED</span>
+                  <span>{Number(totalPrice).toFixed(2)} AED</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-gray-500">
                   <span>Delivery</span>
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                   <span className="text-lg font-black text-[#0a4d3c]">Total</span>
-                  <span className="text-2xl font-black text-emerald-600">{totalPrice.toFixed(2)} AED</span>
+                  <span className="text-2xl font-black text-emerald-600">{Number(totalPrice).toFixed(2)} AED</span>
                 </div>
               </div>
 

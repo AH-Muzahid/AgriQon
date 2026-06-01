@@ -66,7 +66,7 @@ export default function CartPage() {
 
                 <div className="flex-1 text-center sm:text-left">
                   <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
-                  <p className="text-[#0a4d3c] font-bold text-lg">BDT {item.price.toFixed(2)}</p>
+                  <p className="text-[#0a4d3c] font-bold text-lg">BDT {Number(item.price).toFixed(2)}</p>
                 </div>
 
                 <div className="flex items-center gap-6">

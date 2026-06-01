@@ -219,9 +219,9 @@ export default function ProductDetailsPage() {
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex flex-col">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-black text-[#0a4d3c]">AED {product.price.toFixed(2)}</span>
+                    <span className="text-3xl font-black text-[#0a4d3c]">AED {Number(product.price).toFixed(2)}</span>
                     {product.discount && (
-                      <span className="text-lg text-gray-400 line-through">AED {(product.price * (1 + product.discount/100)).toFixed(2)}</span>
+                      <span className="text-lg text-gray-400 line-through">AED {(Number(product.price) * (1 + product.discount/100)).toFixed(2)}</span>
                     )}
                   </div>
                   <span className="text-sm text-gray-500 font-medium mt-1">Per {product.unit || "kg"} • In Stock</span>
