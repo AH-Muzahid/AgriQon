@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, 
@@ -23,8 +24,11 @@ interface Message {
 }
 
 export function AiAssistant() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  
+  if (pathname?.startsWith("/dashboard")) return null;
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: "Hello! I'm your AgriQon AI guide. I can help you find fresh produce, suggest seasonal recipes, or explain our sustainable farming practices. How can I help you today?" }
