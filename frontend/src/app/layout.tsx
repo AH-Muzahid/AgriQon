@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
 import CartProvider from "@/context/cart-context";
 import { WishlistProvider } from "@/context/wishlist-context";
-import { Inter } from "next/font/google";
+import { Manrope, Noto_Sans_Bengali } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
@@ -11,7 +11,12 @@ import { Toaster } from "react-hot-toast";
 import { AiAssistant } from "@/components/ui/ai-assistant";
 
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
+const notoBengali = Noto_Sans_Bengali({
+  subsets: ["bengali"],
+  variable: "--font-bengali",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 export const metadata: Metadata = {
   title: "Agriqon | AI Agriculture Marketplace",
@@ -25,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full antialiased", "font-sans", inter.variable)} data-scroll-behavior="smooth">
+    <html lang="bn" className={cn("h-full antialiased", "font-sans", manrope.variable, notoBengali.variable)} data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <AuthProvider>
           <CartProvider>

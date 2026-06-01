@@ -4,6 +4,18 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --brand-leaf: #0f4f3a;
+  --brand-leaf-dark: #082d22;
+  --brand-leaf-soft: #e8f3ec;
+  --brand-paddy: #f2c94c;
+  --brand-paddy-dark: #c99516;
+  --brand-soil: #8a5a34;
+  --brand-river: #168a8f;
+  --brand-harvest: #d96f32;
+  --brand-cream: #fbfaf2;
+  --brand-mist: #f3f7ef;
+  --brand-ink: #17231f;
+  --brand-muted: #66756e;
 
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -11,7 +23,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
 
-  --primary: oklch(0.508 0.118 165.612);
+  --primary: var(--brand-leaf);
   --primary-foreground: oklch(0.979 0.021 166.113);
 
   --secondary: oklch(0.967 0.001 286.375);
@@ -32,9 +44,9 @@
 
   --radius: 0.625rem;
 
-  --background: oklch(1 0 0);
+  --background: var(--brand-cream);
 
-  --foreground: oklch(0.145 0 0);
+  --foreground: var(--brand-ink);
 
   --chart-1: oklch(0.81 0.117 11.638);
 
@@ -70,6 +82,10 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-bengali), var(--font-sans), sans-serif;
+    background:
+      linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 1) 34rem),
+      radial-gradient(circle at top left, rgba(14, 77, 60, 0.10), transparent 26rem);
   }
   html {
     @apply font-sans;
@@ -86,6 +102,42 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  .font-display {
+    font-family: var(--font-bengali), var(--font-sans), sans-serif;
+  }
+  .market-grid {
+    background-image:
+      linear-gradient(rgba(10, 77, 60, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10, 77, 60, 0.055) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+  .bg-brand-leaf {
+    background-color: var(--brand-leaf);
+  }
+  .bg-brand-leaf-dark {
+    background-color: var(--brand-leaf-dark);
+  }
+  .bg-brand-paddy {
+    background-color: var(--brand-paddy);
+  }
+  .bg-brand-cream {
+    background-color: var(--brand-cream);
+  }
+  .text-brand-leaf {
+    color: var(--brand-leaf);
+  }
+  .text-brand-ink {
+    color: var(--brand-ink);
+  }
+  .text-brand-paddy {
+    color: var(--brand-paddy);
+  }
+  .text-brand-harvest {
+    color: var(--brand-harvest);
+  }
+  .border-brand-soft {
+    border-color: color-mix(in srgb, var(--brand-leaf) 14%, white);
   }
 }
 
@@ -120,7 +172,7 @@
 
 @theme inline {
 
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-bengali);
 
   --font-sans: var(--font-sans);
 
