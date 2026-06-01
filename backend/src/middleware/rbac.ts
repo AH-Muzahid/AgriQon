@@ -1,6 +1,8 @@
 import { Role } from '../generated/client';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { logger } from '../app/lib/logger';
+import { env } from '../config/env';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -22,10 +24,10 @@ export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction)
     token = authHeader.substring(7);
   }
 
-  // If no bearer token, attempt to read authToken cookie
+  // If no bearer token, attempt to read authToken or accessToken cookie
   if (!token && req.headers.cookie) {
     const cookies = req.headers.cookie.split(';').map((c) => c.trim());
-    const match = cookies.find((c) => c.startsWith('authToken='));
+    const match = cookies.find((c) => c.startsWith('authToken=') || c.startsWith('accessToken='));
     if (match) {
       token = decodeURIComponent(match.split('=')[1]);
     }
@@ -34,7 +36,7 @@ export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction)
   if (!token) return next();
 
   try {
-    const jwtSecret = process.env.JWT_SECRET || 'your-secret-key';
+    const jwtSecret = env.jwtSecret || 'your-secret-key';
     const decoded = jwt.verify(token, jwtSecret, { algorithms: ['HS256'] }) as any;
 
     req.user = {
@@ -43,8 +45,9 @@ export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction)
       email: decoded.email,
       businessId: decoded.businessId,
     };
-  } catch (err) {
-    // Token invalid, continue as anonymous
+  } catch (err: any) {
+    // Token invalid, continue as anonymous but log for debugging
+    logger.debug('RBAC: invalid token or token verify failed', { path: req.path, ip: req.ip, message: err?.message });
     return next();
   }
 

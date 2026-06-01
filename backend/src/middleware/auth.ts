@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import { logger } from '../app/lib/logger';
 import type { Role } from '../generated/client';
 import { env } from '../config/env';
 
@@ -18,16 +19,34 @@ declare global {
 }
 
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  // Support Authorization header or authToken cookie
+  let token: string | undefined;
   const header = req.headers.authorization;
+  if (header && header.startsWith('Bearer ')) {
+    token = header.slice(7);
+  }
 
-  if (!header?.startsWith('Bearer ')) {
+  if (!token && req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';').map((c) => c.trim());
+    // Accept either `authToken` or `accessToken` cookie names (some flows use accessToken)
+    const match = cookies.find((c) => c.startsWith('authToken=') || c.startsWith('accessToken='));
+    if (match) token = decodeURIComponent(match.split('=')[1]);
+  }
+
+  if (!token) {
+    logger.warn('Missing bearer token', { path: req.path, ip: req.ip });
     return res.status(401).json({ message: 'Missing bearer token' });
   }
 
+  if (!env.jwtSecret) {
+    return res.status(500).json({ message: 'Server misconfiguration: JWT secret missing' });
+  }
+
   try {
-    req.user = jwt.verify(header.slice(7), env.jwtSecret) as AuthUser;
+    req.user = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] }) as AuthUser;
     return next();
-  } catch {
+  } catch (err: any) {
+    logger.warn('Invalid or expired token', { path: req.path, ip: req.ip, message: err?.message });
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
