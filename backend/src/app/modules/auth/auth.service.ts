@@ -134,15 +134,38 @@ export class AuthService {
     });
   }
 
-  async oauthCallback(data: { email: string; name: string; provider: string; role?: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER' }, sessionInfo?: { ip?: string; ua?: string }) {
+  async oauthCallback(
+    data: { email: string; name: string; provider: string; role?: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER'; idToken?: string },
+    sessionInfo?: { ip?: string; ua?: string }
+  ) {
+    // Validate incoming idToken (issued by Supabase) when present.
+    // This prevents attackers from spoofing email/identity in the callback payload.
+    if (!data.idToken) {
+      throw new AppError('Missing idToken from OAuth provider', 400);
+    }
+
+    try {
+      const verified = jwt.verify(data.idToken, env.supabaseJwtSecret, { algorithms: ['HS256'] }) as any;
+      // Extract email from verified token payload in a defensive manner
+      const verifiedEmail = verified?.email || verified?.user?.email || undefined;
+      if (verifiedEmail && verifiedEmail !== data.email) {
+        throw new AppError('OAuth token email does not match provided email', 401);
+      }
+    } catch (err: any) {
+      throw new AppError(`Invalid OAuth token: ${err?.message ?? 'verification failed'}`, 401);
+    }
+
+    // Do NOT trust client-provided `role`. Default to USER for OAuth signups.
+    const assignedRole: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER' = 'USER';
+
     let user = await this.userRepo.findByEmail(data.email);
-    
+
     if (!user) {
-      // Create new user if they don't exist
+      // Create new user if they don't exist — always with server-assigned role
       user = await this.userRepo.create({
         email: data.email,
         name: data.name,
-        role: data.role || 'USER', // Use role passed in callback, otherwise default
+        role: assignedRole,
       });
     }
 
