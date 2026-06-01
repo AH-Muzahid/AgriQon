@@ -31,6 +31,7 @@ interface Product {
   price: number;
   status: 'সচল' | 'কম স্টক' | 'স্টক আউট';
   image: string;
+  warehouseId?: string;
 }
 
 interface InventoryViewProps {
@@ -38,27 +39,6 @@ interface InventoryViewProps {
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   setShowAddProductModal: (show: boolean) => void;
 }
-
-// Mock Movements
-const mockMovements = [
-  { id: 'MOV-001', product: 'আম্রপালি আম', type: 'IN', qty: 50, user: 'রহিম সওদাগর', date: 'আজ ১২:৩০ PM', remark: 'নতুন আমদানি' },
-  { id: 'MOV-002', product: 'লাল টমেটো', type: 'OUT', qty: 20, user: 'POS সিস্টেম', date: 'আজ ১১:১৫ AM', remark: 'অর্ডার বিক্রি' },
-  { id: 'MOV-003', product: 'দেশি ডিম', type: 'IN', qty: 100, user: 'কুদ্দুস মিয়া', date: 'গতকাল ০৫:০০ PM', remark: 'স্টক রিসিভ' },
-  { id: 'MOV-004', product: 'শসা', type: 'OUT', qty: 15, user: 'POS সিস্টেম', date: 'গতকাল ০৩:২০ PM', remark: 'অর্ডার বিক্রি' }
-];
-
-// Mock Transfers
-const mockTransfers = [
-  { id: 'TRF-102', from: 'প্রধান গুদাম', to: 'ধানমন্ডি শাখা', product: 'আম্রপালি আম', qty: 30, status: 'সম্পন্ন', date: 'আজ ০৯:০০ AM' },
-  { id: 'TRF-101', from: 'প্রধান গুদাম', to: 'উত্তরা শাখা', product: 'লাল টমেটো', qty: 50, status: 'চলমান', date: 'গতকাল ০২:৩০ PM' }
-];
-
-// Mock History
-const mockHistory = [
-  { id: 'HIS-091', action: 'স্টক আপডেট', desc: 'দেশি ডিম স্টক ১০ ডজন বাড়ানো হয়েছে', user: 'রহিম (অ্যাডমিন)', date: 'আজ ০২:০০ PM' },
-  { id: 'HIS-090', action: 'পণ্য মুছে ফেলা', desc: 'টেস্ট ক্যাটাগরির পণ্য রিমুভ করা হয়েছে', user: 'রহিম (অ্যাডমিন)', date: 'আজ ০১:৩০ PM' },
-  { id: 'HIS-089', action: 'বারকোড জেনারেট', desc: 'মিষ্টি কুমড়া পণ্যের নতুন বারকোড সিঙ্ক করা হয়েছে', user: 'সফটওয়্যার', date: 'গতকাল ০৮:০০ PM' }
-];
 
 export default function InventoryView({
   products,
@@ -68,6 +48,69 @@ export default function InventoryView({
   const [activeTab, setActiveTab] = useState<'overview' | 'movements' | 'transfers' | 'history'>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('সব');
+
+  const [movements, setMovements] = useState<any[]>([]);
+  const [transfers, setTransfers] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        // Fetch movements
+        const movRes = await apiClient.getStockMovements();
+        const movData = (movRes.data || []) as any[];
+        const mappedMovements = movData.map(m => {
+          const formattedDate = new Date(m.createdAt).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+          return {
+            id: `MOV-${m.id.slice(-3).toUpperCase()}`,
+            product: m.item?.title || 'পণ্য',
+            type: m.type,
+            qty: m.quantity,
+            user: m.reason || 'সিস্টেম',
+            date: formattedDate,
+            remark: m.reference || 'স্টক আপডেট'
+          };
+        });
+        setMovements(mappedMovements);
+
+        // Fetch transfers
+        const trfRes = await apiClient.getWarehouseTransfers();
+        const trfData = (trfRes.data || []) as any[];
+        const mappedTransfers = trfData.map(t => {
+          const formattedDate = new Date(t.createdAt).toLocaleDateString('bn-BD');
+          return {
+            id: `TRF-${t.id.slice(-3).toUpperCase()}`,
+            from: t.source?.name || 'প্রধান গুদাম',
+            to: t.destination?.name || 'শাখা গুদাম',
+            product: t.items?.[0]?.item?.title || 'পণ্য',
+            qty: t.items?.[0]?.quantity || 0,
+            status: t.status === 'COMPLETED' ? 'সম্পন্ন' : 'চলমান',
+            date: formattedDate
+          };
+        });
+        setTransfers(mappedTransfers);
+
+        // Fetch history/audit logs
+        const auditRes = await apiClient.get('/audit');
+        const auditData = (auditRes.data || []) as any[];
+        const mappedHistory = auditData.map(a => {
+          const formattedDate = new Date(a.createdAt).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+          return {
+            id: `HIS-${a.id.slice(-3).toUpperCase()}`,
+            action: a.action,
+            desc: `পণ্য #${a.entityId.slice(-4)} এর স্টক আপডেট সম্পন্ন হয়েছে`,
+            user: a.user?.name || 'সফটওয়্যার',
+            date: formattedDate
+          };
+        });
+        setHistory(mappedHistory);
+      } catch (err) {
+        console.error('Failed to load inventory logs:', err);
+      }
+    };
+
+    fetchLogs();
+  }, [activeTab]);
 
   const filteredProducts = products.filter(p => {
     const matchesCategory = categoryFilter === 'সব' || p.category === categoryFilter;
@@ -233,7 +276,7 @@ export default function InventoryView({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef2ef] text-xs font-semibold">
-                    {mockMovements.map((m) => (
+                    {movements.map((m) => (
                       <tr key={m.id} className="hover:bg-[#f8faf9]/50 transition-all">
                         <td className="py-4 pl-5 font-black text-[#0f4f3a]">{m.id}</td>
                         <td className="py-4 text-[#17231f] font-bold">{m.product}</td>
@@ -288,7 +331,7 @@ export default function InventoryView({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#eef2ef] text-xs font-semibold">
-                    {mockTransfers.map((t) => (
+                    {transfers.map((t) => (
                       <tr key={t.id} className="hover:bg-[#f8faf9]/50 transition-all">
                         <td className="py-4 pl-5 font-black text-gray-500">{t.id}</td>
                         <td className="py-4 text-[#17231f] font-bold">{t.from}</td>
@@ -322,7 +365,7 @@ export default function InventoryView({
               </div>
 
               <div className="relative border-l border-[#eef2ef] ml-5 pl-8 space-y-8">
-                {mockHistory.map((h, idx) => (
+                {history.map((h, idx) => (
                   <div key={h.id} className="relative">
                     {/* Timeline bullet dot */}
                     <span className="absolute -left-12.5 top-1.5 size-9 bg-white border border-[#eef2ef] hover:border-[#0f4f3a] rounded-full flex items-center justify-center text-xs shadow-sm text-[#0f4f3a]">
