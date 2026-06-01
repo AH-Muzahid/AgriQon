@@ -78,6 +78,13 @@ export interface ApiClient extends AxiosInstance {
   getCategories: <T = unknown>() => Promise<ApiResponse<T>>;
   createOrder: <T = unknown>(data: unknown) => Promise<ApiResponse<T>>;
   generateAiChat: (prompt: string) => Promise<ApiResponse<ChatResponse>>;
+  getCustomers: <T = unknown>(params?: unknown) => Promise<ApiResponse<T>>;
+  createCustomer: <T = unknown>(data: unknown) => Promise<ApiResponse<T>>;
+  collectCustomerDue: <T = unknown>(id: string, amount: number) => Promise<ApiResponse<T>>;
+  getInventory: <T = unknown>(params?: unknown) => Promise<ApiResponse<T>>;
+  getStockMovements: <T = unknown>() => Promise<ApiResponse<T>>;
+  getWarehouseTransfers: <T = unknown>() => Promise<ApiResponse<T>>;
+  getReportsData: <T = unknown>() => Promise<ApiResponse<T>>;
 }
 
 export const apiClient = instance as ApiClient;
@@ -108,3 +115,7 @@ apiClient.generateAiChat = (prompt: string) => apiClient.post('/ai/chat', { prom
 apiClient.getCustomers = (params?: unknown) => apiClient.get('/customers', { params });
 apiClient.createCustomer = (data: unknown) => apiClient.post('/customers', data);
 apiClient.collectCustomerDue = (id: string, amount: number) => apiClient.post(`/customers/${id}/collect-due`, { amount });
+apiClient.getInventory = (params?: unknown) => apiClient.get('/inventory', { params });
+apiClient.getStockMovements = () => apiClient.get('/stock-movements');
+apiClient.getWarehouseTransfers = () => apiClient.get('/warehouses/transfers');
+apiClient.getReportsData = () => apiClient.get('/reports');
