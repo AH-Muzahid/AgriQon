@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { apiClient } from '@/lib/api-client';
 import {
@@ -94,6 +95,7 @@ const initialCustomers: Customer[] = [
 
 export default function DashboardHub() {
   const { user } = useAuth();
+  const router = useRouter();
   
   // Use mock details if local auth is not present
   const activeUser = user || {
@@ -605,8 +607,7 @@ export default function DashboardHub() {
                   {/* Additional Static Tabs to match mockup */}
                   {[
                     { label: 'সাপ্লায়ার', icon: Truck },
-                    { label: 'নোটিফিকেশন', icon: Bell, badge: '12', badgeColor: 'bg-red-500 text-white' },
-                    { label: 'সেটিংস', icon: Settings }
+                    { label: 'নোটিফিকেশন', icon: Bell, badge: '12', badgeColor: 'bg-red-500 text-white' }
                   ].map((tab, idx) => {
                     const Icon = tab.icon;
                     return (
@@ -629,6 +630,20 @@ export default function DashboardHub() {
                       </div>
                     );
                   })}
+
+                  {/* Settings Tab - fully interactive */}
+                  <button
+                    onClick={() => router.push('/dashboard/profile')}
+                    title={isSidebarCollapsed ? 'সেটিংস' : undefined}
+                    className={`w-full flex items-center ${
+                      isSidebarCollapsed ? 'justify-center py-3.5' : 'justify-between px-4 py-3.5'
+                    } text-[#66756e] hover:bg-[#f3f7f4] hover:text-[#0f4f3a] rounded-2xl transition-colors cursor-pointer`}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <Settings className="size-5 shrink-0" />
+                      {!isSidebarCollapsed && <span className="text-sm font-bold truncate">সেটিংস</span>}
+                    </div>
+                  </button>
                 </nav>
               </div>
 
