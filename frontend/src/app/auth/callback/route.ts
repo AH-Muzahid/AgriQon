@@ -75,25 +75,13 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/auth/login?error=backend_invalid_response`);
       }
 
-      const { user, token, accessToken } = parsedResponse.data;
-      const actualToken = token || accessToken;
-
-      if (!actualToken) {
-        console.error('[AuthCallback Route] No JWT access token received from backend.');
-        return NextResponse.redirect(`${origin}/auth/login?error=no_jwt_token`);
-      }
+      const { user } = parsedResponse.data;
 
       console.log('[AuthCallback Route] Successful backend authentication. Redirecting to success page...');
-      
-      // Redirect to the client-side success transition page with details
-      const successUrl = new URL(`${origin}/auth/callback/success`);
-      successUrl.searchParams.set('token', actualToken);
-      successUrl.searchParams.set('id', user.id);
-      successUrl.searchParams.set('email', user.email);
-      successUrl.searchParams.set('name', user.name);
-      successUrl.searchParams.set('role', user.role);
-      
-      return NextResponse.redirect(successUrl.toString());
+
+      // Backend already set httpOnly cookies; redirect to success page where
+      // the client will fetch `/auth/me` to populate user state.
+      return NextResponse.redirect(`${origin}/auth/callback/success`);
     } catch (err) {
       console.error('[AuthCallback Route] Internal server error handling callback:', err);
       const msg = err instanceof Error ? err.message : 'Unknown error';

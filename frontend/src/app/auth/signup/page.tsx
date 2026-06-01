@@ -40,6 +40,8 @@ export default function SignupPage() {
     } catch (err: unknown) {
       if (axios.isAxiosError<{ message?: string }>(err)) {
         setError(err.response?.data?.message || 'Signup failed. Please try again.');
+      } else if (err instanceof Error) {
+        setError(err.message || 'Signup failed. Please try again.');
       } else {
         setError('Signup failed. Please try again.');
       }

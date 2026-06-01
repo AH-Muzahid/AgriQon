@@ -17,37 +17,21 @@ function SuccessHandler() {
   useEffect(() => {
     const handleSuccess = async () => {
       try {
-        const token = searchParams.get('token');
-        const id = searchParams.get('id');
-        const email = searchParams.get('email');
-        const name = searchParams.get('name');
-        const role = searchParams.get('role');
+        // Backend has set httpOnly cookies. Fetch current user from backend.
+        const response = await apiClient.client.get('/auth/me');
+        const userData = response as any;
 
-        if (!token || !id || !email || !name || !role) {
-          throw new Error('Missing authentication parameters in URL');
+        if (!userData) {
+          throw new Error('Failed to load user after OAuth callback');
         }
 
-        console.log('[AuthSuccess] Setting authentication token in storage...');
-        
-        // Save the backend JWT token
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('token', token);
-        apiClient.setToken(token);
-
-        // Update the AuthContext user object
-        setUser({
-          id,
-          email,
-          name,
-          role: role as any,
-        });
-
+        setUser(userData as any);
         setStatus('success');
-        
+
         // Small delay for the success animation to show
         setTimeout(() => {
           router.push('/');
-        }, 1500);
+        }, 1200);
       } catch (err) {
         console.error('[AuthSuccess] Error setting up user session:', err);
         setStatus('error');
