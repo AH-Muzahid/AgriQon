@@ -1,34 +1,55 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { useEffect, useRef, useState } from "react";
+import type { ElementType } from "react";
+import {
+  Apple,
+  Beef,
+  ChevronLeft,
+  ChevronRight,
+  Fish,
+  GlassWater,
+  Loader2,
+  Milk,
+  Package,
+  Sprout,
+  Wheat,
+} from "lucide-react";
 import { motion } from "framer-motion";
+import { apiClient } from "@/lib/api-client";
 
 interface Category {
   id: string;
   name: string;
 }
 
-const CATEGORY_MAP: Record<string, { emoji: string; bgColor: string }> = {
-  "Vegetables": { emoji: "🍅", bgColor: "bg-[#fce5df]" },
-  "Fruits": { emoji: "🍏", bgColor: "bg-[#b6edd6]" },
-  "Drinks": { emoji: "🍹", bgColor: "bg-[#d8a43f]" },
-  "Meat": { emoji: "🥩", bgColor: "bg-[#b4ddf5]" },
-  "Bakery": { emoji: "🍞", bgColor: "bg-[#fadd92]" },
-  "Eggs": { emoji: "🥚", bgColor: "bg-[#d4e5c8]" },
-  "Sea Food": { emoji: "🐟", bgColor: "bg-[#97cbeb]" },
-  "Snacks": { emoji: "🍿", bgColor: "bg-[#fce5df]" },
-  "Dairy": { emoji: "🧀", bgColor: "bg-[#fadd92]" },
-  "Frozen": { emoji: "🍦", bgColor: "bg-[#b4ddf5]" },
-  "Organic": { emoji: "🌿", bgColor: "bg-[#d4e5c8]" },
-  "Grains": { emoji: "🌾", bgColor: "bg-[#fadd92]" },
+const FALLBACK_CATEGORIES: Category[] = [
+  { id: "vegetables", name: "Vegetables" },
+  { id: "fruits", name: "Fruits" },
+  { id: "dairy", name: "Dairy" },
+  { id: "meat", name: "Meat" },
+  { id: "sea-food", name: "Sea Food" },
+  { id: "grains", name: "Grains" },
+  { id: "organic", name: "Organic" },
+  { id: "drinks", name: "Drinks" },
+];
+
+const CATEGORY_STYLE: Record<
+  string,
+  { icon: ElementType; tone: string; hint: string }
+> = {
+  Vegetables: { icon: Sprout, tone: "bg-[#dff3df] text-[#1f6b45]", hint: "picked today" },
+  Fruits: { icon: Apple, tone: "bg-[#ffe1d6] text-[#a83b25]", hint: "peak season" },
+  Dairy: { icon: Milk, tone: "bg-[#e4f0ff] text-[#285f97]", hint: "chilled" },
+  Meat: { icon: Beef, tone: "bg-[#ffe3e8] text-[#9f3146]", hint: "halal cuts" },
+  "Sea Food": { icon: Fish, tone: "bg-[#dff5ff] text-[#18617a]", hint: "daily catch" },
+  Grains: { icon: Wheat, tone: "bg-[#fff1c6] text-[#8d6412]", hint: "bulk lots" },
+  Organic: { icon: Sprout, tone: "bg-[#e7ead3] text-[#52641f]", hint: "certified" },
+  Drinks: { icon: GlassWater, tone: "bg-[#ece7ff] text-[#5946a3]", hint: "cold press" },
 };
 
-const DEFAULT_STYLE = { emoji: "📦", bgColor: "bg-gray-100" };
-
 export function CategoryCarousel() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +57,7 @@ export function CategoryCarousel() {
     const fetchCategories = async () => {
       try {
         const response = await apiClient.getCategories<Category[]>();
-        if (response.success && Array.isArray(response.data)) {
+        if (response.success && Array.isArray(response.data) && response.data.length > 0) {
           setCategories(response.data);
         }
       } catch (error) {
@@ -50,86 +71,87 @@ export function CategoryCarousel() {
   }, []);
 
   const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollAmount = clientWidth * 0.8;
-      const scrollTo = direction === "left" ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
-    }
+    const node = scrollRef.current;
+    if (!node) return;
+    const scrollAmount = node.clientWidth * 0.75;
+    node.scrollTo({
+      left: direction === "left" ? node.scrollLeft - scrollAmount : node.scrollLeft + scrollAmount,
+      behavior: "smooth",
+    });
   };
-
-  const getStyle = (name: string) => {
-    return CATEGORY_MAP[name] || DEFAULT_STYLE;
-  };
-
-  if (loading) {
-    return (
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-12 bg-white flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#0a4d3c]" size={32} />
-      </div>
-    );
-  }
 
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-4 bg-white">
-      <div className="max-w-7xl mx-auto pb-4">
-        <div className="flex items-center justify-between mb-4 px-2">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg md:text-xl font-extrabold text-[#0e3b2e]">Categories</h2>
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#a4d45c]/10 text-[#0e3b2e] text-[9px] font-bold uppercase tracking-wider">
-              <span className="w-1 h-1 rounded-full bg-[#a4d45c] animate-pulse"></span>
-              Fresh
-            </div>
+    <section className="w-full border-b border-[#dce8de] bg-white px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#d46b35]">
+              Browse the market
+            </p>
+            <h2 className="mt-1 text-2xl font-black text-[#123a30] md:text-3xl">
+              Shop by harvest category
+            </h2>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button 
+          <div className="flex items-center gap-2">
+            <button
               onClick={() => scroll("left")}
-              className="w-7 h-7 rounded-full border border-gray-100 flex items-center justify-center text-[#0e3b2e] hover:bg-[#0e3b2e] hover:text-white transition-all shadow-sm active:scale-95"
+              className="flex size-9 items-center justify-center rounded-lg border border-[#dce8de] text-[#123a30] transition-all hover:bg-[#123a30] hover:text-white"
               aria-label="Previous"
             >
-              <ChevronLeft className="w-3.5 h-3.5" />
+              <ChevronLeft className="size-4" />
             </button>
-            <button 
+            <button
               onClick={() => scroll("right")}
-              className="w-7 h-7 rounded-full border border-gray-100 flex items-center justify-center text-[#0e3b2e] hover:bg-[#0e3b2e] hover:text-white transition-all shadow-sm active:scale-95"
+              className="flex size-9 items-center justify-center rounded-lg border border-[#dce8de] text-[#123a30] transition-all hover:bg-[#123a30] hover:text-white"
               aria-label="Next"
             >
-              <ChevronRight className="w-3.5 h-3.5" />
+              <ChevronRight className="size-4" />
             </button>
           </div>
         </div>
 
-        <div className="relative">
-          <div 
+        {loading ? (
+          <div className="flex h-24 items-center justify-center">
+            <Loader2 className="size-7 animate-spin text-[#123a30]" />
+          </div>
+        ) : (
+          <div
             ref={scrollRef}
-            className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-2 py-2"
+            className="no-scrollbar flex snap-x gap-3 overflow-x-auto scroll-smooth py-1"
           >
-            {categories.map((category) => {
-              const style = getStyle(category.name);
+            {categories.map((category, index) => {
+              const style = CATEGORY_STYLE[category.name] || {
+                icon: Package,
+                tone: "bg-[#eef2f0] text-[#4e6259]",
+                hint: "fresh stock",
+              };
+              const Icon = style.icon;
+
               return (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
                   key={category.id}
-                  className="flex flex-col items-center gap-2.5 cursor-pointer group/item flex-shrink-0 snap-center transition-transform active:scale-95"
+                  className="group grid min-w-[170px] snap-start grid-cols-[48px_1fr] items-center gap-3 rounded-lg border border-[#dce8de] bg-[#fbfdfb] p-3 transition-all hover:-translate-y-1 hover:border-[#9cc6a9] hover:shadow-lg hover:shadow-emerald-950/5"
                 >
-                  <div className={`w-16 h-16 md:w-20 md:h-20 rounded-md flex items-center justify-center text-3xl md:text-4xl shadow-sm border border-black/5 transition-all duration-300 group-hover/item:shadow-md group-hover/item:-translate-y-1 ${style.bgColor}`}>
-                    <span className="transition-transform duration-500 group-hover/item:scale-110 group-hover/item:rotate-3">
-                      {style.emoji}
-                    </span>
+                  <div className={`flex size-12 items-center justify-center rounded-lg ${style.tone}`}>
+                    <Icon className="size-6" />
                   </div>
-                  <span className="text-[11px] md:text-sm font-bold text-[#0e3b2e]/90 group-hover/item:text-[#a4d45c] transition-colors text-center whitespace-nowrap px-1">
-                    {category.name}
-                  </span>
+                  <div>
+                    <p className="font-black text-[#123a30]">{category.name}</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-[#75877d]">
+                      {style.hint}
+                    </p>
+                  </div>
                 </motion.div>
               );
             })}
           </div>
-        </div>
+        )}
       </div>
-    </div>
+    </section>
   );
 }
 
 export default CategoryCarousel;
-

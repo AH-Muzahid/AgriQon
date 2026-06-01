@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShoppingCart, Mail, Phone, MapPin, ArrowRight, MessageCircle, Globe } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  // ... svg definition ...
   <svg
     viewBox="0 0 24 24"
     fill="none"
@@ -49,6 +51,8 @@ const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/dashboard")) return null;
   const currentYear = new Date().getFullYear();
 
   return (

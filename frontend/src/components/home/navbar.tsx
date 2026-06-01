@@ -1,317 +1,180 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import React, { useState, useEffect, useRef } from "react"
-import Image from "next/image"
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { Bot, ChevronDown, Gift, Menu, Search, ShoppingCart, Sprout, UserRound, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { SmartSearch } from "@/components/ui/smart-search";
+import { useCart } from "@/context/cart-context";
 
-import { Menu, X, Search, ShoppingCart, Truck, Headphones, ChevronDown, Heart } from "lucide-react"
-import { useCart } from "@/context/cart-context"
-import { useWishlist } from "@/context/wishlist-context"
-import { useAuth } from "@/context/auth-context"
+const topLinks = [
+  { label: "আম বাজার", href: "/shop?category=Fruits", icon: Sprout, highlight: true },
+  { label: "সব পণ্য", href: "/shop" },
+  { label: "সিজনাল অফার", href: "/shop?category=Fruits", icon: Gift },
+  { label: "AI সহায়তা", href: "/dashboard/ai-assistant", icon: Bot },
+];
 
-import { motion, AnimatePresence } from "framer-motion"
-
-import { SmartSearch } from "@/components/ui/smart-search"
+const categoryLinks = [
+  { label: "আম", href: "/shop?category=Fruits" },
+  { label: "সবজি", href: "/shop?category=Vegetables" },
+  { label: "ধান ও চাল", href: "/shop?category=Grains" },
+  { label: "দুধ ও ডিম", href: "/shop?category=Dairy%20%26%20Eggs" },
+  { label: "মাছ ও পোল্ট্রি", href: "/shop?category=Meat%20%26%20Poultry" },
+  { label: "মধু", href: "/shop?category=Organic%20Honey" },
+  { label: "বীজ ও বাদাম", href: "/shop?category=Seeds%20%26%20Nuts" },
+];
 
 export function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { cartCount } = useCart()
-  const { wishlistCount } = useWishlist()
-  const { user, logout, isAuthenticated } = useAuth()
-  const [profileOpen, setProfileOpen] = useState(false)
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { cartCount } = useCart();
 
-  const menuRef = useRef<HTMLDivElement | null>(null)
-  const triggerRef = useRef<HTMLButtonElement | null>(null)
-
-  // Remove handleSearch since SmartSearch handles its own logic now
-  // const [searchQuery, setSearchQuery] = useState("") 
-  // const handleSearch = ...
+  if (pathname?.startsWith("/dashboard")) return null;
 
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setProfileOpen(false)
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
+        event.preventDefault();
+        setIsSearchOpen(true);
       }
-    }
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
-  }, [])
+    };
 
-  // Keyboard shortcut for search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault()
-        setIsSearchOpen(true)
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [])
-
-  // Keyboard navigation for dropdown
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (!profileOpen) return
-      if (!menuRef.current) return
-
-      const items = Array.from(menuRef.current.querySelectorAll<HTMLElement>('a, button'))
-      if (e.key === 'Escape') {
-        setProfileOpen(false)
-        triggerRef.current?.focus()
-      }
-
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        const idx = items.findIndex((el) => el === document.activeElement)
-        const next = items[idx + 1] || items[0]
-        next?.focus()
-      }
-
-      if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        const idx = items.findIndex((el) => el === document.activeElement)
-        const prev = items[idx - 1] || items[items.length - 1]
-        prev?.focus()
-      }
-    }
-
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [profileOpen])
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
-    <header className="w-full bg-white font-sans relative">
+    <header className="relative z-50 w-full bg-white font-sans">
       <SmartSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-      
-      {/* Announcement Bar */}
-      <div className="w-full bg-[#0a4d3c] text-white text-sm py-2 text-center font-medium">
-        Welcome offer — <span className="text-[#facc15]">20% off</span> your first grocery order.
-      </div>
 
-      {/* Main Navbar (Middle Layer) */}
-      <div className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between gap-6">
-            
-            {/* Mobile menu button */}
-            <button
-              aria-label="menu"
-              className="inline-flex items-center rounded-md p-2 lg:hidden text-gray-700 hover:bg-gray-50"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
-              {mobileOpen ? <X className="size-6" /> : <Menu className="size-6" />}
-            </button>
+      <div className="bg-[var(--brand-leaf-dark)] text-white">
+        <div className="mx-auto flex h-[68px] max-w-7xl items-center gap-3 px-3 sm:px-5 lg:h-[76px] lg:gap-5 lg:px-8">
+          <button
+            className="flex size-10 items-center justify-center rounded-full border border-white/20 text-white/90 lg:hidden"
+            onClick={() => setMobileOpen((value) => !value)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 shrink-0">
-              <div className="flex items-center justify-center p-1.5 rounded-lg border-2 border-[#0a4d3c] text-[#0a4d3c]">
-                <ShoppingCart className="size-5 stroke-[2.5]" />
-              </div>
-              <span className="text-xl font-bold text-[#0a4d3c] tracking-tight">AgriQon</span>
-            </Link>
+          <Link href="/" className="flex min-w-fit items-center gap-2.5">
+            <div className="flex size-9 items-center justify-center rounded-full border border-white/45 text-[var(--brand-paddy)] lg:size-10">
+              <ShoppingCart className="size-[18px] lg:size-5" />
+            </div>
+            <div className="leading-none">
+              <p className="text-xl font-extrabold tracking-tight lg:text-2xl">
+                <span className="text-[var(--brand-paddy)]">Agri</span>Qon
+              </p>
+              <p className="mt-1 text-[8px] font-semibold uppercase tracking-[0.28em] text-white/55 lg:text-[9px]">
+                Krishi Market
+              </p>
+            </div>
+          </Link>
 
-            <div className="flex-1 hidden lg:flex items-center max-w-3xl px-6">
-              <button 
-                onClick={() => setIsSearchOpen(true)}
-                className="w-full flex items-center gap-3 px-4 bg-gray-50 hover:bg-gray-100 border-transparent rounded-full h-[46px] text-[15px] text-gray-400 transition-all shadow-sm hover:shadow-md group"
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="hidden h-11 min-w-[260px] max-w-[520px] flex-1 items-center gap-3 rounded-full border border-white/10 bg-white/14 px-4 text-left text-sm font-medium text-white/82 transition hover:bg-white/18 lg:flex"
+          >
+            <Search className="size-5 text-white/58" />
+            <span className="truncate">Search crops, seeds, tools...</span>
+            <span className="ml-auto rounded-md border border-white/12 px-2 py-0.5 text-[11px] text-white/45">
+              Ctrl K
+            </span>
+          </button>
+
+          <nav className="ml-auto hidden items-center gap-4 text-sm font-semibold xl:gap-6 lg:flex">
+            {topLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className={
+                  link.highlight
+                    ? "flex items-center gap-1.5 text-[var(--brand-paddy)] transition hover:text-white"
+                    : "flex items-center gap-1.5 text-white/86 transition hover:text-[var(--brand-paddy)]"
+                }
               >
-                <Search className="size-5 text-gray-400 group-hover:text-[#0a4d3c] transition-colors" />
-                <span>Search for farm fresh groceries...</span>
-                <span className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-gray-200 text-[10px] font-bold text-gray-400">
-                  <span className="text-[8px]">⌘</span>K
-                </span>
-              </button>
-            </div>
-
-            {/* Right actions */}
-            <div className="flex items-center gap-5 sm:gap-8 shrink-0">
-              <div className="hidden xl:flex items-center gap-3">
-                <div className="p-2 bg-gray-50 rounded-full">
-                  <Truck className="size-5 text-[#0a4d3c]" />
-                </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[11px] text-gray-500 font-medium">Delivery to</span>
-                  <span className="text-sm font-bold text-[#0a4d3c]">Abu Dhabi</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <Link href="/wishlist" className="relative group hidden sm:block">
-                  <div className="flex items-center justify-center h-11 w-11 bg-gray-50 rounded-full text-gray-600 transition-all group-hover:bg-red-50 group-hover:text-red-500">
-                    <Heart className="size-5" />
-                  </div>
-                  <AnimatePresence>
-                    {wishlistCount > 0 && (
-                      <motion.span 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        key={wishlistCount}
-                        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[11px] font-bold text-white border-2 border-white shadow-sm"
-                      >
-                        {wishlistCount}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Link>
-
-                <Link href="/cart" className="relative group">
-                  <div className="flex items-center justify-center h-11 w-11 bg-[#0a4d3c] rounded-full text-white transition-colors group-hover:bg-[#07382b]">
-                    <ShoppingCart className="size-5" />
-                  </div>
-                  <AnimatePresence>
-                    {cartCount > 0 && (
-                      <motion.span 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
-                        key={cartCount} 
-                        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#facc15] text-[11px] font-bold text-[#0a4d3c] border-2 border-white shadow-sm"
-                      >
-                        {cartCount}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </Link>
-
-                <div className="relative" ref={menuRef}>
-                  {isAuthenticated && user ? (
-                    <>
-                      <button
-                        ref={triggerRef}
-                        onClick={() => setProfileOpen((s) => !s)}
-                        className="flex items-center justify-center h-11 w-11 rounded-full overflow-hidden border-2 border-transparent hover:border-gray-200 focus:outline-none focus:border-gray-300 transition-all"
-                        aria-expanded={profileOpen}
-                      >
-                        {user?.avatarUrl ? (
-                          <Image
-                            src={user.avatarUrl}
-                            alt={`${user.name} avatar`}
-                            width={44}
-                            height={44}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-[#facc15] text-[#0a4d3c] flex items-center justify-center font-bold text-lg">
-                            {(user.name || 'U').charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </button>
-
-                      {profileOpen && (
-                        <div className="absolute right-0 mt-3 w-48 rounded-xl border border-gray-100 bg-white shadow-lg z-50 py-2">
-                          <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                            <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{user.email || 'user@example.com'}</p>
-                          </div>
-                          <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</Link>
-                          <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Orders</Link>
-                          <button
-                            onClick={async () => {
-                              await logout()
-                              setProfileOpen(false)
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            Logout
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Link href="/auth/login">
-                        <div className="h-11 w-11 bg-[#facc15] text-[#0a4d3c] rounded-full flex items-center justify-center overflow-hidden">
-                          {/* Using a placeholder avatar for non-authenticated visual match if required, otherwise show an icon */}
-                          <Image src="https://i.pravatar.cc/150?img=47" alt="User Avatar" width={44} height={44} className="h-full w-full object-cover" />
-                        </div>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Layer (Links) */}
-      <div className="hidden lg:block border-b border-gray-100">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-[40px] items-center justify-between text-[15px] font-medium text-gray-500">
-            <div className="flex items-center gap-8">
-              <Link href="/shop" className="text-[#0a4d3c] font-bold">Shop</Link>
-              <button className="flex items-center gap-1.5 hover:text-[#0a4d3c] transition-colors">
-                Categories <ChevronDown className="size-4 opacity-50" />
-              </button>
-              <Link href="/deals" className="hover:text-[#0a4d3c] transition-colors">Deals</Link>
-              <Link href="/fresh-produce" className="hover:text-[#0a4d3c] transition-colors">Fresh Produce</Link>
-              <Link href="/about" className="hover:text-[#0a4d3c] transition-colors">About</Link>
-            </div>
-            <div className="flex items-center gap-8">
-              <Link href="/policy" className="hover:text-[#0a4d3c] transition-colors">Policy</Link>
-              <Link href="/faq" className="hover:text-[#0a4d3c] transition-colors">FAQ&apos;s</Link>
-              <Link href="/help" className="flex items-center gap-2 hover:text-[#0a4d3c] transition-colors">
-                <div className="bg-gray-100 p-1 rounded-full text-gray-600">
-                  <Headphones className="size-4" />
-                </div>
-                Help & Support
+                {link.icon ? <link.icon className="size-4" /> : null}
+                {link.label}
               </Link>
-            </div>
-          </div>
+            ))}
+          </nav>
+
+          <Link
+            href="/cart"
+            className="relative ml-auto flex size-10 items-center justify-center rounded-full border border-white/24 text-white/90 transition hover:border-[var(--brand-paddy)] hover:text-[var(--brand-paddy)] lg:ml-0 lg:size-11"
+            aria-label="Cart"
+          >
+            <ShoppingCart className="size-5" />
+            <AnimatePresence>
+              {cartCount > 0 ? (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-[var(--brand-harvest)] text-[11px] font-bold text-white"
+                >
+                  {cartCount}
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+          </Link>
+
+          <Link
+            href="/auth/login"
+            className="hidden size-11 items-center justify-center rounded-full border border-white/24 text-white/90 transition hover:border-[var(--brand-paddy)] hover:text-[var(--brand-paddy)] sm:flex"
+            aria-label="Account"
+          >
+            <UserRound className="size-5" />
+          </Link>
         </div>
       </div>
 
-      {/* Mobile Search Bar (visible only on small screens) */}
-      <div className="lg:hidden px-4 py-3 border-b border-gray-100 bg-white">
-        <button 
+      <div className="border-b border-[#e8ece8] bg-white/96 shadow-[0_1px_0_rgba(15,79,58,0.03)]">
+        <div className="no-scrollbar mx-auto flex h-11 max-w-7xl items-center gap-1.5 overflow-x-auto px-2 text-[13px] font-medium text-[var(--brand-ink)] sm:px-5 lg:h-12 lg:gap-2 lg:px-8 lg:text-sm">
+          {categoryLinks.map((category) => (
+            <Link
+              key={category.label}
+              href={category.href}
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-2 transition hover:bg-[var(--brand-leaf-soft)] hover:text-[var(--brand-leaf)] lg:px-3"
+            >
+              {category.label}
+              <ChevronDown className="size-3.5 text-[#7d8a84]" />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-b border-[#e8ece8] bg-white px-3 py-2.5 lg:hidden">
+        <button
           onClick={() => setIsSearchOpen(true)}
-          className="w-full flex items-center gap-3 px-4 bg-gray-50 border-transparent rounded-full h-11 text-sm text-gray-400"
+          className="flex h-11 w-full items-center gap-3 rounded-full bg-[#f3f6f4] px-4 text-left text-sm font-medium text-[#66756e]"
         >
-          <Search className="size-5 text-gray-400" />
-          <span>Search groceries...</span>
+          <Search className="size-[18px]" />
+          Search crops, seeds, tools...
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full border-b bg-white shadow-xl z-50 max-h-[calc(100vh-140px)] overflow-y-auto">
-          <div className="px-4 py-4 space-y-4">
-            <div className="flex xl:hidden items-center gap-3 p-3 bg-gray-50 rounded-xl mb-4">
-              <div className="p-2 bg-white rounded-full shadow-sm">
-                <Truck className="size-5 text-[#0a4d3c]" />
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className="text-xs text-gray-500">Delivery to</span>
-                <span className="text-sm font-bold text-[#0a4d3c]">Abu Dhabi</span>
-              </div>
-            </div>
-
-            <nav className="flex flex-col gap-1">
-              <Link href="/shop" className="px-4 py-3 rounded-xl font-bold text-[#0a4d3c] bg-emerald-50">Shop</Link>
-              <button className="flex items-center justify-between px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">
-                Categories <ChevronDown className="size-5 opacity-50" />
-              </button>
-              <Link href="/deals" className="px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">Deals</Link>
-              <Link href="/fresh-produce" className="px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">Fresh Produce</Link>
-              <Link href="/about" className="px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">About</Link>
-              <div className="h-px bg-gray-100 my-2"></div>
-              <Link href="/policy" className="px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">Policy</Link>
-              <Link href="/faq" className="px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">FAQ&apos;s</Link>
-              <Link href="/help" className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-gray-50">
-                <div className="p-1.5 bg-gray-100 rounded-full">
-                  <Headphones className="size-5" />
-                </div> 
-                Help & Support
+      {mobileOpen ? (
+        <div className="absolute left-0 top-full w-full border-b border-[#e5e7eb] bg-white shadow-xl lg:hidden">
+          <div className="space-y-2 px-4 py-4">
+            {topLinks.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold text-[var(--brand-ink)] hover:bg-[#f9fafb]"
+                onClick={() => setMobileOpen(false)}
+              >
+                {link.icon ? <link.icon className="size-5 text-[var(--brand-harvest)]" /> : null}
+                {link.label}
               </Link>
-            </nav>
+            ))}
           </div>
         </div>
-      )}
+      ) : null}
     </header>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

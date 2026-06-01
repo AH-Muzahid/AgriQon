@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Zap, Leaf, ShoppingBag } from "lucide-react";
 
 const DEALS = [
-  { text: "Organic Honey — 25% Off", icon: Sparkles },
+  { text: "Organic Honey - 25% Off", icon: Sparkles },
   { text: "Farm Fresh Eggs - New Batch", icon: Leaf },
   { text: "Local Abu Dhabi Dates - 15% Off", icon: Zap },
   { text: "Heirloom Tomatoes - Peak Season", icon: ShoppingBag },
@@ -15,7 +15,7 @@ const DEALS = [
 
 export function SeasonalMarquee() {
   return (
-    <div className="w-full bg-[#facc15] py-3 overflow-hidden border-y border-[#0e3b2e]/10">
+    <div className="w-full bg-[#f5c542] py-3 overflow-hidden border-y border-[#0e3b2e]/10">
       <div className="flex whitespace-nowrap">
         <motion.div 
           animate={{ x: [0, -1000] }}

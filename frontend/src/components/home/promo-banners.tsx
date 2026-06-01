@@ -1,101 +1,120 @@
-import { ArrowRight, ShoppingCart } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, Clock3, ShoppingCart, Tag } from "lucide-react";
 
 const deals = [
   {
     id: 1,
     discount: "20% OFF",
-    image: "🍅",
+    image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=800&q=80",
     oldPrice: "AED 7.99",
     newPrice: "AED 5.99",
     title: "Fresh Tomatoes",
-    subtitle: "1 kg - Farm Fresh",
+    subtitle: "1 kg - greenhouse harvest",
   },
   {
     id: 2,
-    discount: "20% OFF",
-    image: "🍌",
+    discount: "18% OFF",
+    image: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=800&q=80",
     oldPrice: "AED 5.99",
     newPrice: "AED 4.49",
     title: "Premium Bananas",
-    subtitle: "1 kg - Naturally Sweet",
+    subtitle: "1 kg - naturally sweet",
   },
   {
     id: 3,
-    discount: "20% OFF",
-    image: "🍗",
+    discount: "12% OFF",
+    image: "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=800&q=80",
     oldPrice: "AED 22.99",
     newPrice: "AED 18.99",
     title: "Halal Chicken Breast",
-    subtitle: "1 kg - Fresh Cut",
+    subtitle: "1 kg - fresh cut",
   },
 ];
 
 export function PromoBanners() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 bg-[#f8fafb]">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-4 px-2">
-          <h2 className="text-xl md:text-2xl font-bold text-[#113123]">Exclusive Deals for You</h2>
-          <Link href="/deals" className="flex items-center gap-1 text-sm font-bold text-[#113123] hover:underline">
-            View All <ArrowRight className="w-4 h-4" />
+    <section className="w-full bg-white px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-6 flex items-end justify-between gap-4 px-1">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#d46b35]">
+              Buyer specials
+            </p>
+            <h2 className="mt-1 text-2xl font-black text-[#123a30] md:text-3xl">
+              Sharp prices before the next delivery wave
+            </h2>
+          </div>
+          <Link
+            href="/deals"
+            className="hidden items-center gap-2 text-sm font-black uppercase tracking-widest text-[#123a30] transition-all hover:gap-3 md:flex"
+          >
+            View all <ArrowRight className="size-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Promo Card */}
-          <div className="relative overflow-hidden rounded-[16px] bg-[#113123] text-white p-5 flex flex-col items-center text-center shadow-sm">
-            <h3 className="text-lg font-bold mt-1 leading-tight">Today&apos;s<br />Special Offers</h3>
-            <p className="text-xs text-white/80 mt-2 max-w-[160px] leading-relaxed">
-              Limited-time offers on fresh, halal groceries
-            </p>
-            
-            <div className="flex items-center gap-3 mt-5 mb-4 text-[#fcd43c]">
-              <div className="flex flex-col items-center">
-                <span className="text-lg font-bold leading-none">09</span>
-                <span className="text-[9px] mt-1 font-semibold uppercase">Days</span>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="relative overflow-hidden rounded-lg bg-[#123a30] p-5 text-white shadow-sm">
+            <div className="absolute inset-0 market-grid opacity-20" />
+            <div className="relative z-10">
+              <div className="mb-8 flex size-12 items-center justify-center rounded-lg bg-[#f5c542] text-[#123a30]">
+                <Clock3 className="size-6" />
               </div>
-              <div className="w-px h-6 bg-white/20"></div>
-              <div className="flex flex-col items-center">
-                <span className="text-lg font-bold leading-none">12</span>
-                <span className="text-[9px] mt-1 font-semibold uppercase">Hours</span>
-              </div>
-              <div className="w-px h-6 bg-white/20"></div>
-              <div className="flex flex-col items-center">
-                <span className="text-lg font-bold leading-none">35</span>
-                <span className="text-[9px] mt-1 font-semibold uppercase">Mins</span>
-              </div>
-            </div>
-            
-            <div className="mt-auto w-full flex items-end justify-center pt-4">
-              <div className="text-6xl">
-                🧺
+              <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#f5c542]">
+                Closing soon
+              </p>
+              <h3 className="mt-2 text-3xl font-black leading-tight">
+                Today&apos;s harvest window
+              </h3>
+              <div className="mt-8 grid grid-cols-3 gap-2">
+                {[
+                  ["09", "days"],
+                  ["12", "hours"],
+                  ["35", "mins"],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-lg border border-white/15 bg-white/8 p-3 text-center">
+                    <p className="text-xl font-black">{value}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-white/60">
+                      {label}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Deal Cards */}
           {deals.map((deal) => (
-            <div key={deal.id} className="bg-white rounded-[16px] p-4 flex flex-col relative shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
-              <div className="absolute top-0 left-4 bg-[#6a1b29] text-white text-[10px] font-bold px-2.5 py-1 rounded-b-md z-10">
-                {deal.discount}
-              </div>
-              
-              <div className="flex-1 flex items-center justify-center min-h-[120px] text-7xl pt-6 pb-4 transition-transform duration-500 group-hover:scale-105">
-                {deal.image}
-              </div>
-              
-              <div className="border-t border-gray-100 pt-3 flex flex-col items-center text-center mt-auto">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-[11px] text-gray-400 line-through">{deal.oldPrice}</span>
-                  <span className="text-sm font-extrabold text-[#113123]">{deal.newPrice}</span>
+            <div
+              key={deal.id}
+              className="group overflow-hidden rounded-lg border border-[#dce8de] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#9cc6a9] hover:shadow-xl hover:shadow-emerald-950/6"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-[#eef5ef]">
+                <Image
+                  src={deal.image}
+                  alt={deal.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 768px) 92vw, 25vw"
+                />
+                <div className="absolute left-3 top-3 flex items-center gap-1 rounded-md bg-[#9f3146] px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white">
+                  <Tag className="size-3" />
+                  {deal.discount}
                 </div>
-                
-                <h4 className="font-bold text-gray-900 text-sm">{deal.title}</h4>
-                <p className="text-[11px] text-gray-500 mt-0.5 mb-3">{deal.subtitle}</p>
-                
-                <button className="w-full py-2 rounded-md flex items-center justify-center gap-1.5 text-xs font-semibold transition-colors bg-[#f4f5f7] text-[#113123] group-hover:bg-[#113123] group-hover:text-white">
-                  <ShoppingCart className="w-3.5 h-3.5" />
+              </div>
+
+              <div className="p-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#8d9b94] line-through">
+                    {deal.oldPrice}
+                  </span>
+                  <span className="text-lg font-black text-[#123a30]">
+                    {deal.newPrice}
+                  </span>
+                </div>
+                <h4 className="text-lg font-black text-[#123a30]">{deal.title}</h4>
+                <p className="mt-1 text-sm font-medium text-[#66786f]">{deal.subtitle}</p>
+                <button className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#edf7ef] text-sm font-black text-[#123a30] transition-colors group-hover:bg-[#123a30] group-hover:text-white">
+                  <ShoppingCart className="size-4" />
                   Shop now
                 </button>
               </div>
@@ -103,6 +122,6 @@ export function PromoBanners() {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

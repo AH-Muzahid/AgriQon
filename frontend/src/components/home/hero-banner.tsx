@@ -1,127 +1,163 @@
 "use client";
 
-import React from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ArrowRight, ShoppingBag, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  CheckCircle2,
+  MapPin,
+  ShoppingBag,
+  Sparkles,
+  Truck,
+} from "lucide-react";
 
 export function HeroBanner() {
   return (
-    <section className="relative w-full h-[600px] md:h-[700px] lg:h-[800px] overflow-hidden bg-[#0a4d3c]">
-      {/* Background Image with Parallax-like effect */}
-      <motion.div 
-        initial={{ scale: 1.1, opacity: 0 }}
+    <section className="relative w-full min-h-[620px] overflow-hidden bg-[#123a30]">
+      <motion.div
+        initial={{ scale: 1.08, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.5, ease: "easeOut" }}
+        transition={{ duration: 1.2, ease: "easeOut" }}
         className="absolute inset-0 z-0"
       >
         <Image
           src="/images/hero.png"
-          alt="Premium Farm Fresh"
+          alt="Fresh produce harvest"
           fill
-          className="object-cover object-center brightness-[0.7] contrast-[1.1]"
+          className="object-cover object-center brightness-[0.68] contrast-[1.08]"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a4d3c]/90 via-[#0a4d3c]/40 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a4d3c] via-transparent to-transparent z-10" />
+        <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#123a30] via-[#123a30]/82 to-[#123a30]/20" />
+        <div className="absolute inset-0 z-10 market-grid opacity-35" />
       </motion.div>
 
-      {/* Content */}
-      <div className="relative z-20 max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+      <div className="relative z-20 mx-auto grid min-h-[620px] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
         <div className="max-w-3xl">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -24 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#facc15] text-[#0a4d3c] text-xs font-black uppercase tracking-widest mb-8 shadow-xl shadow-yellow-500/20"
+            transition={{ delay: 0.25, duration: 0.7 }}
+            className="mb-8 inline-flex items-center gap-2 rounded-md bg-[#f5c542] px-4 py-2 text-xs font-black uppercase tracking-widest text-[#123a30] shadow-xl shadow-yellow-500/20"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0a4d3c] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#0a4d3c]"></span>
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#123a30] opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-[#123a30]" />
             </span>
             <Sparkles className="size-3" />
-            AI-Powered Freshness
+            AI-powered fresh market
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-9xl font-black text-white tracking-tighter leading-[0.85] mb-8"
+            transition={{ delay: 0.38, duration: 0.75 }}
+            className="font-display mb-7 text-5xl font-black leading-[0.95] text-white md:text-7xl lg:text-8xl"
           >
-            Nature Meets <br />
-            <span className="text-[#facc15] italic">Intelligence.</span>
+            Farm stock, priced and ready today.
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.8 }}
-            className="text-emerald-50/80 text-lg md:text-2xl font-medium max-w-xl mb-12 leading-relaxed"
+            transition={{ delay: 0.52, duration: 0.75 }}
+            className="mb-10 max-w-xl text-lg font-medium leading-relaxed text-emerald-50/85 md:text-xl"
           >
-            AgriQon uses advanced semantic discovery to connect you with the finest organic produce, harvested at peak perfection.
+            AgriQon connects buyers with verified growers, fresh inventory,
+            route-aware delivery, and AI search that understands what you are
+            cooking.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.8 }}
+            transition={{ delay: 0.66, duration: 0.75 }}
             className="flex flex-wrap gap-4"
           >
-            <Link 
+            <Link
               href="/shop"
-              className="group relative inline-flex items-center gap-3 bg-[#facc15] text-[#0a4d3c] px-10 py-6 rounded-2xl font-black text-xl transition-all hover:scale-105 active:scale-95 shadow-2xl shadow-yellow-500/40"
+              className="group inline-flex items-center gap-3 rounded-lg bg-[#f5c542] px-8 py-4 text-base font-black text-[#123a30] shadow-2xl shadow-yellow-500/30 transition-all hover:scale-[1.02] active:scale-95"
             >
-              Start Shopping
-              <ArrowRight className="size-6 transition-transform group-hover:translate-x-1" />
+              Shop harvest
+              <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
             </Link>
-            
-            <Link 
+
+            <Link
               href="/farmers"
-              className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-xl text-white border border-white/20 px-10 py-6 rounded-2xl font-black text-xl transition-all hover:bg-white/20 active:scale-95"
+              className="inline-flex items-center gap-3 rounded-lg border border-white/20 bg-white/10 px-8 py-4 text-base font-black text-white backdrop-blur-xl transition-all hover:bg-white/20 active:scale-95"
             >
-              Meet Farmers
+              Meet farmers
             </Link>
           </motion.div>
-        </div>
-      </div>
 
-      {/* Scroll Indicator */}
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-12 left-12 z-20 flex flex-col items-start gap-4"
-      >
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-px bg-white/20" />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">AgriQon Excellence</span>
+          <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
+            {[
+              ["420+", "active lots"],
+              ["2 hr", "city delivery"],
+              ["98%", "verified farms"],
+            ].map(([value, label]) => (
+              <div
+                key={label}
+                className="rounded-lg border border-white/15 bg-white/10 p-4 backdrop-blur-md"
+              >
+                <p className="text-2xl font-black text-white">{value}</p>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-50/60">
+                  {label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </motion.div>
 
-      {/* Floating Card */}
-      <div className="absolute top-1/2 right-12 -translate-y-1/2 hidden xl:block z-20">
         <motion.div
-          initial={{ opacity: 0, x: 50 }}
+          initial={{ opacity: 0, x: 42 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 1.3, duration: 1 }}
-          className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-[3rem] shadow-2xl max-w-xs"
+          transition={{ delay: 0.72, duration: 0.9 }}
+          className="hidden w-full max-w-md justify-self-end rounded-lg border border-white/60 bg-white/95 p-5 text-[#123a30] shadow-2xl lg:block"
         >
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-[#facc15] flex items-center justify-center text-[#0a4d3c]">
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex size-12 items-center justify-center rounded-lg bg-[#f5c542] text-[#123a30]">
                 <ShoppingBag className="size-7" />
               </div>
-              <div>
-                <p className="text-white font-black text-2xl leading-none">Fresh</p>
-                <p className="text-emerald-100/40 text-xs font-bold uppercase tracking-wider mt-1">Guaranteed</p>
+              <div className="text-right">
+                <p className="text-xs font-black uppercase tracking-widest text-[#6c7d73]">
+                  Live market board
+                </p>
+                <p className="text-2xl font-black">AED 5.99/kg</p>
               </div>
             </div>
-            <div className="h-px bg-white/10" />
-            <p className="text-emerald-50/60 text-sm leading-relaxed">
-              Our AI monitors harvest cycles in real-time to ensure only the freshest produce reaches your table.
-            </p>
+
+            {[
+              {
+                icon: CheckCircle2,
+                label: "Greenhouse tomatoes",
+                meta: "Al Ain Oasis Farm",
+              },
+              {
+                icon: Truck,
+                label: "Delivery slot secured",
+                meta: "Today, 6:00 PM",
+              },
+              {
+                icon: MapPin,
+                label: "Nearest stock matched",
+                meta: "18 km from Abu Dhabi",
+              },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center gap-3 rounded-lg border border-[#dce8de] bg-[#f7faf6] p-4"
+              >
+                <item.icon className="size-5 text-[#2f7b57]" />
+                <div>
+                  <p className="font-black">{item.label}</p>
+                  <p className="text-xs font-bold text-[#6c7d73]">
+                    {item.meta}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>
