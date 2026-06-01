@@ -21,11 +21,13 @@ import { NotificationRoutes } from '../modules/notifications/notification.routes
 import { UploadsRoutes } from '../modules/uploads/uploads.routes';
 import { ReportRoutes } from '../modules/reports/report.routes';
 import { ReconciliationRoutes } from '../modules/reconciliation/reconciliation.routes';
+import { PaymentRoutes } from '../modules/payments/payment.routes';
 
 const router = Router();
 
 const moduleRoutes = [
   { path: '/auth', route: AuthRoutes },
+  { path: '/payments', route: PaymentRoutes },
   { path: '/business', route: BusinessRoutes },
   { path: '/products', route: ProductRoutes },
   { path: '/categories', route: CategoryRoutes },

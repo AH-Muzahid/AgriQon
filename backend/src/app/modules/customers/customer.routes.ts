@@ -11,19 +11,19 @@ import { Role } from '../../../generated/client';
 
 const router = Router();
 
-router.use(auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.ACCOUNTANT));
+router.use(auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.SELLER));
 
 router.get('/', validateRequest(customerQuerySchema), CustomerController.getAllCustomers);
 router.get('/:id', CustomerController.getCustomerById);
 router.post(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER),
+  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.SELLER),
   validateRequest(createCustomerSchema),
   CustomerController.createCustomer
 );
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER),
+  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.SELLER),
   validateRequest(updateCustomerSchema),
   CustomerController.updateCustomer
 );
