@@ -7,7 +7,7 @@ const router = Router();
 
 router.get(
   '/',
-  auth(Role.ADMIN, Role.MANAGER),
+  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
   AuditController.getAuditLogs
 );
 
