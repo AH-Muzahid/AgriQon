@@ -7,14 +7,14 @@ import { Role } from '../../../generated/client';
 
 const router = Router();
 
-router.use(auth(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT, Role.CASHIER));
+router.use(auth(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT, Role.CASHIER, Role.SELLER));
 
 router.get('/', validateRequest(invoiceQuerySchema), InvoiceController.getAllInvoices);
 router.get('/order/:orderId', InvoiceController.getInvoiceByOrderId);
 router.get('/:id', InvoiceController.getInvoiceById);
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT),
+  auth(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT, Role.SELLER),
   validateRequest(updateInvoiceSchema),
   InvoiceController.updateInvoice
 );
