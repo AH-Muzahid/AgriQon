@@ -107,6 +107,49 @@ export default function DashboardHub() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('guest');
+
+  const refreshData = async () => {
+    try {
+      const warehousesRes = await apiClient.get('/warehouses');
+      const warehousesList = (warehousesRes.data || []) as any[];
+      const defaultWarehouseId = warehousesList[0]?.id || '';
+
+      const invRes = await apiClient.getInventory();
+      const inventoryList = (invRes.data || []) as any[];
+
+      const itemsRes = await apiClient.getItems();
+      const itemsList = (itemsRes.data || []) as any[];
+
+      const catsRes = await apiClient.getCategories();
+      const catsList = (catsRes.data || []) as any[];
+      const catMap = new Map(catsList.map(c => [c.id, c.name]));
+
+      const mappedProducts: Product[] = itemsList.map(item => {
+        const itemInv = inventoryList.filter(inv => inv.itemId === item.id);
+        const totalStock = itemInv.reduce((sum, inv) => sum + (inv.availableStock || 0), 0);
+        const warehouseId = itemInv[0]?.warehouseId || defaultWarehouseId;
+        const categoryName = catMap.get(item.categoryId) || item.category?.name || 'সবজি';
+        return {
+          id: item.id,
+          name: item.title,
+          category: categoryName,
+          sku: item.sku || '',
+          stock: totalStock,
+          unit: item.unit || 'কেজি',
+          price: Number(item.price),
+          status: totalStock <= 0 ? 'স্টক আউট' : totalStock < 10 ? 'কম স্টক' : 'সচল',
+          image: '🥬',
+          rating: 4.5,
+          warehouseId
+        };
+      });
+      setProducts(mappedProducts);
+    } catch (e) { console.error(e); }
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, []);
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
