@@ -31,6 +31,7 @@ interface Product {
   price: number;
   status: 'সচল' | 'কম স্টক' | 'স্টক আউট';
   image: string;
+  warehouseId?: string;
 }
 
 interface CartItem {
@@ -206,7 +207,7 @@ export default function POSView({
           </div>
           
           <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar relative">
-            {['সব', 'ফল', 'সবজি', 'ডিম'].map((cat, idx) => {
+            {['সব', ...Array.from(new Set(products.map(p => p.category)))].map((cat, idx) => {
               const isActive = posCategory === cat;
               return (
                 <button
