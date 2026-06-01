@@ -103,6 +103,10 @@ export default function DashboardHub() {
 
   // State Management
   const [activeTab, setActiveTab] = useState<'home' | 'pos' | 'products' | 'customers' | 'reports' | 'assistant' | 'consumer'>('home');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('guest');
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
