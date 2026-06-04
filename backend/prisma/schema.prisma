@@ -74,7 +74,7 @@ model User {
   name          String
   email         String         @unique
   password      String?
-  role          Role           @default(USER)
+  role          PlatformRole @default(USER)
   businessId    String?
   deletedAt     DateTime?
   createdAt     DateTime       @default(now())
@@ -188,6 +188,7 @@ model Warehouse {
   businessId    String
   name          String
   location      String?
+  isDefault     Boolean             @default(false)
   inventory     Inventory[]
   business      Business            @relation(fields: [businessId], references: [id])
   transfersTo   WarehouseTransfer[] @relation("TransferDest")
@@ -605,6 +606,50 @@ enum Role {
   ACCOUNTANT
   WAREHOUSE_KEEPER
 }
+
+model Permission {
+  id          String @id @default(cuid())
+  key         String @unique
+  description String?
+}
+
+model RolePermission {
+  id           String   @id @default(cuid())
+  businessRole BusinessRole
+  permissionId String
+
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([businessRole, permissionId])
+}
+
+
+enum PlatformRole {
+  USER
+  SELLER
+}
+
+enum BusinessRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model UserBusinessRole {
+  id         String @id @default(cuid())
+  userId     String
+  businessId String
+  role       BusinessRole
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User @relation(fields: [userId], references: [id])
+  business   Business @relation(fields: [businessId], references: [id])
+
+  @@unique([userId, businessId])
+  @@index([businessId])
+}
+
 
 enum OrderStatus {
   DRAFT

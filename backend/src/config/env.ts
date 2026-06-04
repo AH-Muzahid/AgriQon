@@ -28,4 +28,6 @@ export const env = {
   geminiApiKey: process.env.GEMINI_API_KEY ?? '',
   openaiApiKey: process.env.OPENAI_API_KEY ?? '',
   aiProvider: (process.env.AI_PROVIDER as 'gemini' | 'openai') ?? 'gemini',
+  // New: default warehouse name
+  defaultWarehouseName: process.env.DEFAULT_WAREHOUSE_NAME ?? 'Main Warehouse',
 };

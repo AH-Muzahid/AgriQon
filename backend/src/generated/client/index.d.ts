@@ -14327,6 +14327,7 @@ export namespace Prisma {
     businessId: string | null
     name: string | null
     location: string | null
+    isDefault: boolean | null
   }
 
   export type WarehouseMaxAggregateOutputType = {
@@ -14334,6 +14335,7 @@ export namespace Prisma {
     businessId: string | null
     name: string | null
     location: string | null
+    isDefault: boolean | null
   }
 
   export type WarehouseCountAggregateOutputType = {
@@ -14341,6 +14343,7 @@ export namespace Prisma {
     businessId: number
     name: number
     location: number
+    isDefault: number
     _all: number
   }
 
@@ -14350,6 +14353,7 @@ export namespace Prisma {
     businessId?: true
     name?: true
     location?: true
+    isDefault?: true
   }
 
   export type WarehouseMaxAggregateInputType = {
@@ -14357,6 +14361,7 @@ export namespace Prisma {
     businessId?: true
     name?: true
     location?: true
+    isDefault?: true
   }
 
   export type WarehouseCountAggregateInputType = {
@@ -14364,6 +14369,7 @@ export namespace Prisma {
     businessId?: true
     name?: true
     location?: true
+    isDefault?: true
     _all?: true
   }
 
@@ -14444,6 +14450,7 @@ export namespace Prisma {
     businessId: string
     name: string
     location: string | null
+    isDefault: boolean
     _count: WarehouseCountAggregateOutputType | null
     _min: WarehouseMinAggregateOutputType | null
     _max: WarehouseMaxAggregateOutputType | null
@@ -14468,6 +14475,7 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     location?: boolean
+    isDefault?: boolean
     inventory?: boolean | Warehouse$inventoryArgs<ExtArgs>
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     transfersTo?: boolean | Warehouse$transfersToArgs<ExtArgs>
@@ -14480,6 +14488,7 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     location?: boolean
+    isDefault?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["warehouse"]>
 
@@ -14488,6 +14497,7 @@ export namespace Prisma {
     businessId?: boolean
     name?: boolean
     location?: boolean
+    isDefault?: boolean
   }
 
   export type WarehouseInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14514,6 +14524,7 @@ export namespace Prisma {
       businessId: string
       name: string
       location: string | null
+      isDefault: boolean
     }, ExtArgs["result"]["warehouse"]>
     composites: {}
   }
@@ -14915,6 +14926,7 @@ export namespace Prisma {
     readonly businessId: FieldRef<"Warehouse", 'String'>
     readonly name: FieldRef<"Warehouse", 'String'>
     readonly location: FieldRef<"Warehouse", 'String'>
+    readonly isDefault: FieldRef<"Warehouse", 'Boolean'>
   }
     
 
@@ -45200,7 +45212,8 @@ export namespace Prisma {
     id: 'id',
     businessId: 'businessId',
     name: 'name',
-    location: 'location'
+    location: 'location',
+    isDefault: 'isDefault'
   };
 
   export type WarehouseScalarFieldEnum = (typeof WarehouseScalarFieldEnum)[keyof typeof WarehouseScalarFieldEnum]
@@ -47074,6 +47087,7 @@ export namespace Prisma {
     businessId?: StringFilter<"Warehouse"> | string
     name?: StringFilter<"Warehouse"> | string
     location?: StringNullableFilter<"Warehouse"> | string | null
+    isDefault?: BoolFilter<"Warehouse"> | boolean
     inventory?: InventoryListRelationFilter
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     transfersTo?: WarehouseTransferListRelationFilter
@@ -47085,6 +47099,7 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     location?: SortOrderInput | SortOrder
+    isDefault?: SortOrder
     inventory?: InventoryOrderByRelationAggregateInput
     business?: BusinessOrderByWithRelationInput
     transfersTo?: WarehouseTransferOrderByRelationAggregateInput
@@ -47100,6 +47115,7 @@ export namespace Prisma {
     businessId?: StringFilter<"Warehouse"> | string
     name?: StringFilter<"Warehouse"> | string
     location?: StringNullableFilter<"Warehouse"> | string | null
+    isDefault?: BoolFilter<"Warehouse"> | boolean
     inventory?: InventoryListRelationFilter
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     transfersTo?: WarehouseTransferListRelationFilter
@@ -47111,6 +47127,7 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     location?: SortOrderInput | SortOrder
+    isDefault?: SortOrder
     _count?: WarehouseCountOrderByAggregateInput
     _max?: WarehouseMaxOrderByAggregateInput
     _min?: WarehouseMinOrderByAggregateInput
@@ -47124,6 +47141,7 @@ export namespace Prisma {
     businessId?: StringWithAggregatesFilter<"Warehouse"> | string
     name?: StringWithAggregatesFilter<"Warehouse"> | string
     location?: StringNullableWithAggregatesFilter<"Warehouse"> | string | null
+    isDefault?: BoolWithAggregatesFilter<"Warehouse"> | boolean
   }
 
   export type InventoryWhereInput = {
@@ -50336,6 +50354,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryCreateNestedManyWithoutWarehouseInput
     business: BusinessCreateNestedOneWithoutWarehousesInput
     transfersTo?: WarehouseTransferCreateNestedManyWithoutDestinationInput
@@ -50347,6 +50366,7 @@ export namespace Prisma {
     businessId: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryUncheckedCreateNestedManyWithoutWarehouseInput
     transfersTo?: WarehouseTransferUncheckedCreateNestedManyWithoutDestinationInput
     transfersFrom?: WarehouseTransferUncheckedCreateNestedManyWithoutSourceInput
@@ -50356,6 +50376,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUpdateManyWithoutWarehouseNestedInput
     business?: BusinessUpdateOneRequiredWithoutWarehousesNestedInput
     transfersTo?: WarehouseTransferUpdateManyWithoutDestinationNestedInput
@@ -50367,6 +50388,7 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
     transfersTo?: WarehouseTransferUncheckedUpdateManyWithoutDestinationNestedInput
     transfersFrom?: WarehouseTransferUncheckedUpdateManyWithoutSourceNestedInput
@@ -50377,12 +50399,14 @@ export namespace Prisma {
     businessId: string
     name: string
     location?: string | null
+    isDefault?: boolean
   }
 
   export type WarehouseUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type WarehouseUncheckedUpdateManyInput = {
@@ -50390,6 +50414,7 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type InventoryCreateInput = {
@@ -53783,6 +53808,7 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     location?: SortOrder
+    isDefault?: SortOrder
   }
 
   export type WarehouseMaxOrderByAggregateInput = {
@@ -53790,6 +53816,7 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     location?: SortOrder
+    isDefault?: SortOrder
   }
 
   export type WarehouseMinOrderByAggregateInput = {
@@ -53797,6 +53824,7 @@ export namespace Prisma {
     businessId?: SortOrder
     name?: SortOrder
     location?: SortOrder
+    isDefault?: SortOrder
   }
 
   export type ProductBatchNullableScalarRelationFilter = {
@@ -60942,6 +60970,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryCreateNestedManyWithoutWarehouseInput
     transfersTo?: WarehouseTransferCreateNestedManyWithoutDestinationInput
     transfersFrom?: WarehouseTransferCreateNestedManyWithoutSourceInput
@@ -60951,6 +60980,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryUncheckedCreateNestedManyWithoutWarehouseInput
     transfersTo?: WarehouseTransferUncheckedCreateNestedManyWithoutDestinationInput
     transfersFrom?: WarehouseTransferUncheckedCreateNestedManyWithoutSourceInput
@@ -61983,6 +62013,7 @@ export namespace Prisma {
     businessId?: StringFilter<"Warehouse"> | string
     name?: StringFilter<"Warehouse"> | string
     location?: StringNullableFilter<"Warehouse"> | string | null
+    isDefault?: BoolFilter<"Warehouse"> | boolean
   }
 
   export type WarehouseTransferUpsertWithWhereUniqueWithoutBusinessInput = {
@@ -65251,6 +65282,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
     business: BusinessCreateNestedOneWithoutWarehousesInput
     transfersTo?: WarehouseTransferCreateNestedManyWithoutDestinationInput
     transfersFrom?: WarehouseTransferCreateNestedManyWithoutSourceInput
@@ -65261,6 +65293,7 @@ export namespace Prisma {
     businessId: string
     name: string
     location?: string | null
+    isDefault?: boolean
     transfersTo?: WarehouseTransferUncheckedCreateNestedManyWithoutDestinationInput
     transfersFrom?: WarehouseTransferUncheckedCreateNestedManyWithoutSourceInput
   }
@@ -65548,6 +65581,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     business?: BusinessUpdateOneRequiredWithoutWarehousesNestedInput
     transfersTo?: WarehouseTransferUpdateManyWithoutDestinationNestedInput
     transfersFrom?: WarehouseTransferUpdateManyWithoutSourceNestedInput
@@ -65558,6 +65592,7 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     transfersTo?: WarehouseTransferUncheckedUpdateManyWithoutDestinationNestedInput
     transfersFrom?: WarehouseTransferUncheckedUpdateManyWithoutSourceNestedInput
   }
@@ -66457,6 +66492,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryCreateNestedManyWithoutWarehouseInput
     business: BusinessCreateNestedOneWithoutWarehousesInput
     transfersFrom?: WarehouseTransferCreateNestedManyWithoutSourceInput
@@ -66467,6 +66503,7 @@ export namespace Prisma {
     businessId: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryUncheckedCreateNestedManyWithoutWarehouseInput
     transfersFrom?: WarehouseTransferUncheckedCreateNestedManyWithoutSourceInput
   }
@@ -66480,6 +66517,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryCreateNestedManyWithoutWarehouseInput
     business: BusinessCreateNestedOneWithoutWarehousesInput
     transfersTo?: WarehouseTransferCreateNestedManyWithoutDestinationInput
@@ -66490,6 +66528,7 @@ export namespace Prisma {
     businessId: string
     name: string
     location?: string | null
+    isDefault?: boolean
     inventory?: InventoryUncheckedCreateNestedManyWithoutWarehouseInput
     transfersTo?: WarehouseTransferUncheckedCreateNestedManyWithoutDestinationInput
   }
@@ -66635,6 +66674,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUpdateManyWithoutWarehouseNestedInput
     business?: BusinessUpdateOneRequiredWithoutWarehousesNestedInput
     transfersFrom?: WarehouseTransferUpdateManyWithoutSourceNestedInput
@@ -66645,6 +66685,7 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
     transfersFrom?: WarehouseTransferUncheckedUpdateManyWithoutSourceNestedInput
   }
@@ -66664,6 +66705,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUpdateManyWithoutWarehouseNestedInput
     business?: BusinessUpdateOneRequiredWithoutWarehousesNestedInput
     transfersTo?: WarehouseTransferUpdateManyWithoutDestinationNestedInput
@@ -66674,6 +66716,7 @@ export namespace Prisma {
     businessId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
     transfersTo?: WarehouseTransferUncheckedUpdateManyWithoutDestinationNestedInput
   }
@@ -74390,6 +74433,7 @@ export namespace Prisma {
     id?: string
     name: string
     location?: string | null
+    isDefault?: boolean
   }
 
   export type WarehouseTransferCreateManyBusinessInput = {
@@ -75275,6 +75319,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUpdateManyWithoutWarehouseNestedInput
     transfersTo?: WarehouseTransferUpdateManyWithoutDestinationNestedInput
     transfersFrom?: WarehouseTransferUpdateManyWithoutSourceNestedInput
@@ -75284,6 +75329,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
     inventory?: InventoryUncheckedUpdateManyWithoutWarehouseNestedInput
     transfersTo?: WarehouseTransferUncheckedUpdateManyWithoutDestinationNestedInput
     transfersFrom?: WarehouseTransferUncheckedUpdateManyWithoutSourceNestedInput
@@ -75293,6 +75339,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     location?: NullableStringFieldUpdateOperationsInput | string | null
+    isDefault?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type WarehouseTransferUpdateWithoutBusinessInput = {

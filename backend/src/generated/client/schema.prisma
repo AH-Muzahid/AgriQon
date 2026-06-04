@@ -188,6 +188,7 @@ model Warehouse {
   businessId    String
   name          String
   location      String?
+  isDefault     Boolean             @default(false)
   inventory     Inventory[]
   business      Business            @relation(fields: [businessId], references: [id])
   transfersTo   WarehouseTransfer[] @relation("TransferDest")

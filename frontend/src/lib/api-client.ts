@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 // Create the base axios instance
 const instance = axios.create({
@@ -59,6 +59,22 @@ export interface ChatResponse {
   source: string;
 }
 
+export interface AiLog {
+  id: string;
+  type: string;
+  prompt: string;
+  response?: string | null;
+  contextData?: unknown;
+  createdAt: string;
+  userId?: string | null;
+}
+
+export interface AiLogsMeta {
+  page: number;
+  limit: number;
+  total: number;
+}
+
 export interface ApiClient extends AxiosInstance {
   // Override axios methods to return data directly (as handled by our interceptor)
   get<T = unknown, R = ApiResponse<T>, D = unknown>(url: string, config?: AxiosRequestConfig<D>): Promise<R>;
@@ -85,6 +101,7 @@ export interface ApiClient extends AxiosInstance {
   getStockMovements: <T = unknown>() => Promise<ApiResponse<T>>;
   getWarehouseTransfers: <T = unknown>() => Promise<ApiResponse<T>>;
   getReportsData: <T = unknown>() => Promise<ApiResponse<T>>;
+  getAiLogs: (params?: { page?: number; limit?: number }) => Promise<ApiResponse<AiLog[]> & { meta?: AiLogsMeta }>;
 }
 
 export const apiClient = instance as ApiClient;
@@ -112,6 +129,7 @@ apiClient.getReviews = (itemId: string) => apiClient.get(`/reviews/item/${itemId
 apiClient.getCategories = () => apiClient.get('/categories');
 apiClient.createOrder = (data: unknown) => apiClient.post('/orders', data);
 apiClient.generateAiChat = (prompt: string) => apiClient.post('/ai/chat', { prompt });
+apiClient.getAiLogs = (params?: { page?: number; limit?: number }) => apiClient.get('/ai/logs', { params });
 apiClient.getCustomers = (params?: unknown) => apiClient.get('/customers', { params });
 apiClient.createCustomer = (data: unknown) => apiClient.post('/customers', data);
 apiClient.collectCustomerDue = (id: string, amount: number) => apiClient.post(`/customers/${id}/collect-due`, { amount });

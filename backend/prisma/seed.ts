@@ -1,11 +1,14 @@
 import { PrismaClient, Role, OrderStatus, PaymentStatus, MovementType, ProcessingStatus, AccountType } from '../src/generated/client';
 import { faker } from '@faker-js/faker';
+import { seedPermissions } from './seed-permissions';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting comprehensive database seeding...');
 
+  // Seed permission catalog and role mappings first
+  await seedPermissions();
   // Clean existing data (Optional but recommended for a fresh seed)
   // await prisma.$executeRawUnsafe('TRUNCATE TABLE "Organization" CASCADE');
 

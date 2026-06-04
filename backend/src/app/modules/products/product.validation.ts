@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const productQuerySchema = z.object({
   search: z.string().optional(),
-  category: z.string().optional(),
+  categoryId: z.string().optional(),
   minPrice: z.coerce.number().nonnegative().optional(),
   maxPrice: z.coerce.number().nonnegative().optional(),
   page: z.coerce.number().int().positive().default(1),
@@ -12,7 +12,7 @@ export const productQuerySchema = z.object({
 export const createProductSchema = z.object({
   title: z.string().min(2).max(120),
   description: z.string().max(1000).optional(),
-  category: z.string().min(2).max(60),
+  categoryId: z.string().uuid(),
   price: z.coerce.number().positive(),
   unit: z.string().min(1).max(20).default('kg'),
   initialStock: z.coerce.number().int().nonnegative().default(0), // renamed for clarity

@@ -212,7 +212,8 @@ exports.Prisma.WarehouseScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
   name: 'name',
-  location: 'location'
+  location: 'location',
+  isDefault: 'isDefault'
 };
 
 exports.Prisma.InventoryScalarFieldEnum = {

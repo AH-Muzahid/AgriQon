@@ -9,6 +9,7 @@ import Navbar from "@/components/home/navbar";
 import { Footer } from "@/components/home/footer";
 import { Toaster } from "react-hot-toast";
 import { AiAssistant } from "@/components/ui/ai-assistant";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
@@ -32,20 +33,22 @@ export default function RootLayout({
   return (
     <html lang="bn" className={cn("h-full antialiased", "font-sans", manrope.variable, notoBengali.variable)} data-scroll-behavior="smooth">
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <Navbar />
-              <div className="flex-1">
-                {children}
-              </div>
-              <Footer />
-              <Toaster position="bottom-right" />
-              <AiAssistant />
+        <TooltipProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <Navbar />
+                <div className="flex-1">
+                  {children}
+                </div>
+                <Footer />
+                <Toaster position="bottom-right" />
+                <AiAssistant />
 
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </TooltipProvider>
       </body>
     </html>
   );
