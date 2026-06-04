@@ -1,16 +1,23 @@
 import { Router } from 'express';
 import { LoyaltyController } from './loyalty.controller';
-import { extractAuth, authorize } from '../../middleware/rbac.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
 import validateRequest from '../../middleware/validateRequest';
 import { configureLoyaltySchema } from './loyalty.validation';
-import { Role } from '../../../generated/client';
+import {
+  LOYALTY_CREATE,
+  LOYALTY_VIEW,
+  LOYALTY_MANAGE,
+} from '../../constants/permissions';
 
 const router = Router();
 
 router.post(
   '/program',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(LOYALTY_CREATE, LOYALTY_MANAGE),
   validateRequest(configureLoyaltySchema),
   LoyaltyController.setupProgram
 );
@@ -18,7 +25,9 @@ router.post(
 router.get(
   '/customer/:customerId/balance',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER, Role.CASHIER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(LOYALTY_VIEW, LOYALTY_MANAGE),
   LoyaltyController.getBalance
 );
 

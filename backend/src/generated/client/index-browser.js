@@ -477,6 +477,27 @@ exports.Prisma.ReviewScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PermissionScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  description: 'description'
+};
+
+exports.Prisma.RolePermissionScalarFieldEnum = {
+  id: 'id',
+  businessRole: 'businessRole',
+  permissionId: 'permissionId'
+};
+
+exports.Prisma.UserBusinessRoleScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  businessId: 'businessId',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.LoyaltyProgramScalarFieldEnum = {
   id: 'id',
   businessId: 'businessId',
@@ -847,6 +868,23 @@ exports.Prisma.ReviewOrderByRelevanceFieldEnum = {
   itemId: 'itemId'
 };
 
+exports.Prisma.PermissionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  key: 'key',
+  description: 'description'
+};
+
+exports.Prisma.RolePermissionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  permissionId: 'permissionId'
+};
+
+exports.Prisma.UserBusinessRoleOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  businessId: 'businessId'
+};
+
 exports.Prisma.LoyaltyProgramOrderByRelevanceFieldEnum = {
   id: 'id',
   businessId: 'businessId'
@@ -897,14 +935,9 @@ exports.Prisma.ReportCacheOrderByRelevanceFieldEnum = {
   businessId: 'businessId',
   reportType: 'reportType'
 };
-exports.Role = exports.$Enums.Role = {
+exports.PlatformRole = exports.$Enums.PlatformRole = {
   USER: 'USER',
-  SELLER: 'SELLER',
-  ADMIN: 'ADMIN',
-  MANAGER: 'MANAGER',
-  CASHIER: 'CASHIER',
-  ACCOUNTANT: 'ACCOUNTANT',
-  WAREHOUSE_KEEPER: 'WAREHOUSE_KEEPER'
+  SELLER: 'SELLER'
 };
 
 exports.MovementType = exports.$Enums.MovementType = {
@@ -955,6 +988,12 @@ exports.ProcessingStatus = exports.$Enums.ProcessingStatus = {
   FAILED: 'FAILED'
 };
 
+exports.BusinessRole = exports.$Enums.BusinessRole = {
+  OWNER: 'OWNER',
+  MANAGER: 'MANAGER',
+  STAFF: 'STAFF'
+};
+
 exports.JournalStatus = exports.$Enums.JournalStatus = {
   DRAFT: 'DRAFT',
   POSTED: 'POSTED'
@@ -992,6 +1031,9 @@ exports.Prisma.ModelName = {
   OutboxEvent: 'OutboxEvent',
   Embedding: 'Embedding',
   Review: 'Review',
+  Permission: 'Permission',
+  RolePermission: 'RolePermission',
+  UserBusinessRole: 'UserBusinessRole',
   LoyaltyProgram: 'LoyaltyProgram',
   LoyaltyPoint: 'LoyaltyPoint',
   WebhookEvent: 'WebhookEvent',

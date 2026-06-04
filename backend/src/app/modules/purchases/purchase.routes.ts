@@ -1,16 +1,24 @@
 import { Router } from 'express';
 import { PurchaseController } from './purchase.controller';
-import { extractAuth, authorize } from '../../middleware/rbac.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
 import validateRequest from '../../middleware/validateRequest';
 import { createPurchaseSchema, receivePurchaseSchema } from './purchase.validation';
-import { Role } from '../../../generated/client';
+import {
+  PURCHASE_CREATE,
+  PURCHASE_VIEW,
+  PURCHASE_UPDATE,
+  PURCHASE_MANAGE,
+} from '../../constants/permissions';
 
 const router = Router();
 
 router.post(
   '/',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PURCHASE_CREATE, PURCHASE_MANAGE),
   validateRequest(createPurchaseSchema),
   PurchaseController.create
 );
@@ -18,21 +26,27 @@ router.post(
 router.get(
   '/',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PURCHASE_VIEW, PURCHASE_MANAGE),
   PurchaseController.getAll
 );
 
 router.get(
   '/:id',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PURCHASE_VIEW, PURCHASE_MANAGE),
   PurchaseController.getById
 );
 
 router.post(
   '/:id/receive',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PURCHASE_UPDATE, PURCHASE_MANAGE),
   validateRequest(receivePurchaseSchema),
   PurchaseController.receive
 );
@@ -40,14 +54,18 @@ router.post(
 router.post(
   '/:id/cancel',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PURCHASE_UPDATE, PURCHASE_MANAGE),
   PurchaseController.cancel
 );
 
 router.post(
   '/:id/pay',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PURCHASE_UPDATE, PURCHASE_MANAGE),
   PurchaseController.pay
 );
 

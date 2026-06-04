@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../../errors/AppError';
+import { AppError } from '../app/errors/AppError';
 
 /**
  * Middleware to ensure the request is scoped to a business (multi‑tenant).

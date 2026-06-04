@@ -25,7 +25,7 @@ export class PermissionService {
         where: { businessRole: role },
         select: { permission: { select: { key: true } } },
       });
-      return rolePerms.map((rp) => rp.permission.key);
+      return rolePerms.map((rp: { permission: { key: string } }) => rp.permission.key);
     } catch (e) {
       // Fail closed – treat lookup errors as no permissions.
       throw new AppError('Permission lookup failed. Access denied.', 403);

@@ -1,4 +1,4 @@
-import { PlatformRole, BusinessRole } from '../../generated/client';
+import { PlatformRole, BusinessRole, Role } from '../../generated/client';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../../config/env';
@@ -10,7 +10,7 @@ import { PermissionService } from '../services/permission.service';
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    role: PlatformRole;
+    role: PlatformRole | Role;
     email?: string;
     businessId?: string | null;
     organizationId?: string | null;

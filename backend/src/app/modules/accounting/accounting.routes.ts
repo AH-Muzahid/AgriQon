@@ -1,10 +1,17 @@
 import { Router } from 'express';
 import { AccountingController } from './accounting.controller';
 import { FinancialReportingController } from './financial-reporting.controller';
-import { extractAuth, authorize } from '../../middleware/rbac.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
 import validateRequest from '../../middleware/validateRequest';
 import { createAccountSchema, createJournalEntrySchema } from './accounting.validation';
-import { Role } from '../../../generated/client';
+import {
+  ACCOUNTING_CREATE,
+  ACCOUNTING_VIEW,
+  ACCOUNTING_MANAGE,
+  RECONCILIATION_MANAGE,
+  RECONCILIATION_VIEW,
+} from '../../constants/permissions';
 
 const router = Router();
 
@@ -12,28 +19,36 @@ const router = Router();
 router.get(
   '/reports/trial-balance',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
   FinancialReportingController.getTrialBalance
 );
 
 router.get(
   '/reports/profit-loss',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
   FinancialReportingController.getProfitAndLoss
 );
 
 router.get(
   '/reports/balance-sheet',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
   FinancialReportingController.getBalanceSheet
 );
 
 router.post(
   '/accounts',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_CREATE, ACCOUNTING_MANAGE),
   validateRequest(createAccountSchema),
   AccountingController.createAccount
 );
@@ -41,14 +56,18 @@ router.post(
 router.get(
   '/accounts',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
   AccountingController.getAccounts
 );
 
 router.post(
   '/journal-entries',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT, Role.CASHIER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_CREATE, ACCOUNTING_MANAGE),
   validateRequest(createJournalEntrySchema),
   AccountingController.createJournalEntry
 );
@@ -56,14 +75,18 @@ router.post(
 router.get(
   '/ledger',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
   AccountingController.getLedger
 );
 
 router.get(
   '/reconciliation',
   extractAuth,
-  authorize(Role.ADMIN, Role.ACCOUNTANT),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(RECONCILIATION_MANAGE, RECONCILIATION_VIEW),
   AccountingController.reconcileBalances
 );
 

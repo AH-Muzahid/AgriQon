@@ -6,7 +6,7 @@ import csurf from 'csurf';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import { notFound } from './middleware/notFound';
-import { extractAuth } from './middleware/rbac';
+import { extractAuth } from './app/middleware/rbac.middleware';
 import router from './app/routes';
 import globalErrorHandler from './app/middleware/error.middleware';
 

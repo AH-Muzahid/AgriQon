@@ -1,16 +1,25 @@
 import { Router } from 'express';
 import { SupplierController } from './supplier.controller';
-import { extractAuth, authorize } from '../../middleware/rbac.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
 import validateRequest from '../../middleware/validateRequest';
 import { createSupplierSchema, updateSupplierSchema } from './supplier.validation';
-import { Role } from '../../../generated/client';
+import {
+  SUPPLIER_CREATE,
+  SUPPLIER_VIEW,
+  SUPPLIER_UPDATE,
+  SUPPLIER_DELETE,
+  SUPPLIER_MANAGE,
+} from '../../constants/permissions';
 
 const router = Router();
 
 router.post(
   '/',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(SUPPLIER_CREATE, SUPPLIER_MANAGE),
   validateRequest(createSupplierSchema),
   SupplierController.create
 );
@@ -18,21 +27,27 @@ router.post(
 router.get(
   '/',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(SUPPLIER_VIEW, SUPPLIER_MANAGE),
   SupplierController.getAll
 );
 
 router.get(
   '/:id',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(SUPPLIER_VIEW, SUPPLIER_MANAGE),
   SupplierController.getById
 );
 
 router.patch(
   '/:id',
   extractAuth,
-  authorize(Role.ADMIN, Role.MANAGER),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(SUPPLIER_UPDATE, SUPPLIER_MANAGE),
   validateRequest(updateSupplierSchema),
   SupplierController.update
 );
@@ -40,7 +55,9 @@ router.patch(
 router.delete(
   '/:id',
   extractAuth,
-  authorize(Role.ADMIN),
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(SUPPLIER_DELETE, SUPPLIER_MANAGE),
   SupplierController.delete
 );
 

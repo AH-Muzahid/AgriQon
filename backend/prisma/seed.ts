@@ -1,4 +1,4 @@
-import { PrismaClient, Role, OrderStatus, PaymentStatus, MovementType, ProcessingStatus, AccountType } from '../src/generated/client';
+import { PrismaClient, PlatformRole, BusinessRole, OrderStatus, PaymentStatus, MovementType, ProcessingStatus, AccountType } from '../src/generated/client';
 import { faker } from '@faker-js/faker';
 import { seedPermissions } from './seed-permissions';
 
@@ -38,17 +38,31 @@ async function main() {
 
     // 3. Create Users
     const users = [];
-    const roles: Role[] = [Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.WAREHOUSE_KEEPER];
-    for (const role of roles) {
+    const platformRoles = [PlatformRole.SELLER, PlatformRole.SELLER, PlatformRole.SELLER, PlatformRole.SELLER, PlatformRole.SELLER];
+    const businessRoles = [BusinessRole.OWNER, BusinessRole.MANAGER, BusinessRole.STAFF, BusinessRole.STAFF, BusinessRole.STAFF];
+    
+    for (let j = 0; j < platformRoles.length; j++) {
+      const pRole = platformRoles[j];
+      const bRole = businessRoles[j];
+      
       const user = await prisma.user.create({
         data: {
           name: faker.person.fullName(),
           email: faker.internet.email().toLowerCase(),
           password: 'password123',
-          role: role,
+          role: pRole,
           businessId: business.id,
         },
       });
+
+      await prisma.userBusinessRole.create({
+        data: {
+          userId: user.id,
+          businessId: business.id,
+          role: bRole,
+        },
+      });
+
       users.push(user);
     }
 

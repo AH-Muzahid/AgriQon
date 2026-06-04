@@ -1,13 +1,15 @@
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { logger } from '../app/lib/logger';
-import type { Role } from '../generated/client';
+import type { Role, PlatformRole } from '../generated/client';
 import { env } from '../config/env';
 
 export type AuthUser = {
   id: string;
-  role: Role;
+  role: Role | PlatformRole;
+  email?: string;
   businessId?: string | null;
+  organizationId?: string | null;
 };
 
 declare global {

@@ -65,6 +65,7 @@ model Business {
   refunds           Refund[]
   inventoryValuations InventoryValuation[]
   reportCaches      ReportCache[]
+  userBusinessRoles UserBusinessRole[]
 
   @@index([organizationId])
 }
@@ -87,6 +88,7 @@ model User {
   notifications Notification[]
   postedJournalEntries JournalEntry[] @relation("JournalPostedBy")
   business      Business?      @relation(fields: [businessId], references: [id])
+  businessRoles UserBusinessRole[]
 
   @@index([businessId])
 }
@@ -611,6 +613,7 @@ model Permission {
   id          String @id @default(cuid())
   key         String @unique
   description String?
+  rolePermissions RolePermission[]
 }
 
 model RolePermission {
