@@ -1,10 +1,13 @@
 import { AccountingService } from '../accounting/accounting.service';
+import { AccountingRepository } from '../accounting/accounting.repository';
 import { BusinessRepository } from './business.repository';
 import { CreateBusinessDTO, UpdateBusinessDTO } from './business.validation';
 import { AppError } from '../../errors/AppError';
 import { env } from '../../../config/env';
 import { WarehouseService } from '../warehouse/warehouse.service';
 import { WarehouseRepository } from '../warehouse/warehouse.repository';
+import { prisma } from '../../lib/prisma';
+import { Prisma } from '../../../generated/client';
 
 export class BusinessService {
   private accountingService: AccountingService;
@@ -13,21 +16,45 @@ export class BusinessService {
     this.accountingService = new AccountingService();
   }
 
-  async createBusiness(data: CreateBusinessDTO & { organizationId: string }) {
-    const business = await this.businessRepo.create(data);
-    
-    // Initialize mandatory accounting accounts
-    await this.accountingService.initializeSystemAccounts(business.id);
-    
-    // Create default warehouse for the new business using env config
-    const { defaultWarehouseName } = env;
-    const warehouseService = new WarehouseService(new WarehouseRepository());
-    await warehouseService.createWarehouse({
-      name: defaultWarehouseName,
-      businessId: business.id,
-    } as any);
+  async createBusiness(data: CreateBusinessDTO & { organizationId: string; userId?: string }) {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // 1. Create Business using transaction repo
+      const businessRepoTx = new BusinessRepository(tx);
+      const business = await businessRepoTx.create(data);
+      
+      // 2. Assign the creator as OWNER of this business if userId is provided
+      if (data.userId) {
+        await tx.userBusinessRole.create({
+          data: {
+            userId: data.userId,
+            businessId: business.id,
+            role: 'OWNER',
+          },
+        });
 
-    return business;
+        // Update the User's businessId to link them to the new business
+        await tx.user.update({
+          where: { id: data.userId },
+          data: { businessId: business.id },
+        });
+      }
+      
+      // 3. Initialize mandatory accounting accounts within the transaction
+      const accountingRepoTx = new AccountingRepository(tx);
+      const accountingServiceTx = new AccountingService(accountingRepoTx);
+      await accountingServiceTx.initializeSystemAccounts(business.id);
+      
+      // 4. Create default warehouse for the new business using env config within the transaction
+      const { defaultWarehouseName } = env;
+      const warehouseRepoTx = new WarehouseRepository(tx);
+      const warehouseServiceTx = new WarehouseService(warehouseRepoTx);
+      await warehouseServiceTx.createWarehouse({
+        name: defaultWarehouseName || 'Main Warehouse',
+        businessId: business.id,
+      } as any);
+
+      return business;
+    });
   }
 
   async getBusinessById(id: string) {

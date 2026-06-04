@@ -19,8 +19,8 @@ export class AccountingService {
   private accountingRepository: AccountingRepository;
   private auditService: AuditService;
 
-  constructor() {
-    this.accountingRepository = new AccountingRepository();
+  constructor(accountingRepository?: AccountingRepository) {
+    this.accountingRepository = accountingRepository || new AccountingRepository();
     this.auditService = new AuditService();
   }
 

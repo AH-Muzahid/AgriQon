@@ -13,6 +13,7 @@ const createBusiness = catchAsync(async (req: AuthRequest, res: Response) => {
   const result = await businessService.createBusiness({
     ...req.body,
     organizationId,
+    userId: req.user?.id,
   });
 
   sendResponse(res, {
