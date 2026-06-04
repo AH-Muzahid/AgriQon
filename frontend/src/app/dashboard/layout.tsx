@@ -19,8 +19,12 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   );
 
   useEffect(() => {
-    if (!isLoading && !user && !isDev) {
-      router.push('/auth/login');
+    if (!isLoading) {
+      if (!user && !isDev) {
+        router.push('/auth/login');
+      } else if (user && user.role === 'SELLER' && !user.businessId) {
+        router.push('/onboarding');
+      }
     }
   }, [user, isLoading, router, isDev]);
 
