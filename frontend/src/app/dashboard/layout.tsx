@@ -11,22 +11,15 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const { user, isLoading } = useAuth();
   const router = useRouter();
   
-  // Dev mode bypass for seamless local demo viewing
-  const isDev = typeof window !== 'undefined' && (
-    window.location.hostname === 'localhost' || 
-    window.location.hostname === '127.0.0.1' ||
-    process.env.NODE_ENV === 'development'
-  );
-
   useEffect(() => {
     if (!isLoading) {
-      if (!user && !isDev) {
+      if (!user) {
         router.push('/auth/login');
       } else if (user && user.role === 'SELLER' && !user.businessId) {
         router.push('/onboarding');
       }
     }
-  }, [user, isLoading, router, isDev]);
+  }, [user, isLoading, router]);
 
   if (isLoading) {
     return (
@@ -39,7 +32,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     );
   }
 
-  if (!user && !isDev) {
+  if (!user) {
     return null;
   }
 

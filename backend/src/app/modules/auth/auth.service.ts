@@ -144,24 +144,29 @@ export class AuthService {
       throw new AppError('Missing idToken from OAuth provider', 400);
     }
 
+    let verifiedEmail: string | undefined;
     try {
       const verified = jwt.verify(data.idToken, env.supabaseJwtSecret, { algorithms: ['HS256'] }) as any;
       // Extract email from verified token payload in a defensive manner
-      const verifiedEmail = verified?.email || verified?.user?.email || undefined;
-      if (verifiedEmail && verifiedEmail !== data.email) {
-        throw new AppError('OAuth token email does not match provided email', 401);
-      }
+      verifiedEmail = verified?.email || verified?.user?.email || undefined;
     } catch (err: any) {
       throw new AppError(`Invalid OAuth token: ${err?.message ?? 'verification failed'}`, 401);
     }
 
-    // Do NOT trust client-provided `role`. Default to USER for OAuth signups.
-    const assignedRole: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER' = 'USER';
+    if (verifiedEmail && verifiedEmail !== data.email) {
+      throw new AppError('OAuth token email does not match provided email', 401);
+    }
+
+    // Validate client-provided `role`. Only allow USER or SELLER, default to USER.
+    let assignedRole: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER' = 'USER';
+    if (data.role === 'SELLER' || data.role === 'USER') {
+      assignedRole = data.role;
+    }
 
     let user = await this.userRepo.findByEmail(data.email);
 
     if (!user) {
-      // Create new user if they don't exist — always with server-assigned role
+      // Create new user if they don't exist — with validated role
       user = await this.userRepo.create({
         email: data.email,
         name: data.name,

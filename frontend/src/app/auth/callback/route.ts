@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function GET(request: Request) {
@@ -20,10 +20,10 @@ export async function GET(request: Request) {
           get(name: string) {
             return cookieStore.get(name)?.value;
           },
-          set(name: string, value: string, options: any) {
+          set(name: string, value: string, options: CookieOptions) {
             cookieStore.set({ name, value, ...options });
           },
-          remove(name: string, options: any) {
+          remove(name: string, options: CookieOptions) {
             cookieStore.delete({ name, ...options });
           },
         },
@@ -75,13 +75,13 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/auth/login?error=backend_invalid_response`);
       }
 
-      const { user } = parsedResponse.data;
+      const { accessToken } = parsedResponse.data;
 
       console.log('[AuthCallback Route] Successful backend authentication. Redirecting to success page...');
 
-      // Backend already set httpOnly cookies; redirect to success page where
-      // the client will fetch `/auth/me` to populate user state.
-      return NextResponse.redirect(`${origin}/auth/callback/success`);
+      // Backend already set httpOnly cookies; redirect to success page and pass the token
+      // in the query parameters so the client can initialize its local Storage session.
+      return NextResponse.redirect(`${origin}/auth/callback/success?token=${accessToken}`);
     } catch (err) {
       console.error('[AuthCallback Route] Internal server error handling callback:', err);
       const msg = err instanceof Error ? err.message : 'Unknown error';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -19,9 +19,24 @@ export default function SignupPage() {
     role: 'USER' as 'USER' | 'SELLER',
   });
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { register, signUpWithGoogle } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { user, isLoading, register, signUpWithGoogle } = useAuth();
   const router = useRouter();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && user) {
+      if (user.role === 'SELLER') {
+        if (!user.businessId) {
+          router.replace('/onboarding');
+        } else {
+          router.replace('/dashboard');
+        }
+      } else {
+        router.replace('/');
+      }
+    }
+  }, [user, isLoading, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,11 +47,19 @@ export default function SignupPage() {
       return;
     }
 
-    setIsLoading(true);
+    setSubmitting(true);
 
     try {
-      await register(formData.email, formData.password, formData.name, formData.role);
-      router.push('/');
+      const signedUpUser = await register(formData.email, formData.password, formData.name, formData.role);
+      if (signedUpUser.role === 'SELLER') {
+        if (!signedUpUser.businessId) {
+          router.push('/onboarding');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        router.push('/');
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError<{ message?: string }>(err)) {
         setError(err.response?.data?.message || 'Signup failed. Please try again.');
@@ -46,7 +69,7 @@ export default function SignupPage() {
         setError('Signup failed. Please try again.');
       }
     } finally {
-      setIsLoading(false);
+      setSubmitting(false);
     }
   }
 
@@ -251,12 +274,12 @@ export default function SignupPage() {
               </div>
             </div>
 
-            <Button 
+             <Button 
               type="submit" 
-              disabled={isLoading}
+              disabled={submitting || isLoading}
               className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-lg shadow-lg shadow-emerald-200 group transition-all active:scale-95 mt-4"
             >
-              {isLoading ? (
+              {submitting ? (
                 <div className="flex items-center gap-2">
                   <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Creating Account...
@@ -282,7 +305,7 @@ export default function SignupPage() {
               type="button"
               variant="outline"
               onClick={() => signUpWithGoogle(formData.role)}
-              disabled={isLoading}
+              disabled={submitting || isLoading}
               className="w-full h-12 border-slate-200 hover:bg-white hover:border-slate-300 rounded-xl font-bold flex items-center justify-center gap-3 transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

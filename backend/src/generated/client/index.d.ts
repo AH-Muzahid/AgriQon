@@ -225,7 +225,6 @@ export type ReportCache = $Result.DefaultSelection<Prisma.$ReportCachePayload>
 export namespace $Enums {
   export const Role: {
   USER: 'USER',
-  SELLER: 'SELLER',
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
   CASHIER: 'CASHIER',
@@ -238,7 +237,7 @@ export type Role = (typeof Role)[keyof typeof Role]
 
 export const PlatformRole: {
   USER: 'USER',
-  SELLER: 'SELLER'
+  SUPER_ADMIN: 'SUPER_ADMIN'
 };
 
 export type PlatformRole = (typeof PlatformRole)[keyof typeof PlatformRole]

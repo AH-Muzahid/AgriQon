@@ -38,7 +38,7 @@ async function main() {
 
     // 3. Create Users
     const users = [];
-    const platformRoles = [PlatformRole.SELLER, PlatformRole.SELLER, PlatformRole.SELLER, PlatformRole.SELLER, PlatformRole.SELLER];
+    const platformRoles = [PlatformRole.USER, PlatformRole.USER, PlatformRole.USER, PlatformRole.USER, PlatformRole.USER];
     const businessRoles = [BusinessRole.OWNER, BusinessRole.MANAGER, BusinessRole.STAFF, BusinessRole.STAFF, BusinessRole.STAFF];
     
     for (let j = 0; j < platformRoles.length; j++) {

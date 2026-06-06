@@ -598,7 +598,6 @@ model Review {
 
 enum Role {
   USER
-  SELLER
   ADMIN
   MANAGER
   CASHIER
@@ -625,7 +624,7 @@ model RolePermission {
 
 enum PlatformRole {
   USER
-  SELLER
+  SUPER_ADMIN
 }
 
 enum BusinessRole {

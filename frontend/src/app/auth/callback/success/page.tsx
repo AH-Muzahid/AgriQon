@@ -2,8 +2,8 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { apiClient } from '@/lib/api-client';
-import { useAuth } from '@/context/auth-context';
+import { apiClient, ApiResponse } from '@/lib/api-client';
+import { useAuth, User } from '@/context/auth-context';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -17,20 +17,33 @@ function SuccessHandler() {
   useEffect(() => {
     const handleSuccess = async () => {
       try {
+        const token = searchParams.get('token');
+        if (token) {
+          apiClient.setToken(token);
+        }
+
         // Backend has set httpOnly cookies. Fetch current user from backend.
-        const response = await apiClient.client.get('/auth/me');
-        const userData = response as any;
+        const response = (await apiClient.client.get('/auth/me')) as unknown as ApiResponse<User>;
+        const userData = response?.data;
 
         if (!userData) {
           throw new Error('Failed to load user after OAuth callback');
         }
 
-        setUser(userData as any);
+        setUser(userData);
         setStatus('success');
 
         // Small delay for the success animation to show
         setTimeout(() => {
-          router.push('/');
+          if (userData.role === 'SELLER') {
+            if (!userData.businessId) {
+              router.push('/onboarding');
+            } else {
+              router.push('/dashboard');
+            }
+          } else {
+            router.push('/');
+          }
         }, 1200);
       } catch (err) {
         console.error('[AuthSuccess] Error setting up user session:', err);

@@ -937,7 +937,7 @@ exports.Prisma.ReportCacheOrderByRelevanceFieldEnum = {
 };
 exports.PlatformRole = exports.$Enums.PlatformRole = {
   USER: 'USER',
-  SELLER: 'SELLER'
+  SUPER_ADMIN: 'SUPER_ADMIN'
 };
 
 exports.MovementType = exports.$Enums.MovementType = {

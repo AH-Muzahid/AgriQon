@@ -96,4 +96,117 @@ describe('AuthService', () => {
       );
     });
   });
+
+  describe('oauthCallback', () => {
+    const oAuthData = {
+      email: 'oauth@example.com',
+      name: 'OAuth User',
+      provider: 'google',
+      idToken: 'valid-id-token',
+    };
+
+    beforeEach(() => {
+      (jwt.verify as jest.Mock).mockReturnValue({ email: 'oauth@example.com' });
+      (jwt.sign as jest.Mock).mockReturnValue('backend-access-token');
+      mockUserRepo.createRefreshToken.mockResolvedValue({} as any);
+    });
+
+    it('should sign up a new user as USER by default if no role is provided', async () => {
+      mockUserRepo.findByEmail.mockResolvedValue(null);
+      mockUserRepo.create.mockResolvedValue({
+        id: 'new-oauth-user-1',
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'USER',
+      } as any);
+
+      const result = await authService.oauthCallback({ ...oAuthData });
+
+      expect(jwt.verify).toHaveBeenCalled();
+      expect(mockUserRepo.create).toHaveBeenCalledWith({
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'USER',
+      });
+      expect(result.user.role).toBe('USER');
+      expect(result.accessToken).toBe('backend-access-token');
+    });
+
+    it('should sign up a new user as SELLER if role is set to SELLER', async () => {
+      mockUserRepo.findByEmail.mockResolvedValue(null);
+      mockUserRepo.create.mockResolvedValue({
+        id: 'new-oauth-user-2',
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'SELLER',
+      } as any);
+
+      const result = await authService.oauthCallback({ ...oAuthData, role: 'SELLER' });
+
+      expect(mockUserRepo.create).toHaveBeenCalledWith({
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'SELLER',
+      });
+      expect(result.user.role).toBe('SELLER');
+    });
+
+    it('should sign up a new user as USER if an invalid role is provided', async () => {
+      mockUserRepo.findByEmail.mockResolvedValue(null);
+      mockUserRepo.create.mockResolvedValue({
+        id: 'new-oauth-user-3',
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'USER',
+      } as any);
+
+      const result = await authService.oauthCallback({ ...oAuthData, role: 'ADMIN' as any });
+
+      expect(mockUserRepo.create).toHaveBeenCalledWith({
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'USER',
+      });
+      expect(result.user.role).toBe('USER');
+    });
+
+    it('should login an existing user and preserve their role, ignoring the requested role', async () => {
+      const existingUser = {
+        id: 'existing-oauth-user',
+        email: oAuthData.email,
+        name: oAuthData.name,
+        role: 'ADMIN', // Existing role is ADMIN
+      };
+      mockUserRepo.findByEmail.mockResolvedValue(existingUser as any);
+
+      const result = await authService.oauthCallback({ ...oAuthData, role: 'SELLER' });
+
+      expect(mockUserRepo.create).not.toHaveBeenCalled();
+      expect(result.user.role).toBe('ADMIN');
+    });
+
+    it('should throw an error if idToken is missing', async () => {
+      await expect(
+        authService.oauthCallback({ ...oAuthData, idToken: undefined })
+      ).rejects.toThrow(new AppError('Missing idToken from OAuth provider', 400));
+    });
+
+    it('should throw an error if verification fails', async () => {
+      (jwt.verify as jest.Mock).mockImplementation(() => {
+        throw new Error('jwt expired');
+      });
+
+      await expect(authService.oauthCallback(oAuthData)).rejects.toThrow(
+        new AppError('Invalid OAuth token: jwt expired', 401)
+      );
+    });
+
+    it('should throw an error if verified email does not match provided email', async () => {
+      (jwt.verify as jest.Mock).mockReturnValue({ email: 'hacker@example.com' });
+
+      await expect(authService.oauthCallback(oAuthData)).rejects.toThrow(
+        new AppError('OAuth token email does not match provided email', 401)
+      );
+    });
+  });
 });

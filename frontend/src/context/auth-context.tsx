@@ -96,6 +96,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const actualToken = token || accessToken;
 
+      if (actualToken) {
+        apiClient.setToken(actualToken);
+      }
+
       // Backend sets cookies for the session; rely on cookie-based auth and
       // populate the frontend user state from backend response.
       setUser(userData);
@@ -121,6 +125,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.debug('[Auth] register response received', { url: '/auth/register', hasUser: !!userData, hasToken: !!(token || accessToken) });
       }
       const actualToken = token || accessToken;
+
+      if (actualToken) {
+        apiClient.setToken(actualToken);
+      }
 
       setUser(userData);
       return userData;
@@ -163,15 +171,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signUpWithGoogle(role: 'USER' | 'SELLER') {
     setIsLoading(true);
     try {
-      // Store intended role in sessionStorage and let the redirect URI be static.
-      // Avoid adding query params to redirectTo to prevent OAuth state mismatches.
+      // Store intended role in sessionStorage and also pass it in redirectTo.
+      // Passing it in redirectTo ensures the server-side callback handler can read it.
       sessionStorage.setItem('googleAuthRole', role);
 
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
         },
       });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Leaf, Mail, Lock, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
@@ -16,7 +16,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const { login, signInWithGoogle } = useAuth();
+  const { user, isLoading, login, signInWithGoogle } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && user) {
+      if (user.role === "SELLER") {
+        if (!user.businessId) {
+          router.replace("/onboarding");
+        } else {
+          router.replace("/dashboard");
+        }
+      } else {
+        router.replace("/");
+      }
+    }
+  }, [user, isLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +39,16 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await login(formData.email, formData.password);
-      router.push("/");
+      const loggedInUser = await login(formData.email, formData.password);
+      if (loggedInUser.role === "SELLER") {
+        if (!loggedInUser.businessId) {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
+      } else {
+        router.push("/");
+      }
     } catch (err: unknown) {
       if (axios.isAxiosError<{ message?: string }>(err)) {
         setError(err.response?.data?.message || "Login failed. Please verify your credentials.");

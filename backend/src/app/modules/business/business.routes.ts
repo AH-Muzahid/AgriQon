@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.get(
   '/my-business',
-  auth(Role.ADMIN, Role.MANAGER, Role.USER),
+  auth(Role.ADMIN, Role.MANAGER, Role.USER, Role.SELLER),
   BusinessController.getMyBusiness
 );
 
@@ -26,14 +26,14 @@ router.get(
 
 router.post(
   '/',
-  auth(Role.ADMIN, Role.MANAGER),
+  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
   validateRequest(BusinessValidation.createBusinessSchema),
   BusinessController.createBusiness
 );
 
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER),
+  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
   validateRequest(BusinessValidation.updateBusinessSchema),
   BusinessController.updateBusiness
 );

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/auth-context';
-import { apiClient } from '@/lib/api-client';
+import { useAuth, User } from '@/context/auth-context';
+import { apiClient, ApiResponse } from '@/lib/api-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,7 +65,7 @@ export default function OnboardingPage() {
 
     try {
       // 1. Post to create business
-      await apiClient.client.post('/businesses', {
+      await apiClient.client.post('/business', {
         name: formData.name,
         email: formData.email || undefined,
         phone: formData.phone || undefined,
@@ -76,24 +76,25 @@ export default function OnboardingPage() {
       });
 
       // 2. Fetch updated profile (so businessId is populated)
-      const userRes = await apiClient.client.get('/auth/me');
-      
+      const userRes = (await apiClient.client.get('/auth/me')) as unknown as ApiResponse<User>;
+
       // Axios interceptor unwraps response to return response.data
-      const updatedUser = (userRes as any).data || userRes;
+      const updatedUser = userRes.data;
       setUser(updatedUser);
 
       toast.success('AgroAI Business set up successfully!');
-      
+
       // 3. Transition to success step
       setStep(3);
-      
+
       // 4. Redirect after brief delay
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create business. Please try again.');
-      toast.error(err.message || 'Setup failed');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create business. Please try again.';
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
