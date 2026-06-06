@@ -1,11 +1,12 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import httpStatus from 'http-status';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
 import { BrandService } from './brand.service';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 
-const createBrand = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
+const createBrand = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
   const result = await BrandService.createBrand({
     ...req.body,
     businessId,
@@ -18,9 +19,9 @@ const createBrand = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAllBrands = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
-  const result = await BrandService.getAllBrands(businessId!);
+const getAllBrands = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
+  const result = await BrandService.getAllBrands(businessId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -29,9 +30,10 @@ const getAllBrands = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getBrandById = catchAsync(async (req: Request, res: Response) => {
+const getBrandById = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const result = await BrandService.getBrandById(id);
+  const businessId = req.businessId!;
+  const result = await BrandService.getBrandById(id, businessId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -40,9 +42,10 @@ const getBrandById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateBrand = catchAsync(async (req: Request, res: Response) => {
+const updateBrand = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const result = await BrandService.updateBrand(id, req.body);
+  const businessId = req.businessId!;
+  const result = await BrandService.updateBrand(id, businessId, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -51,9 +54,10 @@ const updateBrand = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const deleteBrand = catchAsync(async (req: Request, res: Response) => {
+const deleteBrand = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const result = await BrandService.deleteBrand(id);
+  const businessId = req.businessId!;
+  const result = await BrandService.deleteBrand(id, businessId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

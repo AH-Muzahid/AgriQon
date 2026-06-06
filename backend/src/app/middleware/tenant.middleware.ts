@@ -10,7 +10,10 @@ export const requireTenant = (req: AuthRequest, res: Response, next: NextFunctio
   const businessId = req.headers['x-business-id'] as string || req.user?.businessId;
 
   if (!businessId) {
-    throw new AppError('Business Context (businessId) is required for this operation', 400);
+    if (!req.user) {
+      return next(new AppError('Unauthorized. Please login.', 401));
+    }
+    return next(new AppError('Business Context (businessId) is required for this operation', 400));
   }
 
   // Inject businessId into request for easy access in controllers/services

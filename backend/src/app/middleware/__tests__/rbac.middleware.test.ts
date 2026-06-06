@@ -97,8 +97,9 @@ describe('RBAC Middleware', () => {
 
       (prisma.userBusinessRole.findUnique as jest.Mock).mockRejectedValue(new Error('DB connection lost'));
 
-      await expect(attachBusinessRole(req as AuthRequest, res as Response, next))
-        .rejects.toThrow(new AppError('RBAC role lookup failed. Access denied.', 403));
+      await attachBusinessRole(req as AuthRequest, res as Response, next);
+
+      expect(next).toHaveBeenCalledWith(new AppError('RBAC role lookup failed. Access denied.', 403));
     });
   });
 
@@ -115,15 +116,23 @@ describe('RBAC Middleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    it('should throw 403 AppError if user lacks all required permissions', async () => {
+    it('should return 403 AppError if user lacks all required permissions', async () => {
       req.user = { id: 'user-1', role: PlatformRole.SELLER };
       req.businessRole = BusinessRole.STAFF;
 
       (PermissionService.getPermissionsForRole as jest.Mock).mockResolvedValue(['product.view']);
 
       const middleware = authorizeAny('product.create' as any);
-      await expect(middleware(req as AuthRequest, res as Response, next))
-        .rejects.toThrow(new AppError('Forbidden. Requires one of: product.create', 403));
+      await middleware(req as AuthRequest, res as Response, next);
+
+      expect(next).toHaveBeenCalledWith(new AppError('Forbidden. Requires one of: product.create', 403));
+    });
+
+    it('should return 401 AppError if user is not authenticated', async () => {
+      const middleware = authorizeAny('product.view' as any);
+      await middleware(req as AuthRequest, res as Response, next);
+
+      expect(next).toHaveBeenCalledWith(new AppError('Unauthorized. Please login.', 401));
     });
   });
 
@@ -140,15 +149,18 @@ describe('RBAC Middleware', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    it('should throw 403 AppError if user lacks one of the required permissions', async () => {
+    it('should return 403 AppError if user lacks one of the required permissions', async () => {
       req.user = { id: 'user-1', role: PlatformRole.SELLER };
       req.businessRole = BusinessRole.STAFF;
 
       (PermissionService.getPermissionsForRole as jest.Mock).mockResolvedValue(['inventory.view']);
 
       const middleware = authorizeAll('inventory.view' as any, 'inventory.update' as any);
-      await expect(middleware(req as AuthRequest, res as Response, next))
-        .rejects.toThrow(new AppError('Forbidden. Requires all of: inventory.view, inventory.update', 403));
+      await middleware(req as AuthRequest, res as Response, next);
+
+      expect(next).toHaveBeenCalledWith(
+        new AppError('Forbidden. Requires all of: inventory.view, inventory.update', 403),
+      );
     });
   });
 });

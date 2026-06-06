@@ -1,10 +1,11 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
 import { ProductService } from './product.service';
 import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 
 // Dependency Injection (Manual for now, can be moved to a container later)
 const productRepository = new ProductRepository();
@@ -12,8 +13,8 @@ const inventoryRepository = new InventoryRepository();
 const inventoryService = new InventoryService(inventoryRepository);
 const productService = new ProductService(productRepository, inventoryService);
 
-const createProduct = catchAsync(async (req: Request, res: Response) => {
-  const { businessId } = req.body; // In production, this comes from auth middleware
+const createProduct = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
   const result = await productService.createProduct({
     businessId,
     data: req.body,
@@ -27,8 +28,8 @@ const createProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAllProducts = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.query.businessId as string;
+const getAllProducts = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const search = req.query.search as string;
@@ -55,9 +56,9 @@ const getAllProducts = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getProductById = catchAsync(async (req: Request, res: Response) => {
+const getProductById = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const businessId = req.query.businessId as string;
+  const businessId = req.businessId!;
 
   const result = await productService.getProductById(id, businessId);
 
@@ -69,11 +70,11 @@ const getProductById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const updateProduct = catchAsync(async (req: Request, res: Response) => {
+const updateProduct = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const { businessId, ...updateData } = req.body;
+  const businessId = req.businessId!;
 
-  const result = await productService.updateProduct(id, businessId, updateData);
+  const result = await productService.updateProduct(id, businessId, req.body);
 
   sendResponse(res, {
     statusCode: 200,
@@ -83,9 +84,9 @@ const updateProduct = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const deleteProduct = catchAsync(async (req: Request, res: Response) => {
+const deleteProduct = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const businessId = req.query.businessId as string;
+  const businessId = req.businessId!;
 
   const result = await productService.deleteProduct(id, businessId);
 

@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { auth } from '../../middleware/auth.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
 import { CustomerController } from './customer.controller';
 import validateRequest from '../../middleware/validateRequest';
 import {
@@ -7,26 +8,61 @@ import {
   updateCustomerSchema,
   customerQuerySchema,
 } from './customer.validation';
-import { Role } from '../../../generated/client';
+import {
+  CUSTOMER_VIEW,
+  CUSTOMER_CREATE,
+  CUSTOMER_UPDATE,
+  CUSTOMER_DELETE,
+} from '../../constants/permissions';
 
 const router = Router();
 
-router.use(auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.ACCOUNTANT, Role.SELLER));
+router.get(
+  '/',
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(CUSTOMER_VIEW),
+  validateRequest(customerQuerySchema),
+  CustomerController.getAllCustomers
+);
 
-router.get('/', validateRequest(customerQuerySchema), CustomerController.getAllCustomers);
-router.get('/:id', CustomerController.getCustomerById);
+router.get(
+  '/:id',
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(CUSTOMER_VIEW),
+  CustomerController.getCustomerById
+);
+
 router.post(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(CUSTOMER_CREATE),
   validateRequest(createCustomerSchema),
   CustomerController.createCustomer
 );
+
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.CASHIER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(CUSTOMER_UPDATE),
   validateRequest(updateCustomerSchema),
   CustomerController.updateCustomer
 );
-router.delete('/:id', auth(Role.ADMIN, Role.MANAGER), CustomerController.deleteCustomer);
+
+router.delete(
+  '/:id',
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(CUSTOMER_DELETE),
+  CustomerController.deleteCustomer
+);
 
 export const CustomerRoutes = router;

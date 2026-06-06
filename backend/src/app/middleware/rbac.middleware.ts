@@ -99,7 +99,7 @@ export const attachBusinessRole = async (
     next();
   } catch (err) {
     // FAIL CLOSED — RBAC lookup errors must not silently pass through
-    throw new AppError('RBAC role lookup failed. Access denied.', 403);
+    next(new AppError('RBAC role lookup failed. Access denied.', 403));
   }
 };
 
@@ -110,7 +110,7 @@ export const attachBusinessRole = async (
  */
 export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user) {
-    throw new AppError('Unauthorized. Please login.', 401);
+    return next(new AppError('Unauthorized. Please login.', 401));
   }
   next();
 };
@@ -123,25 +123,28 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
  */
 export const authorizeAny = (...requiredPermissions: PermissionKey[]) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
-    assertAuthAndRole(req);
-
     try {
+      const authError = getAuthAndRoleError(req);
+      if (authError) return next(authError);
+
       const grantedKeys = await PermissionService.getPermissionsForRole(req.businessRole!);
       const grantedSet = new Set(grantedKeys);
 
       const hasSome = requiredPermissions.some((key) => grantedSet.has(key));
       if (!hasSome) {
-        throw new AppError(
-          `Forbidden. Requires one of: ${requiredPermissions.join(', ')}`,
-          403,
+        return next(
+          new AppError(
+            `Forbidden. Requires one of: ${requiredPermissions.join(', ')}`,
+            403,
+          ),
         );
       }
 
       next();
     } catch (err) {
-      if (err instanceof AppError) throw err;
+      if (err instanceof AppError) return next(err);
       // Fail closed on unexpected errors
-      throw new AppError('Permission check failed. Access denied.', 403);
+      next(new AppError('Permission check failed. Access denied.', 403));
     }
   };
 };
@@ -152,24 +155,27 @@ export const authorizeAny = (...requiredPermissions: PermissionKey[]) => {
  */
 export const authorizeAll = (...requiredPermissions: PermissionKey[]) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
-    assertAuthAndRole(req);
-
     try {
+      const authError = getAuthAndRoleError(req);
+      if (authError) return next(authError);
+
       const grantedKeys = await PermissionService.getPermissionsForRole(req.businessRole!);
       const grantedSet = new Set(grantedKeys);
 
       const hasAll = requiredPermissions.every((key) => grantedSet.has(key));
       if (!hasAll) {
-        throw new AppError(
-          `Forbidden. Requires all of: ${requiredPermissions.join(', ')}`,
-          403,
+        return next(
+          new AppError(
+            `Forbidden. Requires all of: ${requiredPermissions.join(', ')}`,
+            403,
+          ),
         );
       }
 
       next();
     } catch (err) {
-      if (err instanceof AppError) throw err;
-      throw new AppError('Permission check failed. Access denied.', 403);
+      if (err instanceof AppError) return next(err);
+      next(new AppError('Permission check failed. Access denied.', 403));
     }
   };
 };
@@ -180,13 +186,14 @@ export const authorizeAll = (...requiredPermissions: PermissionKey[]) => {
  * Shared pre-check for authorization middleware.
  * Ensures the user is authenticated and has a business role attached.
  */
-function assertAuthAndRole(req: AuthRequest): void {
+function getAuthAndRoleError(req: AuthRequest): AppError | null {
   if (!req.user) {
-    throw new AppError('Unauthorized. Please login.', 401);
+    return new AppError('Unauthorized. Please login.', 401);
   }
   if (!req.businessRole) {
-    throw new AppError('Forbidden. No business role assigned.', 403);
+    return new AppError('Forbidden. No business role assigned.', 403);
   }
+  return null;
 }
 
 // ─── Backward Compatibility ─────────────────────────────────────────

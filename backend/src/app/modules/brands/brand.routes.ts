@@ -2,40 +2,61 @@ import express from 'express';
 import validateRequest from '../../middleware/validateRequest';
 import { BrandController } from './brand.controller';
 import { BrandValidation } from './brand.validation';
-import { auth } from '../../middleware/auth.middleware';
-import { Role } from '../../../generated/client';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
+import {
+  BRAND_VIEW,
+  BRAND_CREATE,
+  BRAND_UPDATE,
+  BRAND_DELETE,
+} from '../../constants/permissions';
 
 const router = express.Router();
 
 router.get(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.USER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(BRAND_VIEW),
   BrandController.getAllBrands
 );
 
 router.get(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.USER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(BRAND_VIEW),
   BrandController.getBrandById
 );
 
 router.post(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(BRAND_CREATE),
   validateRequest(BrandValidation.createBrandSchema),
   BrandController.createBrand
 );
 
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(BRAND_UPDATE),
   validateRequest(BrandValidation.updateBrandSchema),
   BrandController.updateBrand
 );
 
 router.delete(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(BRAND_DELETE),
   BrandController.deleteBrand
 );
 

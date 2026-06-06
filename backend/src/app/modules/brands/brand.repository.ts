@@ -14,20 +14,21 @@ const findMany = async (businessId: string): Promise<Brand[]> => {
   });
 };
 
-const findById = async (id: string): Promise<Brand | null> => {
-  return await prisma.brand.findUnique({
-    where: { id },
+const findById = async (id: string, businessId: string): Promise<Brand | null> => {
+  return await prisma.brand.findFirst({
+    where: { id, businessId },
   });
 };
 
-const update = async (id: string, data: any): Promise<Brand> => {
+const update = async (id: string, _businessId: string, data: any): Promise<Brand> => {
+  // Tenant ownership verified by service via findById before calling update.
   return await prisma.brand.update({
     where: { id },
     data,
   });
 };
 
-const deleteById = async (id: string): Promise<Brand> => {
+const deleteById = async (id: string, _businessId: string): Promise<Brand> => {
   return await prisma.brand.delete({
     where: { id },
   });

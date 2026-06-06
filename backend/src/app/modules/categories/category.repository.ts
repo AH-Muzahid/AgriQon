@@ -8,18 +8,18 @@ const create = async (data: any): Promise<Category> => {
   });
 };
 
-const findMany = async (businessId?: string): Promise<Category[]> => {
+const findMany = async (businessId: string): Promise<Category[]> => {
   return await prisma.category.findMany({
-    where: businessId ? { businessId } : {},
+    where: { businessId },
     include: {
       children: true,
     },
   });
 };
 
-const findById = async (id: string): Promise<Category | null> => {
-  return await prisma.category.findUnique({
-    where: { id },
+const findById = async (id: string, businessId: string): Promise<Category | null> => {
+  return await prisma.category.findFirst({
+    where: { id, businessId },
     include: {
       children: true,
       parent: true,
@@ -27,14 +27,15 @@ const findById = async (id: string): Promise<Category | null> => {
   });
 };
 
-const update = async (id: string, data: any): Promise<Category> => {
+const update = async (id: string, _businessId: string, data: any): Promise<Category> => {
+  // Tenant ownership verified by service via findById before calling update.
   return await prisma.category.update({
     where: { id },
     data,
   });
 };
 
-const deleteById = async (id: string): Promise<Category> => {
+const deleteById = async (id: string, _businessId: string): Promise<Category> => {
   return await prisma.category.delete({
     where: { id },
   });
