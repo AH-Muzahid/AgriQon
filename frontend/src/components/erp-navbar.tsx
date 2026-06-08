@@ -14,12 +14,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from 'next-themes';
-import { Bell, Sun, Moon, Laptop, ShieldAlert, Sparkles, Database } from 'lucide-react';
+import { Bell, Sun, Moon, Laptop, ShieldAlert, Sparkles, Database, Search } from 'lucide-react';
 
 export function ErpNavbar() {
   const { user } = useAuthStore();
   const { currentBusiness, activeWarehouseId, warehouses, setActiveWarehouseId } = useOrganizationStore();
-  const { setTheme, theme } = useTheme();
+  const { setTheme } = useTheme();
 
   const activeWarehouse = warehouses.find((w) => w.id === activeWarehouseId);
 
@@ -32,12 +32,39 @@ export function ErpNavbar() {
       .slice(0, 2);
   };
 
+  // Trigger Ctrl+K Command Palette programmatically on search bar click
+  const triggerCommandPalette = () => {
+    const event = new KeyboardEvent('keydown', {
+      key: 'k',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    document.dispatchEvent(event);
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 shadow-sm md:px-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-1">
         <SidebarTrigger />
         <div className="hidden h-4 w-[1px] bg-border md:block" />
         <DashboardBreadcrumbs />
+      </div>
+
+      {/* Global search component */}
+      <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
+        <button
+          onClick={triggerCommandPalette}
+          className="w-full flex items-center justify-between gap-2 border rounded-xl px-3 py-1.5 text-xs text-muted-foreground bg-muted/30 hover:bg-muted/60 transition-colors text-left cursor-pointer border-slate-200"
+        >
+          <div className="flex items-center gap-2">
+            <Search className="h-3.5 w-3.5" />
+            <span>Search products, customers, orders, invoices, payments...</span>
+          </div>
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+            <span className="text-[9px]">Ctrl</span>K
+          </kbd>
+        </button>
       </div>
 
       <div className="flex items-center gap-4">
@@ -48,7 +75,7 @@ export function ErpNavbar() {
             <span className="text-xs font-medium text-muted-foreground">Warehouse:</span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 gap-1 px-1 font-semibold text-xs">
+                <Button variant="ghost" size="sm" className="h-6 gap-1 px-1 font-semibold text-xs cursor-pointer">
                   {activeWarehouse?.name || 'Select Warehouse'}
                   <span className="text-[10px] text-muted-foreground">({activeWarehouse?.code})</span>
                 </Button>
@@ -78,7 +105,7 @@ export function ErpNavbar() {
         {/* Notifications Area */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border">
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border cursor-pointer">
               <Bell className="h-4 w-4" />
               <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-primary" />
             </Button>
@@ -116,7 +143,7 @@ export function ErpNavbar() {
         {/* Theme Toggle */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full border">
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full border cursor-pointer">
               <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
               <span className="sr-only">Toggle theme</span>

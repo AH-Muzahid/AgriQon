@@ -4,6 +4,7 @@ import { ErpProvider } from '@/components/providers/erp-provider';
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 import { ErpSidebar } from '@/components/erp-sidebar';
 import { ErpNavbar } from '@/components/erp-navbar';
+import { CommandPalette } from '@/components/command-palette';
 import React from 'react';
 
 export default function ErpLayout({ children }: { children: React.ReactNode }) {
@@ -32,6 +33,9 @@ export default function ErpLayout({ children }: { children: React.ReactNode }) {
             </main>
           </SidebarInset>
         </div>
+
+        {/* Global Keyboard Command Palette */}
+        <CommandPalette />
       </SidebarProvider>
     </ErpProvider>
   );
