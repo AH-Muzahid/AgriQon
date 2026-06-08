@@ -236,6 +236,47 @@ export const requirePlatformAdmin = (
   next();
 };
 
+// ─── Organization-Level Guard ────────────────────────────────────────
+
+/**
+ * Require organization-level authorization.
+ *
+ * Purpose: guards routes that operate on organization-scoped data BEFORE
+ * a tenant (business) context exists — e.g. listing, creating, or deleting
+ * a Business under an Organization.
+ *
+ * Behaviour:
+ *  - Validates the JWT (user must be authenticated via extractAuth)
+ *  - Checks req.user.role against the provided allowed roles
+ *  - Does NOT require req.businessId or tenant context
+ *
+ * Usage:
+ *  router.get('/', extractAuth, requireOrganizationAuth(Role.ADMIN, Role.MANAGER), handler)
+ *
+ * Must run AFTER extractAuth.
+ */
+export const requireOrganizationAuth = (...roles: Role[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(new AppError("Unauthorized. Please login.", 401));
+    }
+
+    const userRole = req.user.role as string;
+    const allowed = roles.map((r) => r as string);
+
+    if (!allowed.includes(userRole)) {
+      return next(
+        new AppError(
+          `Forbidden. Requires one of organization roles: ${roles.join(", ")}`,
+          403,
+        ),
+      );
+    }
+
+    next();
+  };
+};
+
 // ─── Backward Compatibility ─────────────────────────────────────────
 
 /**
@@ -245,3 +286,4 @@ export const requirePlatformAdmin = (
  */
 export const authorize = (...keys: any[]) =>
   authorizeAny(...(keys as PermissionKey[]));
+

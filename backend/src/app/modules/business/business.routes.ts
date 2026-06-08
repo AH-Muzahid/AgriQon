@@ -2,9 +2,8 @@ import express from "express";
 import validateRequest from "../../middleware/validateRequest";
 import { BusinessValidation } from "./business.validation";
 import { BusinessController } from "./business.controller";
-import { auth } from "../../middleware/auth.middleware";
 import { Role } from "../../../generated/client";
-import { extractAuth, attachBusinessRole, authorizeAny } from "../../middleware/rbac.middleware";
+import { extractAuth, attachBusinessRole, authorizeAny, requireOrganizationAuth } from "../../middleware/rbac.middleware";
 import { requireTenant } from "../../middleware/tenant.middleware";
 import { BUSINESS_VIEW, BUSINESS_UPDATE } from "../../constants/permissions";
 
@@ -23,13 +22,15 @@ router.get("/public", BusinessController.getAllBusinesses);
 
 router.get(
   "/",
-  auth(Role.ADMIN, Role.MANAGER),
+  extractAuth,
+  requireOrganizationAuth(Role.ADMIN, Role.MANAGER),
   BusinessController.getBusinessesByOrganization,
 );
 
 router.post(
   "/",
-  auth(Role.ADMIN, Role.MANAGER),
+  extractAuth,
+  requireOrganizationAuth(Role.ADMIN, Role.MANAGER),
   validateRequest(BusinessValidation.createBusinessSchema),
   BusinessController.createBusiness,
 );
@@ -44,6 +45,11 @@ router.patch(
   BusinessController.updateBusiness,
 );
 
-router.delete("/:id", auth(Role.ADMIN), BusinessController.deleteBusiness);
+router.delete(
+  "/:id",
+  extractAuth,
+  requireOrganizationAuth(Role.ADMIN),
+  BusinessController.deleteBusiness,
+);
 
 export const BusinessRoutes = router;
