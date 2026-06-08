@@ -45,7 +45,7 @@ export function ErpNavbar() {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 shadow-sm md:px-6">
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex items-center gap-4 shrink-0">
         <SidebarTrigger />
         <div className="hidden h-4 w-[1px] bg-border md:block" />
         <DashboardBreadcrumbs />

@@ -64,7 +64,7 @@ export function DashboardBreadcrumbs() {
 
   return (
     <Breadcrumb>
-      <BreadcrumbList>
+      <BreadcrumbList className="flex-nowrap whitespace-nowrap">
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link href="/dashboard">Dashboard</Link>
