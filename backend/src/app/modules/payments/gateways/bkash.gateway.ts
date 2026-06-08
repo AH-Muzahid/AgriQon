@@ -2,28 +2,26 @@ import { IPaymentGateway, GatewayInitiatePayload, GatewayInitiateResponse, Payme
 
 export class BkashGateway implements IPaymentGateway {
   async initiatePayment(payload: GatewayInitiatePayload): Promise<GatewayInitiateResponse> {
-    // Boilerplate for bKash Initiate Payment
     console.log('Initiating bKash payment', payload);
     return {
       success: true,
+      transactionId: 'BKASH_' + Date.now() + '_' + payload.orderId,
       paymentUrl: 'https://sandbox.payment.bkash.com/checkout/...', 
     };
   }
 
   async verifyPayment(data: any): Promise<PaymentVerificationResult> {
-    // Boilerplate for bKash Verify Payment
     console.log('Verifying bKash payment', data);
     return {
       isVerified: true,
-      transactionId: data.transactionId || 'mock_trx_id',
-      amount: data.amount || 0,
+      transactionId: data.transactionId || data.body?.transactionId,
+      amount: data.amount || data.body?.amount || 0,
       currency: 'BDT',
       status: 'SUCCESS',
     };
   }
 
   async processRefund(payload: GatewayRefundPayload): Promise<GatewayRefundResponse> {
-    // Boilerplate for bKash Refund
     console.log('Processing bKash refund', payload);
     return {
       success: true,

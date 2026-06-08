@@ -1,46 +1,131 @@
 import { ProductContract, CreateProductInput, UpdateProductInput } from '@/types/contracts/product.contract';
-import { MOCK_PRODUCTS } from '@/lib/mock-erp-data';
+import { apiClient } from '../api/client';
 
 export const productsMock = {
   async list(): Promise<ProductContract[]> {
-    return new Promise((resolve) => setTimeout(() => resolve(MOCK_PRODUCTS as ProductContract[]), 100));
+    const res = await apiClient.get<any>('/products?limit=100');
+    const items = res.items || [];
+    return items.map((item: any) => ({
+      sku: item.sku || item.id,
+      name: item.title,
+      category: item.category?.name || 'Uncategorized',
+      brand: item.brand?.name || 'Generic',
+      costPrice: Number(item.costPrice || 0),
+      sellingPrice: Number(item.price),
+      status: item.deletedAt ? 'INACTIVE' : 'ACTIVE',
+      description: item.description || '',
+    }));
   },
 
   async getById(sku: string): Promise<ProductContract | null> {
-    return new Promise((resolve) => {
-      const p = MOCK_PRODUCTS.find((item) => item.sku === sku);
-      setTimeout(() => resolve((p as ProductContract) || null), 100);
-    });
+    try {
+      const item = await apiClient.get<any>(`/products/${sku}`);
+      if (item) {
+        return {
+          sku: item.sku || item.id,
+          name: item.title,
+          category: item.category?.name || 'Uncategorized',
+          brand: item.brand?.name || 'Generic',
+          costPrice: Number(item.costPrice || 0),
+          sellingPrice: Number(item.price),
+          status: item.deletedAt ? 'INACTIVE' : 'ACTIVE',
+          description: item.description || '',
+        };
+      }
+    } catch {
+      const list = await this.list();
+      return list.find((item) => item.sku === sku) || null;
+    }
+    return null;
   },
 
   async create(input: CreateProductInput): Promise<ProductContract> {
-    return new Promise((resolve) => {
-      const created: ProductContract = {
-        ...input,
-        category: input.category || 'Uncategorized',
-        brand: input.brand || 'Generic',
-        status: 'ACTIVE',
-        description: input.description || '',
-      };
-      setTimeout(() => resolve(created), 100);
-    });
+    let categoryId = '';
+    try {
+      const cats = await apiClient.get<any>('/categories');
+      const matched = cats.find((c: any) => c.name.toLowerCase() === (input.category || '').toLowerCase());
+      if (matched) {
+        categoryId = matched.id;
+      } else if (cats.length > 0) {
+        categoryId = cats[0].id;
+      }
+    } catch {}
+
+    const payload = {
+      title: input.name,
+      description: input.description || '',
+      price: input.sellingPrice,
+      costPrice: input.costPrice,
+      categoryId: categoryId || undefined,
+      sku: input.sku,
+    };
+
+    const item = await apiClient.post<any>('/products', payload);
+    return {
+      sku: item.sku || item.id,
+      name: item.title,
+      category: input.category || 'Uncategorized',
+      brand: input.brand || 'Generic',
+      costPrice: Number(item.costPrice || 0),
+      sellingPrice: Number(item.price),
+      status: 'ACTIVE',
+      description: item.description || '',
+    };
   },
 
   async update(sku: string, input: UpdateProductInput): Promise<ProductContract> {
-    return new Promise((resolve, reject) => {
-      const p = MOCK_PRODUCTS.find((item) => item.sku === sku);
-      if (!p) {
-        return reject(new Error('Product SKU not found'));
+    let id = sku;
+    try {
+      const list = await apiClient.get<any>('/products?limit=100');
+      const found = (list.items || []).find((item: any) => item.sku === sku || item.id === sku);
+      if (found) {
+        id = found.id;
       }
-      const updated: ProductContract = {
-        ...(p as ProductContract),
-        ...input,
-      };
-      setTimeout(() => resolve(updated), 100);
-    });
+    } catch {}
+
+    let categoryId = undefined;
+    if (input.category) {
+      try {
+        const cats = await apiClient.get<any>('/categories');
+        const matched = cats.find((c: any) => c.name.toLowerCase() === input.category!.toLowerCase());
+        if (matched) categoryId = matched.id;
+      } catch {}
+    }
+
+    const payload = {
+      title: input.name,
+      description: input.description,
+      price: input.sellingPrice,
+      costPrice: input.costPrice,
+      categoryId,
+      status: input.status,
+    };
+
+    const item = await apiClient.patch<any>(`/products/${id}`, payload);
+    return {
+      sku: item.sku || item.id,
+      name: item.title,
+      category: input.category || 'Uncategorized',
+      brand: input.brand || 'Generic',
+      costPrice: Number(item.costPrice || 0),
+      sellingPrice: Number(item.price),
+      status: input.status || 'ACTIVE',
+      description: item.description || '',
+    };
   },
 
   async delete(sku: string): Promise<boolean> {
-    return new Promise((resolve) => setTimeout(() => resolve(true), 100));
+    let id = sku;
+    try {
+      const list = await apiClient.get<any>('/products?limit=100');
+      const found = (list.items || []).find((item: any) => item.sku === sku || item.id === sku);
+      if (found) {
+        id = found.id;
+      }
+    } catch {}
+
+    await apiClient.delete(`/products/${id}`);
+    return true;
   },
 };
+export default productsMock;

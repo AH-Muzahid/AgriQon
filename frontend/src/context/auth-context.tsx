@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore, translateBackendUser } from '@/store/auth-store';
 
 export interface User {
   id: string;
@@ -63,16 +64,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             const response = await apiClient.client.get('/auth/me');
             setUser(response.data);
+            useAuthStore.getState().setUser(translateBackendUser(response.data));
           } catch (err) {
             // Not authenticated or endpoint failed; log and clear user
             console.debug('Failed to fetch /auth/me:', err);
             setUser(null);
+            useAuthStore.getState().setUser(null);
           }
 
         }
       } catch (error) {
         console.error('Error checking user:', error);
-        if (!cancelled) setUser(null);
+        if (!cancelled) {
+          setUser(null);
+          useAuthStore.getState().setUser(null);
+        }
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -103,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Backend sets cookies for the session; rely on cookie-based auth and
       // populate the frontend user state from backend response.
       setUser(userData);
+      useAuthStore.getState().setUser(translateBackendUser(userData));
       console.log('[Auth] login successful, user set:', userData);
       return userData;
     } finally {
@@ -131,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setUser(userData);
+      useAuthStore.getState().setUser(translateBackendUser(userData));
       return userData;
     } finally {
       setIsLoading(false);
@@ -146,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Clear any client-side state; backend clears cookies via /auth/logout.
       apiClient.setToken(null);
       setUser(null);
+      useAuthStore.getState().logout();
     } finally {
       setIsLoading(false);
     }

@@ -4,9 +4,39 @@ import sendResponse from '../../shared/utils/sendResponse';
 import { AppError } from '../../errors/AppError';
 import { AuthService } from './auth.service';
 import { UserRepository } from './user.repository';
+import { prisma } from '../../lib/prisma';
+import { PermissionService } from '../../services/permission.service';
 
 const userRepository = new UserRepository();
 const authService = new AuthService(userRepository);
+
+async function enrichUser(user: any) {
+  if (!user) return user;
+  let businessRole = 'STAFF';
+  let permissions: string[] = [];
+  
+  if (user.businessId) {
+    const ubr = await prisma.userBusinessRole.findUnique({
+      where: {
+        userId_businessId: {
+          userId: user.id,
+          businessId: user.businessId
+        }
+      }
+    });
+    if (ubr) {
+      businessRole = ubr.role;
+      permissions = await PermissionService.getPermissionsForRole(ubr.role);
+    }
+  }
+  
+  const { password, ...safeUser } = user;
+  return {
+    ...safeUser,
+    businessRole,
+    permissions
+  };
+}
 
 const register = catchAsync(async (req: Request, res: Response) => {
   const sessionInfo = {
@@ -15,6 +45,7 @@ const register = catchAsync(async (req: Request, res: Response) => {
   };
   const result = await authService.register(req.body, sessionInfo);
   const { user, accessToken, refreshToken } = result;
+  const enrichedUser = await enrichUser(user);
 
   // Set cookies
   res.cookie('refreshToken', refreshToken, {
@@ -35,7 +66,7 @@ const register = catchAsync(async (req: Request, res: Response) => {
     statusCode: 201,
     success: true,
     message: 'User registered successfully',
-    data: { user, accessToken },
+    data: { user: enrichedUser, accessToken },
   });
 });
 
@@ -46,6 +77,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
   };
   const result = await authService.login(req.body, sessionInfo);
   const { user, accessToken, refreshToken } = result;
+  const enrichedUser = await enrichUser(user);
 
   // Set cookies
   res.cookie('refreshToken', refreshToken, {
@@ -66,7 +98,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
     statusCode: 200,
     success: true,
     message: 'User logged in successfully',
-    data: { user, accessToken },
+    data: { user: enrichedUser, accessToken },
   });
 });
 
@@ -130,6 +162,7 @@ const oauthCallback = catchAsync(async (req: Request, res: Response) => {
   };
   const result = await authService.oauthCallback(req.body, sessionInfo);
   const { user, accessToken, refreshToken } = result;
+  const enrichedUser = await enrichUser(user);
 
   // Set cookies
   res.cookie('refreshToken', refreshToken, {
@@ -150,7 +183,7 @@ const oauthCallback = catchAsync(async (req: Request, res: Response) => {
     statusCode: 200,
     success: true,
     message: 'User authenticated with OAuth successfully',
-    data: { user, accessToken },
+    data: { user: enrichedUser, accessToken },
   });
 });
 
@@ -165,14 +198,13 @@ const getMe = catchAsync(async (req: Request, res: Response) => {
     throw new AppError('User not found', 404);
   }
 
-  // Remove sensitive fields
-  const { password, ...safeUser } = user as any;
+  const enrichedUser = await enrichUser(user);
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'User profile retrieved successfully',
-    data: safeUser,
+    data: enrichedUser,
   });
 });
 

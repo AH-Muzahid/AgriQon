@@ -1,47 +1,108 @@
 import { CustomerContract, CreateCustomerInput, UpdateCustomerInput } from '@/types/contracts/customer.contract';
-import { MOCK_CUSTOMERS } from '@/lib/mock-erp-data';
+import { apiClient } from '../api/client';
 
 export const customersMock = {
   async list(): Promise<CustomerContract[]> {
-    return new Promise((resolve) => setTimeout(() => resolve(MOCK_CUSTOMERS as any[] as CustomerContract[]), 100));
+    const items = await apiClient.get<any[]>('/customers?limit=100');
+    return items.map((c: any) => {
+      const purchasesCount = c.orders?.length || 0;
+      const totalSpent = c.orders?.reduce((sum: number, o: any) => sum + Number(o.totalAmount || 0), 0) || 0;
+      const dueAmount = c.invoices?.reduce((sum: number, inv: any) => sum + Number(inv.dueAmount || 0), 0) || 0;
+      
+      return {
+        id: c.id,
+        name: c.name,
+        email: c.email || '',
+        phone: c.phone || '',
+        address: c.address || '',
+        purchasesCount,
+        totalSpent,
+        dueAmount,
+        status: c.deletedAt ? 'INACTIVE' : 'ACTIVE',
+        timeline: [],
+      };
+    });
   },
 
   async getById(id: string): Promise<CustomerContract | null> {
-    return new Promise((resolve) => {
-      const c = MOCK_CUSTOMERS.find((item) => item.id === id);
-      setTimeout(() => resolve((c as any as CustomerContract) || null), 100);
-    });
+    try {
+      const c = await apiClient.get<any>(`/customers/${id}`);
+      if (c) {
+        const purchasesCount = c.orders?.length || 0;
+        const totalSpent = c.orders?.reduce((sum: number, o: any) => sum + Number(o.totalAmount || 0), 0) || 0;
+        const dueAmount = c.invoices?.reduce((sum: number, inv: any) => sum + Number(inv.dueAmount || 0), 0) || 0;
+
+        return {
+          id: c.id,
+          name: c.name,
+          email: c.email || '',
+          phone: c.phone || '',
+          address: c.address || '',
+          purchasesCount,
+          totalSpent,
+          dueAmount,
+          status: c.deletedAt ? 'INACTIVE' : 'ACTIVE',
+          timeline: (c.orders || []).map((o: any) => ({
+            date: new Date(o.createdAt).toLocaleDateString(),
+            event: `Placed order ${o.id.slice(0, 8).toUpperCase()} for BDT ${o.totalAmount}`,
+            type: 'order',
+          })),
+        };
+      }
+    } catch {
+      const list = await this.list();
+      return list.find((item) => item.id === id) || null;
+    }
+    return null;
   },
 
   async create(input: CreateCustomerInput): Promise<CustomerContract> {
-    return new Promise((resolve) => {
-      const created: CustomerContract = {
-        id: `cust_${Math.floor(Math.random() * 10000)}`,
-        ...input,
-        purchasesCount: 0,
-        totalSpent: 0,
-        dueAmount: 0,
-        status: 'ACTIVE',
-        timeline: [],
-      };
-      setTimeout(() => resolve(created), 100);
+    const res = await apiClient.post<any>('/customers', {
+      name: input.name,
+      email: input.email || undefined,
+      phone: input.phone || undefined,
+      address: input.address || undefined,
     });
+
+    return {
+      id: res.id,
+      name: res.name,
+      email: res.email || '',
+      phone: res.phone || '',
+      address: res.address || '',
+      purchasesCount: 0,
+      totalSpent: 0,
+      dueAmount: 0,
+      status: 'ACTIVE',
+      timeline: [],
+    };
   },
 
   async update(id: string, input: UpdateCustomerInput): Promise<CustomerContract> {
-    return new Promise((resolve, reject) => {
-      const c = MOCK_CUSTOMERS.find((item) => item.id === id);
-      if (!c) return reject(new Error('Customer not found'));
-      const updated: CustomerContract = {
-        ...(c as any as CustomerContract),
-        ...input,
-      };
-      setTimeout(() => resolve(updated), 100);
+    const res = await apiClient.patch<any>(`/customers/${id}`, {
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      address: input.address,
     });
+
+    return {
+      id: res.id,
+      name: res.name,
+      email: res.email || '',
+      phone: res.phone || '',
+      address: res.address || '',
+      purchasesCount: res.orders?.length || 0,
+      totalSpent: res.orders?.reduce((sum: number, o: any) => sum + Number(o.totalAmount || 0), 0) || 0,
+      dueAmount: res.invoices?.reduce((sum: number, inv: any) => sum + Number(inv.dueAmount || 0), 0) || 0,
+      status: 'ACTIVE',
+      timeline: [],
+    };
   },
 
   async delete(id: string): Promise<boolean> {
-    return new Promise((resolve) => setTimeout(() => resolve(true), 100));
+    await apiClient.delete(`/customers/${id}`);
+    return true;
   },
 };
 export default customersMock;
