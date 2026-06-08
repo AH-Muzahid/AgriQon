@@ -51,10 +51,10 @@ export function useCreateProduct() {
   });
 }
 
-export function useUpdateProduct(sku: string) {
+export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateProductInput) => productsMock.update(sku, input),
+    mutationFn: ({ sku, input }: { sku: string; input: UpdateProductInput }) => productsMock.update(sku, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
@@ -125,10 +125,20 @@ export function useCreateCustomer() {
   });
 }
 
-export function useUpdateCustomer(id: string) {
+export function useUpdateCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateCustomerInput) => customersMock.update(id, input),
+    mutationFn: ({ id, input }: { id: string; input: UpdateCustomerInput }) => customersMock.update(id, input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: customerKeys.all });
+    },
+  });
+}
+
+export function useDeleteCustomer() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => customersMock.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all });
     },

@@ -1,229 +1,121 @@
 'use client';
 
 import React from 'react';
+import { PageShell } from '@/components/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  ShoppingCart,
-  Users,
-  Warehouse,
-  AlertTriangle,
-  ArrowRight,
-  Plus,
-  Sparkles,
-} from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
-
-const MOCK_METRICS = [
-  {
-    title: 'Total Revenue',
-    value: '৳2,450,890',
-    change: '+12.5%',
-    trend: 'up',
-    timeframe: 'vs last month',
-    icon: DollarSign,
-    color: 'text-emerald-600 bg-emerald-500/10',
-  },
-  {
-    title: 'Sales Orders',
-    value: '1,842',
-    change: '+8.2%',
-    trend: 'up',
-    timeframe: 'vs last week',
-    icon: ShoppingCart,
-    color: 'text-blue-600 bg-blue-500/10',
-  },
-  {
-    title: 'Active Customers',
-    value: '842',
-    change: '+15.4%',
-    trend: 'up',
-    timeframe: 'vs last quarter',
-    icon: Users,
-    color: 'text-violet-600 bg-violet-500/10',
-  },
-  {
-    title: 'Inventory Value',
-    value: '৳4,890,200',
-    change: '-2.1%',
-    trend: 'down',
-    timeframe: 'vs yesterday',
-    icon: Warehouse,
-    color: 'text-amber-600 bg-amber-500/10',
-  },
-];
-
-const MOCK_CHART_DATA = [
-  { month: 'Jan', revenue: 180000, expenses: 110000 },
-  { month: 'Feb', revenue: 220000, expenses: 130000 },
-  { month: 'Mar', revenue: 250000, expenses: 140000 },
-  { month: 'Apr', revenue: 210000, expenses: 125000 },
-  { month: 'May', revenue: 290000, expenses: 150000 },
-  { month: 'Jun', revenue: 320000, expenses: 165000 },
-  { month: 'Jul', revenue: 380000, expenses: 180000 },
-];
-
-const LOW_STOCK_ITEMS = [
-  { name: 'NPK Fertilizer (50kg)', sku: 'AGR-NPK-001', stock: 12, unit: 'bags' },
-  { name: 'Organic Compost (25kg)', sku: 'AGR-CMP-005', stock: 5, unit: 'bags' },
-  { name: 'Hybrid Rice Seeds', sku: 'AGR-RCE-012', stock: 8, unit: 'kg' },
-];
+import { ShieldAlert, RefreshCw, FileText, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   return (
-    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
-      {/* Welcome banner */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h2 className="text-3xl font-extrabold tracking-tight text-foreground">Executive Dashboard</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Real-time analytics and management controller for Agriqon ERP.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2 cursor-pointer font-semibold shadow-sm">
-            <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-            AI Forecast
-          </Button>
-          <Button className="gap-2 cursor-pointer font-semibold shadow-sm">
-            <Plus className="h-4 w-4" />
-            New Order
-          </Button>
-        </div>
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {MOCK_METRICS.map((metric) => (
-          <Card key={metric.title} className="border shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {metric.title}
-              </span>
-              <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${metric.color}`}>
-                <metric.icon className="h-4 w-4" />
+    <React.Fragment>
+      <PageShell
+        title="Executive Dashboard"
+        description="Real-time analytics and management controller for AgriQon ERP."
+      >
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div className="flex gap-3 p-4 rounded-lg border border-amber-200 bg-amber-50 text-amber-900 dark:bg-amber-950/20 dark:text-amber-200 dark:border-amber-800">
+            <ShieldAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="grid gap-1">
+              <h5 className="font-extrabold text-base leading-none tracking-tight">Dashboard Summary API Pending</h5>
+              <div className="text-sm font-semibold opacity-90 leading-relaxed">
+                This screen is configured as <span className="font-bold underline uppercase">Blocked Pending Backend</span>. The backend does not provide unified KPI analytics or summary endpoints (`GET /dashboard/summary` or `GET /analytics`). All hardcoded mock data has been removed.
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{metric.value}</div>
-              <div className="flex items-center gap-1.5 mt-2">
-                {metric.trend === 'up' ? (
-                  <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                ) : (
-                  <TrendingDown className="h-3.5 w-3.5 text-rose-500" />
-                )}
-                <span
-                  className={`text-xs font-bold ${
-                    metric.trend === 'up' ? 'text-emerald-600' : 'text-rose-600'
-                  }`}
-                >
-                  {metric.change}
-                </span>
-                <span className="text-xs text-muted-foreground">{metric.timeframe}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
+          </div>
 
-      {/* Main Charts & Side Panels */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Sales Trend Chart */}
-        <Card className="border shadow-sm md:col-span-2">
-          <CardHeader className="border-b bg-muted/20">
-            <CardTitle className="text-base font-semibold">Financial Overview</CardTitle>
-            <CardDescription>Monthly revenue and operational expenses comparison</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6 h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MOCK_CHART_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" style={{ fontSize: 11 }} />
-                <YAxis style={{ fontSize: 11 }} tickFormatter={(v) => `৳${v / 1000}k`} />
-                <Tooltip
-                  formatter={(v) => [`৳${v}`, '']}
-                  contentStyle={{
-                    borderRadius: '8px',
-                    border: '1px solid hsl(var(--border))',
-                    fontSize: 12,
-                  }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Area
-                  name="Revenue"
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="hsl(var(--primary))"
-                  fillOpacity={1}
-                  fill="url(#colorRevenue)"
-                  strokeWidth={2}
-                />
-                <Area
-                  name="Expenses"
-                  type="monotone"
-                  dataKey="expenses"
-                  stroke="#94a3b8"
-                  fillOpacity={1}
-                  fill="url(#colorExpenses)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Low Stock Alerts */}
-        <Card className="border shadow-sm flex flex-col justify-between">
-          <CardHeader className="border-b bg-muted/20 pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Critical Stock Alerts
-            </CardTitle>
-            <CardDescription>Items below minimum safety threshold</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 py-4 flex flex-col justify-between">
-            <div className="grid gap-3">
-              {LOW_STOCK_ITEMS.map((item) => (
-                <div key={item.sku} className="flex items-center justify-between border-b pb-2 text-xs">
-                  <div className="grid gap-0.5">
-                    <span className="font-semibold">{item.name}</span>
-                    <span className="text-[10px] text-muted-foreground">SKU: {item.sku}</span>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="border border-slate-200/80 dark:border-neutral-800 shadow-sm md:col-span-2">
+              <CardHeader className="border-b bg-muted/10 pb-4">
+                <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800">
+                  <RefreshCw className="h-4 w-4 animate-spin text-amber-500" />
+                  Integration Status: AWAITING_BACKEND
+                </CardTitle>
+                <CardDescription>
+                  Displaying loading skeleton state. Hardcoded statistics and mock revenue charts have been eliminated to ensure true data integrity.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-2 text-xs font-semibold text-slate-600">
+                  <span className="text-xs font-black uppercase text-slate-400">Missing Backend Endpoints</span>
+                  <div className="border rounded-xl p-4 bg-slate-50 dark:bg-slate-900/30 space-y-3">
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="font-mono text-slate-700">GET /dashboard/summary</span>
+                      <span className="rounded bg-rose-100 dark:bg-rose-950/40 px-2 py-0.5 text-[10px] text-rose-700 font-bold">MISSING</span>
+                    </div>
+                    <div className="flex items-center justify-between border-b pb-2">
+                      <span className="font-mono text-slate-700">GET /analytics</span>
+                      <span className="rounded bg-rose-100 dark:bg-rose-950/40 px-2 py-0.5 text-[10px] text-rose-700 font-bold">MISSING</span>
+                    </div>
                   </div>
-                  <span className="rounded bg-rose-500/10 px-2 py-0.5 font-bold text-rose-600">
-                    {item.stock} {item.unit}
-                  </span>
                 </div>
+
+                <div className="flex justify-between items-center bg-slate-100 p-4 rounded-xl border text-xs font-semibold text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-slate-500" />
+                    <span>Review analytics specifications in requirements document</span>
+                  </div>
+                  <Link
+                    href="file:///C:/Users/Muzahid/.gemini/antigravity/brain/c48c4976-37a9-4bbf-b6dc-a0c9e4d42045/dashboard_requirements_report.md"
+                    target="_blank"
+                    className="flex items-center gap-1 text-primary hover:underline font-bold"
+                  >
+                    View Requirements
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-slate-200/80 dark:border-neutral-800 shadow-sm flex flex-col justify-between">
+              <CardHeader className="border-b bg-muted/10 pb-4">
+                <CardTitle className="text-base font-bold text-slate-800">Alerts & Notifications</CardTitle>
+                <CardDescription>System threshold safety logs</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 py-6 flex flex-col justify-center items-center text-center space-y-3">
+                <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs font-black uppercase text-slate-400">Low Stock Log Pending</p>
+                  <p className="text-[11px] text-muted-foreground font-semibold max-w-[200px]">
+                    Waiting for safety threshold query support in inventory APIs.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Metrics Skeleton HUD Grid */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 opacity-40">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i} className="border shadow-sm">
+                <CardHeader className="pb-2">
+                  <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-24 animate-pulse" />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="h-6 bg-slate-250 dark:bg-slate-850 rounded w-16 animate-pulse" />
+                  <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded w-32 animate-pulse" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Chart Skeleton */}
+          <div className="h-[280px] bg-slate-200/30 dark:bg-slate-900/10 rounded-xl border border-slate-200/50 p-6 flex flex-col justify-between opacity-30">
+            <div className="flex justify-between items-center">
+              <div className="h-4 bg-slate-250 rounded w-48 animate-pulse" />
+              <div className="h-4 bg-slate-250 rounded w-24 animate-pulse" />
+            </div>
+            <div className="h-32 bg-slate-200 rounded animate-pulse" />
+            <div className="flex justify-between">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-2 bg-slate-200 rounded w-8 animate-pulse" />
               ))}
             </div>
-            <Button variant="ghost" size="sm" className="w-full text-xs font-semibold mt-4 gap-1 justify-center cursor-pointer">
-              Go to Inventory
-              <ArrowRight className="h-3 w-3" />
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </div>
+        </div>
+      </PageShell>
+    </React.Fragment>
   );
 }

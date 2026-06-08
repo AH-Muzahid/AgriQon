@@ -19,14 +19,18 @@ import { Loader2 } from 'lucide-react';
  * - If authenticated → render the full ERP shell.
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.replace('/auth/login');
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.replace('/auth/login');
+      } else if (!user?.businessId) {
+        router.replace('/onboarding');
+      }
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, user, router]);
 
   // Loading state — show spinner, hide all ERP content
   if (isLoading) {
@@ -40,19 +44,19 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Not authenticated — render nothing while redirect fires
-  if (!isAuthenticated) {
+  // Not authenticated or no business — render nothing while redirect fires
+  if (!isAuthenticated || !user?.businessId) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Redirecting to login…</p>
+          <p className="text-sm text-muted-foreground">Redirecting…</p>
         </div>
       </div>
     );
   }
 
-  // Authenticated — render children
+  // Authenticated and has business — render children
   return <>{children}</>;
 }
 
