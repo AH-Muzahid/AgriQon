@@ -1,42 +1,55 @@
-import { Router } from 'express';
-import { ReviewController } from './review.controller';
-import { ReviewValidation } from './review.validation';
-import validateRequest from '../../middleware/validateRequest';
-import { auth } from '../../middleware/auth.middleware';
-import { Role } from '../../../generated/client';
+import { Router } from "express";
+import { ReviewController } from "./review.controller";
+import { ReviewValidation } from "./review.validation";
+import validateRequest from "../../middleware/validateRequest";
+import {
+  extractAuth,
+  requireAuth,
+  attachBusinessRole,
+  authorizeAny,
+} from "../../middleware/rbac.middleware";
+import { requireTenant } from "../../middleware/tenant.middleware";
+import { REVIEW_VIEW } from "../../constants/permissions";
 
 const router = Router();
 
+// ─── Consumer: Create a review (any authenticated user) ──────────────
 router.post(
-  '/',
-  auth(Role.USER, Role.SELLER, Role.ADMIN),
+  "/",
+  extractAuth,
+  requireAuth,
   validateRequest(ReviewValidation.createReviewZodSchema),
-  ReviewController.createReview
+  ReviewController.createReview,
 );
 
+// ─── Business: View all reviews for the tenant ───────────────────────
 router.get(
-  '/',
-  auth(Role.ADMIN, Role.MANAGER),
-  ReviewController.getAllReviews
+  "/",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REVIEW_VIEW),
+  ReviewController.getAllReviews,
 );
 
-router.get(
-  '/item/:itemId',
-  auth(Role.USER, Role.SELLER, Role.ADMIN, Role.MANAGER),
-  ReviewController.getReviewsByItem
-);
+// ─── Public: Browse reviews for a product item ───────────────────────
+router.get("/item/:itemId", extractAuth, ReviewController.getReviewsByItem);
 
+// ─── Consumer: Edit own review ───────────────────────────────────────
 router.patch(
-  '/:id',
-  auth(Role.USER),
+  "/:id",
+  extractAuth,
+  requireAuth,
   validateRequest(ReviewValidation.updateReviewZodSchema),
-  ReviewController.updateReview
+  ReviewController.updateReview,
 );
 
+// ─── Consumer + Moderator: Delete (author self-delete or REVIEW_MANAGE) ─
 router.delete(
-  '/:id',
-  auth(Role.USER, Role.ADMIN),
-  ReviewController.deleteReview
+  "/:id",
+  extractAuth,
+  requireAuth,
+  ReviewController.deleteReview,
 );
 
 export const ReviewRoutes = router;

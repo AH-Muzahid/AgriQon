@@ -48,14 +48,14 @@ export class ReviewService {
     return this.reviewRepo.update(id, businessId, data);
   }
 
-  async deleteReview(id: string, businessId: string, userId: string, role: string) {
+  async deleteReview(id: string, businessId: string, userId: string, isModerator: boolean) {
     const review = await this.reviewRepo.findById(id, businessId);
     if (!review) {
       throw new AppError('Review not found', 404);
     }
 
-    // Author or Admin can delete
-    if (review.userId !== userId && role !== 'ADMIN') {
+    // Author can always delete their own review; moderators can delete any review
+    if (review.userId !== userId && !isModerator) {
       throw new AppError('Unauthorized to delete this review', 403);
     }
 
