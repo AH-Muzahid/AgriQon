@@ -73,13 +73,19 @@ export class BusinessService {
     return await this.businessRepo.findAll();
   }
 
-  async updateBusiness(id: string, data: UpdateBusinessDTO) {
-    await this.getBusinessById(id); // Ensure exists and not deleted
+  async updateBusiness(id: string, organizationId: string, data: UpdateBusinessDTO) {
+    const business = await this.getBusinessById(id); // Ensure exists and not deleted
+    if (business.organizationId !== organizationId) {
+      throw new AppError('Forbidden: Business does not belong to your organization', 403);
+    }
     return await this.businessRepo.update(id, data);
   }
 
-  async deleteBusiness(id: string) {
-    await this.getBusinessById(id); // Ensure exists and not deleted
+  async deleteBusiness(id: string, organizationId: string) {
+    const business = await this.getBusinessById(id); // Ensure exists and not deleted
+    if (business.organizationId !== organizationId) {
+      throw new AppError('Forbidden: Business does not belong to your organization', 403);
+    }
     return await this.businessRepo.softDelete(id);
   }
 }

@@ -49,7 +49,8 @@ const getMyBusiness = catchAsync(async (req: AuthRequest, res: Response) => {
 
 const updateBusiness = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const result = await businessService.updateBusiness(id, req.body);
+  const organizationId = req.user?.organizationId as string;
+  const result = await businessService.updateBusiness(id, organizationId, req.body);
 
   sendResponse(res, {
     statusCode: 200,
@@ -61,7 +62,8 @@ const updateBusiness = catchAsync(async (req: AuthRequest, res: Response) => {
 
 const deleteBusiness = catchAsync(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  await businessService.deleteBusiness(id);
+  const organizationId = req.user?.organizationId as string;
+  await businessService.deleteBusiness(id, organizationId);
 
   sendResponse(res, {
     statusCode: 200,
