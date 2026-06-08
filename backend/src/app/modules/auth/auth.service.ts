@@ -1,18 +1,21 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import { env } from '../../../config/env';
-import { AppError } from '../../errors/AppError';
-import { UserRepository } from './user.repository';
-import { CreateUserDTO, LoginDTO } from './auth.validation';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+import { env } from "../../../config/env";
+import { AppError } from "../../errors/AppError";
+import { UserRepository } from "./user.repository";
+import { CreateUserDTO, LoginDTO } from "./auth.validation";
 
 export class AuthService {
   constructor(private userRepo: UserRepository) {}
 
-  async register(data: CreateUserDTO, sessionInfo?: { ip?: string; ua?: string }) {
+  async register(
+    data: CreateUserDTO,
+    sessionInfo?: { ip?: string; ua?: string },
+  ) {
     const existingUser = await this.userRepo.findByEmail(data.email);
     if (existingUser) {
-      throw new AppError('User with this email already exists', 400);
+      throw new AppError("User with this email already exists", 400);
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
@@ -24,8 +27,8 @@ export class AuthService {
 
     const accessToken = this.generateAccessToken(user);
     const { token: refreshToken, hashedToken } = this.generateSecureToken();
-    const familyId = crypto.randomBytes(20).toString('hex');
-    
+    const familyId = crypto.randomBytes(20).toString("hex");
+
     await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
 
     return { user, accessToken, refreshToken };
@@ -34,29 +37,32 @@ export class AuthService {
   async login(data: LoginDTO, sessionInfo?: { ip?: string; ua?: string }) {
     const user = await this.userRepo.findByEmail(data.email);
     if (!user || !user.password) {
-      throw new AppError('Invalid email or password', 401);
+      throw new AppError("Invalid email or password", 401);
     }
 
     const isPasswordMatch = await bcrypt.compare(data.password, user.password);
     if (!isPasswordMatch) {
-      throw new AppError('Invalid email or password', 401);
+      throw new AppError("Invalid email or password", 401);
     }
 
     const accessToken = this.generateAccessToken(user);
     const { token, hashedToken } = this.generateSecureToken();
-    const familyId = crypto.randomBytes(20).toString('hex');
-    
+    const familyId = crypto.randomBytes(20).toString("hex");
+
     await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
 
     return { user, accessToken, refreshToken: token };
   }
 
-  async refreshToken(token: string, sessionInfo?: { ip?: string; ua?: string }) {
+  async refreshToken(
+    token: string,
+    sessionInfo?: { ip?: string; ua?: string },
+  ) {
     const hashedToken = this.hashToken(token);
     const storedToken = await this.userRepo.findRefreshToken(hashedToken);
 
     if (!storedToken) {
-      throw new AppError('Invalid refresh token', 401);
+      throw new AppError("Invalid refresh token", 401);
     }
 
     // Reuse Detection
@@ -68,22 +74,26 @@ export class AuthService {
       } else {
         await this.userRepo.revokeAllRefreshTokensForUser(storedToken.userId);
       }
-      throw new AppError('Token reuse detected! Security breach suspected. Session family revoked.', 401);
+      throw new AppError(
+        "Token reuse detected! Security breach suspected. Session family revoked.",
+        401,
+      );
     }
 
     if (storedToken.expiresAt < new Date()) {
-      throw new AppError('Refresh token expired', 401);
+      throw new AppError("Refresh token expired", 401);
     }
 
     // Generate new pair
     const accessToken = this.generateAccessToken(storedToken.user);
-    const { token: newRawToken, hashedToken: newHashedToken } = this.generateSecureToken();
+    const { token: newRawToken, hashedToken: newHashedToken } =
+      this.generateSecureToken();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
 
     // Rotation: Revoke old token and link to new one
     await this.userRepo.revokeRefreshToken(storedToken.id, newHashedToken);
-    
+
     // Save new token in the SAME family
     await this.userRepo.createRefreshToken({
       userId: storedToken.userId,
@@ -106,24 +116,24 @@ export class AuthService {
   }
 
   private hashToken(token: string): string {
-    return crypto.createHash('sha256').update(token).digest('hex');
+    return crypto.createHash("sha256").update(token).digest("hex");
   }
 
   private generateSecureToken() {
-    const token = crypto.randomBytes(40).toString('hex');
+    const token = crypto.randomBytes(40).toString("hex");
     const hashedToken = this.hashToken(token);
     return { token, hashedToken };
   }
 
   private async saveRefreshToken(
-    userId: string, 
-    hashedToken: string, 
-    familyId?: string, 
-    sessionInfo?: { ip?: string; ua?: string }
+    userId: string,
+    hashedToken: string,
+    familyId?: string,
+    sessionInfo?: { ip?: string; ua?: string },
   ) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
-    
+
     await this.userRepo.createRefreshToken({
       userId,
       token: hashedToken,
@@ -135,33 +145,44 @@ export class AuthService {
   }
 
   async oauthCallback(
-    data: { email: string; name: string; provider: string; role?: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER'; idToken?: string },
-    sessionInfo?: { ip?: string; ua?: string }
+    data: {
+      email: string;
+      name: string;
+      provider: string;
+      role?: "USER";
+      idToken?: string;
+    },
+    sessionInfo?: { ip?: string; ua?: string },
   ) {
     // Validate incoming idToken (issued by Supabase) when present.
     // This prevents attackers from spoofing email/identity in the callback payload.
     if (!data.idToken) {
-      throw new AppError('Missing idToken from OAuth provider', 400);
+      throw new AppError("Missing idToken from OAuth provider", 400);
     }
 
     let verifiedEmail: string | undefined;
     try {
-      const verified = jwt.verify(data.idToken, env.supabaseJwtSecret, { algorithms: ['HS256'] }) as any;
+      const verified = jwt.verify(data.idToken, env.supabaseJwtSecret, {
+        algorithms: ["HS256"],
+      }) as any;
       // Extract email from verified token payload in a defensive manner
       verifiedEmail = verified?.email || verified?.user?.email || undefined;
     } catch (err: any) {
-      throw new AppError(`Invalid OAuth token: ${err?.message ?? 'verification failed'}`, 401);
+      throw new AppError(
+        `Invalid OAuth token: ${err?.message ?? "verification failed"}`,
+        401,
+      );
     }
 
     if (verifiedEmail && verifiedEmail !== data.email) {
-      throw new AppError('OAuth token email does not match provided email', 401);
+      throw new AppError(
+        "OAuth token email does not match provided email",
+        401,
+      );
     }
 
-    // Validate client-provided `role`. Only allow USER or SELLER, default to USER.
-    let assignedRole: 'USER' | 'SELLER' | 'ADMIN' | 'MANAGER' = 'USER';
-    if (data.role === 'SELLER' || data.role === 'USER') {
-      assignedRole = data.role;
-    }
+    // Validate client-provided `role`. Only USER is permitted at OAuth registration.
+    const assignedRole: "USER" = "USER";
 
     let user = await this.userRepo.findByEmail(data.email);
 
@@ -176,8 +197,8 @@ export class AuthService {
 
     const accessToken = this.generateAccessToken(user);
     const { token, hashedToken } = this.generateSecureToken();
-    const familyId = crypto.randomBytes(20).toString('hex');
-    
+    const familyId = crypto.randomBytes(20).toString("hex");
+
     await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
 
     return { user, accessToken, refreshToken: token };
@@ -185,7 +206,7 @@ export class AuthService {
 
   private generateAccessToken(user: any) {
     if (!env.jwtSecret) {
-      throw new AppError('JWT secret not configured', 500);
+      throw new AppError("JWT secret not configured", 500);
     }
     return jwt.sign(
       {
@@ -196,8 +217,7 @@ export class AuthService {
         organizationId: user.organizationId,
       },
       env.jwtSecret,
-      { expiresIn: env.jwtAccessExpiresIn as any }
+      { expiresIn: env.jwtAccessExpiresIn as any },
     );
   }
-
 }
