@@ -2,55 +2,83 @@ import express from 'express';
 import validateRequest from '../../middleware/validateRequest';
 import { InventoryValidation } from './inventory.validation';
 import { InventoryController } from './inventory.controller';
-import { auth } from '../../middleware/auth.middleware';
-import { Role } from '../../../generated/client';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
+import {
+  INVENTORY_VIEW,
+  INVENTORY_UPDATE,
+  STOCK_MOVEMENT_VIEW,
+  STOCK_MOVEMENT_CREATE,
+  STOCK_MOVEMENT_MANAGE,
+} from '../../constants/permissions';
 
 const router = express.Router();
 
 router.get(
   '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
-  InventoryController.getInventory
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(INVENTORY_VIEW),
+  InventoryController.getInventory,
 );
 
 router.post(
   '/adjust-stock',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(INVENTORY_UPDATE),
   validateRequest(InventoryValidation.adjustStockSchema),
-  InventoryController.adjustStock
+  InventoryController.adjustStock,
 );
 
 router.get(
   '/valuation',
-  auth(Role.ADMIN, Role.MANAGER),
-  InventoryController.getValuation
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(INVENTORY_VIEW),
+  InventoryController.getValuation,
 );
 
 router.get(
   '/valuation/:itemId',
-  auth(Role.ADMIN, Role.MANAGER),
-  InventoryController.getValuationHistory
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(INVENTORY_VIEW),
+  InventoryController.getValuationHistory,
 );
 
 // ─── Warehouse Transfers ───────────────────────────────────────────────────
 
 router.get(
   '/transfers',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
-  InventoryController.getTransfers
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_VIEW),
+  InventoryController.getTransfers,
 );
 
 router.post(
   '/transfers',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_CREATE),
   validateRequest(InventoryValidation.initiateTransferSchema),
-  InventoryController.initiateTransfer
+  InventoryController.initiateTransfer,
 );
 
 router.post(
   '/transfers/:id/complete',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
-  InventoryController.completeTransfer
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_MANAGE),
+  InventoryController.completeTransfer,
 );
 
 export const InventoryRoutes = router;

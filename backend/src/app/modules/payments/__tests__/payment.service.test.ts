@@ -12,6 +12,16 @@ jest.mock('../../../../shared/transactions/transaction.helper', () => ({
   runInTransaction: jest.fn().mockResolvedValue({ success: true, message: 'Payment successfully processed and reconciled.' })
 }));
 
+jest.mock('../../../lib/prisma', () => ({
+  prisma: {
+    webhookEvent: {
+      findUnique: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({ id: 'webhook-123', status: 'PENDING' }),
+      update: jest.fn().mockResolvedValue({ id: 'webhook-123', status: 'PROCESSED' }),
+    },
+  },
+}));
+
 describe('Webhook Verification', () => {
   it('should process webhook when signature is verified and status is SUCCESS', async () => {
     const mockGateway = {

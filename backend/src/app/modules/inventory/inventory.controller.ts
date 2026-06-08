@@ -4,7 +4,7 @@ import sendResponse from '../../shared/utils/sendResponse';
 import { InventoryService } from './inventory.service';
 import { InventoryRepository } from './inventory.repository';
 import { ValuationService } from './valuation.service';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import { AppError } from '../../errors/AppError';
 
 import { WarehouseTransferService } from './warehouse-transfer.service';
@@ -15,11 +15,7 @@ const valuationService = new ValuationService();
 const transferService = new WarehouseTransferService(inventoryService);
 
 const getInventory = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
-
-  if (!businessId) {
-    throw new AppError('Business ID is required', 400);
-  }
+  const businessId = req.businessId!;
 
   const { itemId, warehouseId, batchId } = req.query;
 
@@ -39,11 +35,7 @@ const getInventory = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const adjustStock = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
-
-  if (!businessId) {
-    throw new AppError('Business ID is required for this operation', 400);
-  }
+  const businessId = req.businessId!;
 
   const result = await inventoryService.adjustStock({
     businessId,
@@ -59,10 +51,7 @@ const adjustStock = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const getValuation = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
-  if (!businessId) {
-    throw new AppError('Business ID is required', 400);
-  }
+  const businessId = req.businessId!;
 
   const result = await valuationService.getTotalValuation(businessId);
 
@@ -75,11 +64,8 @@ const getValuation = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const getValuationHistory = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
+  const businessId = req.businessId!;
   const { itemId } = req.params;
-  if (!businessId) {
-    throw new AppError('Business ID is required', 400);
-  }
 
   const result = await valuationService.getValuationHistory(businessId, itemId);
 
@@ -92,8 +78,7 @@ const getValuationHistory = catchAsync(async (req: AuthRequest, res: Response) =
 });
 
 const initiateTransfer = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
-  if (!businessId) throw new AppError('Business ID is required', 400);
+  const businessId = req.businessId!;
 
   const result = await transferService.initiateTransfer({
     businessId,
@@ -109,9 +94,8 @@ const initiateTransfer = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const completeTransfer = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
+  const businessId = req.businessId!;
   const { id } = req.params;
-  if (!businessId) throw new AppError('Business ID is required', 400);
 
   const result = await transferService.completeTransfer(businessId, id);
 
@@ -124,8 +108,7 @@ const completeTransfer = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const getTransfers = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
-  if (!businessId) throw new AppError('Business ID is required', 400);
+  const businessId = req.businessId!;
 
   const result = await transferService.getTransfers(businessId);
 
