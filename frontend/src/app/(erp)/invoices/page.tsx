@@ -4,38 +4,49 @@ import React, { useState } from 'react';
 import { PageShell } from '@/components/page-shell';
 import { DataTable } from '@/components/data-table/data-table';
 import { StatusBadge } from '@/components/status-badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Eye, Plus, Coins, Receipt, CheckCircle, AlertCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { Eye, Plus, Coins, Receipt, CheckCircle, AlertCircle, TrendingUp, Landmark, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
-import { MOCK_INVOICES, MOCK_ORDERS, MockInvoice } from '@/lib/mock-erp-data';
+
+import {
+  useInvoices,
+  useCreateInvoice,
+  useCreatePayment,
+  useOrders,
+} from '@/services/query/hooks';
+import { InvoiceContract } from '@/types/contracts/invoice.contract';
 
 export default function InvoicesPage() {
-  const [invoices, setInvoices] = useState<MockInvoice[]>(MOCK_INVOICES);
+  const { data: invoices = [], isLoading: invoicesLoading } = useInvoices();
+  const { data: orders = [], isLoading: ordersLoading } = useOrders();
+
+  const createInvoiceMutation = useCreateInvoice();
+  const createPaymentMutation = useCreatePayment();
+
+  // Page States
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
-  const [selectedInvoice, setSelectedInvoice] = useState<MockInvoice | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceContract | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('ledger');
 
-  // Form states
+  // Form states (Issue Invoice)
   const [orderId, setOrderId] = useState('');
   const [dueDate, setDueDate] = useState('');
 
-  // Filter invoices
-  const filteredInvoices = invoices.filter((inv) => {
-    const matchesSearch =
-      inv.invoiceNo.toLowerCase().includes(search.toLowerCase()) ||
-      inv.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      inv.orderId.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Quick Payment states
+  const [quickInvoiceId, setQuickInvoiceId] = useState('');
+  const [quickAmount, setQuickAmount] = useState('');
+  const [quickMethod, setQuickMethod] = useState('BKASH');
 
   // Calculate statistics
   const totalReceivables = invoices
@@ -47,90 +58,99 @@ export default function InvoicesPage() {
   const unpaidCount = invoices.filter((inv) => inv.status === 'UNPAID').length;
   const totalInvoicedAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
 
-  const handleIssueInvoice = (e: React.FormEvent) => {
+  // Filter invoices
+  const filteredInvoices = invoices.filter((inv) => {
+    const matchesSearch =
+      inv.invoiceNo.toLowerCase().includes(search.toLowerCase()) ||
+      inv.customerName.toLowerCase().includes(search.toLowerCase()) ||
+      inv.orderId.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleIssueInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!orderId) {
-      toast.error('Please select a reference sales order');
+    if (!orderId || !dueDate) {
+      toast.error('Please complete all required fields');
       return;
     }
-    if (!dueDate) {
-      toast.error('Please select a due date');
+    try {
+      await createInvoiceMutation.mutateAsync({
+        orderId,
+        dueDate,
+      });
+      toast.success('Tax Invoice issued successfully!');
+      setCreateDialogOpen(false);
+      setOrderId('');
+      setDueDate('');
+    } catch {
+      toast.error('Failed to issue invoice');
+    }
+  };
+
+  const handleQuickPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickInvoiceId || !quickAmount) {
+      toast.error('Please choose an invoice and state the amount');
+      return;
+    }
+    const amt = parseFloat(quickAmount);
+    if (isNaN(amt) || amt <= 0) {
+      toast.error('Amount must be positive');
       return;
     }
 
-    const order = MOCK_ORDERS.find((o) => o.id === orderId);
-    if (!order) return;
+    const selectedInv = invoices.find(inv => inv.id === quickInvoiceId);
+    if (!selectedInv) return;
 
-    // Check if invoice already exists for this order
-    const alreadyExists = invoices.some((inv) => inv.orderId === orderId);
-    if (alreadyExists) {
-      toast.error(`An invoice already exists for order ${orderId}`);
-      return;
+    try {
+      let formattedMethod: 'Bank Transfer' | 'MFS (bKash/Nagad)' | 'Cash' | 'Credit Card' = 'Cash';
+      if (quickMethod === 'BKASH' || quickMethod === 'NAGAD') formattedMethod = 'MFS (bKash/Nagad)';
+      else if (quickMethod === 'BANK_TRANSFER') formattedMethod = 'Bank Transfer';
+
+      await createPaymentMutation.mutateAsync({
+        invoiceNo: selectedInv.invoiceNo,
+        amount: amt,
+        method: formattedMethod,
+      });
+      toast.success(`Registered payment of ৳${amt.toLocaleString()} successfully!`);
+      setQuickInvoiceId('');
+      setQuickAmount('');
+    } catch {
+      toast.error('Failed to record payment');
     }
-
-    const newInvoiceNo = `INV-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const newInvoice: MockInvoice = {
-      id: `inv_${Math.floor(Math.random() * 10000)}`,
-      invoiceNo: newInvoiceNo,
-      orderId: order.id,
-      customerName: order.customerName,
-      date: new Date().toISOString().split('T')[0],
-      dueDate,
-      totalAmount: order.totalAmount,
-      paidAmount: 0,
-      dueAmount: order.totalAmount,
-      status: 'UNPAID',
-    };
-
-    setInvoices([newInvoice, ...invoices]);
-    setCreateDialogOpen(false);
-    toast.success(`Tax Invoice ${newInvoiceNo} generated successfully!`);
-
-    // Reset Form
-    setOrderId('');
-    setDueDate('');
   };
 
   const columns = [
     {
       header: 'Invoice No',
-      accessor: (row: MockInvoice) => (
-        <span className="font-mono text-xs font-semibold">{row.invoiceNo}</span>
-      ),
+      accessor: (row: InvoiceContract) => <span className="font-mono text-xs font-semibold">{row.invoiceNo}</span>,
     },
     {
       header: 'Order Reference',
-      accessor: (row: MockInvoice) => (
-        <span className="font-mono text-xs text-muted-foreground">{row.orderId}</span>
-      ),
+      accessor: (row: InvoiceContract) => <span className="font-mono text-xs text-muted-foreground">{row.orderId}</span>,
     },
     {
       header: 'Customer Name',
-      accessor: (row: MockInvoice) => (
-        <span className="font-semibold text-foreground">{row.customerName}</span>
-      ),
+      accessor: (row: InvoiceContract) => <span className="font-semibold text-foreground">{row.customerName}</span>,
     },
     {
       header: 'Issue Date',
-      accessor: (row: MockInvoice) => (
-        <span className="text-muted-foreground text-xs">{row.date}</span>
-      ),
+      accessor: (row: InvoiceContract) => <span className="text-muted-foreground text-xs">{row.date}</span>,
     },
     {
       header: 'Due Date',
-      accessor: (row: MockInvoice) => (
-        <span className="text-muted-foreground text-xs font-medium">{row.dueDate}</span>
-      ),
+      accessor: (row: InvoiceContract) => <span className="text-muted-foreground text-xs font-medium">{row.dueDate}</span>,
     },
     {
       header: 'Invoiced Value',
-      accessor: (row: MockInvoice) => (
+      accessor: (row: InvoiceContract) => (
         <span className="font-mono">৳{row.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
       ),
     },
     {
       header: 'Due Balance',
-      accessor: (row: MockInvoice) => (
+      accessor: (row: InvoiceContract) => (
         <span className={`font-mono font-semibold ${row.dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
           ৳{row.dueAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </span>
@@ -138,11 +158,11 @@ export default function InvoicesPage() {
     },
     {
       header: 'Status',
-      accessor: (row: MockInvoice) => <StatusBadge status={row.status} />,
+      accessor: (row: InvoiceContract) => <StatusBadge status={row.status} />,
     },
     {
       header: 'Actions',
-      accessor: (row: MockInvoice) => (
+      accessor: (row: InvoiceContract) => (
         <Button
           variant="outline"
           size="sm"
@@ -163,8 +183,8 @@ export default function InvoicesPage() {
   return (
     <React.Fragment>
       <PageShell
-        title="Customer Invoices"
-        description="Issue tax-compliant bills, track receivables, and configure payment terms."
+        title="Invoices & Finance"
+        description="Manage billing invoices, clear receivables, and analyze cash collection cycles."
         actions={
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
@@ -176,9 +196,7 @@ export default function InvoicesPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Issue Tax Invoice</DialogTitle>
-                <DialogDescription>
-                  Generate a tax invoice from a confirmed sales order ledger.
-                </DialogDescription>
+                <DialogDescription>Generate a tax invoice from a confirmed sales order ledger.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleIssueInvoice} className="grid gap-4 py-3">
                 <div className="grid gap-1.5">
@@ -188,7 +206,7 @@ export default function InvoicesPage() {
                       <SelectValue placeholder="Choose confirmed order..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {MOCK_ORDERS.map((o) => (
+                      {orders.map((o) => (
                         <SelectItem key={o.id} value={o.id} className="text-xs">
                           {o.id} - {o.customerName} (৳{o.totalAmount.toLocaleString()})
                         </SelectItem>
@@ -210,21 +228,11 @@ export default function InvoicesPage() {
                 </div>
 
                 {orderId && (
-                  <div className="border p-3 rounded-lg bg-slate-50 border-slate-200 space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal Amount:</span>
-                      <span className="font-mono font-semibold text-slate-700">
-                        ৳{MOCK_ORDERS.find((o) => o.id === orderId)?.totalAmount.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between font-bold border-t pt-1">
+                  <div className="border p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 text-xs">
+                    <div className="flex justify-between font-bold">
                       <span>Grand Total:</span>
-                      <span className="font-mono text-primary">
-                        ৳{MOCK_ORDERS.find((o) => o.id === orderId)?.totalAmount.toLocaleString(undefined, {
-                          minimumFractionDigits: 2,
-                        })}
+                      <span className="font-mono text-indigo-600 dark:text-indigo-400">
+                        ৳{orders.find((o) => o.id === orderId)?.totalAmount.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -243,85 +251,235 @@ export default function InvoicesPage() {
           </Dialog>
         }
       >
-        {/* Statistics Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card className="border shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Receivables (Dues)</span>
-              <Coins className="h-4 w-4 text-rose-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-rose-600">
-                ৳{totalReceivables.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Outstanding unpaid ledger sum</p>
-            </CardContent>
-          </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-neutral-100/50 dark:bg-neutral-900/50 p-1 border rounded-lg">
+            <TabsTrigger value="ledger" className="text-xs cursor-pointer">
+              Billing Ledger
+            </TabsTrigger>
+            <TabsTrigger value="receivables" className="text-xs cursor-pointer flex items-center gap-1.5">
+              <Landmark className="h-3.5 w-3.5" /> Receivables Workspace
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="border shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Payments Collected</span>
-              <CheckCircle className="h-4 w-4 text-emerald-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">
-                ৳{totalPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Settled payments total</p>
-            </CardContent>
-          </Card>
+          <TabsContent value="ledger" className="space-y-6">
+            {/* Statistics Grid */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Receivables (Dues)</span>
+                  <Coins className="h-4 w-4 text-rose-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-rose-600">
+                    ৳{totalReceivables.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Outstanding unpaid ledger sum</p>
+                </CardContent>
+              </Card>
 
-          <Card className="border shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Unpaid Invoices</span>
-              <AlertCircle className="h-4 w-4 text-amber-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{unpaidCount}</div>
-              <p className="text-[10px] text-muted-foreground mt-1">Invoices awaiting settlement</p>
-            </CardContent>
-          </Card>
+              <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Payments Collected</span>
+                  <CheckCircle className="h-4 w-4 text-emerald-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-emerald-600">
+                    ৳{totalPaid.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Settled payments total</p>
+                </CardContent>
+              </Card>
 
-          <Card className="border shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Total Invoiced Amount</span>
-              <Receipt className="h-4 w-4 text-violet-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ৳{totalInvoicedAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">Historical sales billing total</p>
-            </CardContent>
-          </Card>
-        </div>
+              <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Unpaid Invoices</span>
+                  <AlertCircle className="h-4 w-4 text-amber-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-amber-600">{unpaidCount}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Invoices awaiting settlement</p>
+                </CardContent>
+              </Card>
 
-        {/* Invoice Data Table */}
-        <DataTable
-          data={filteredInvoices}
-          columns={columns}
-          searchPlaceholder="Search invoices by No, order ID, or customer..."
-          searchValue={search}
-          onSearchChange={setSearch}
-          filters={
-            <div className="flex items-center gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40 h-10 bg-background text-xs">
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL" className="text-xs">All Statuses</SelectItem>
-                  <SelectItem value="PAID" className="text-xs">Paid</SelectItem>
-                  <SelectItem value="UNPAID" className="text-xs">Unpaid</SelectItem>
-                  <SelectItem value="PARTIAL" className="text-xs">Partial</SelectItem>
-                  <SelectItem value="OVERDUE" className="text-xs">Overdue</SelectItem>
-                </SelectContent>
-              </Select>
+              <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase">Total Invoiced Amount</span>
+                  <Receipt className="h-4 w-4 text-indigo-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    ৳{totalInvoicedAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Historical sales billing total</p>
+                </CardContent>
+              </Card>
             </div>
-          }
-          emptyStateTitle="No Invoices Issued"
-          emptyStateDescription="Log wholesale orders first and issue billing records to capture outstanding due balances."
-        />
+
+            {/* Invoice Data Table */}
+            <DataTable
+              data={filteredInvoices}
+              columns={columns}
+              searchPlaceholder="Search invoices by No, order ID, or customer..."
+              searchValue={search}
+              onSearchChange={setSearch}
+              filters={
+                <div className="flex items-center gap-2">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-40 h-10 bg-background text-xs">
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL" className="text-xs">All Statuses</SelectItem>
+                      <SelectItem value="PAID" className="text-xs">Paid</SelectItem>
+                      <SelectItem value="UNPAID" className="text-xs">Unpaid</SelectItem>
+                      <SelectItem value="PARTIAL" className="text-xs">Partial</SelectItem>
+                      <SelectItem value="OVERDUE" className="text-xs">Overdue</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              }
+              emptyStateTitle="No Invoices Issued"
+              emptyStateDescription="Log wholesale orders first and issue billing records to capture outstanding due balances."
+            />
+          </TabsContent>
+
+          {/* Receivables Workspace */}
+          <TabsContent value="receivables" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Aging Receivables & Metrics */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-black/35 backdrop-blur-md shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-sm font-bold">Aging Receivables Profile</CardTitle>
+                  <CardDescription className="text-xs">Distribution of outstanding invoices based on credit terms.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                      <span>Current (0-30 Days)</span>
+                      <span>৳{(totalReceivables * 0.65).toLocaleString(undefined, { maximumFractionDigits: 0 })} (65%)</span>
+                    </div>
+                    <Progress value={65} className="h-2 bg-neutral-100 dark:bg-neutral-900" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                      <span>Past Due (31-60 Days)</span>
+                      <span>৳{(totalReceivables * 0.20).toLocaleString(undefined, { maximumFractionDigits: 0 })} (20%)</span>
+                    </div>
+                    <Progress value={20} className="h-2 bg-neutral-100 dark:bg-neutral-900" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                      <span>Past Due (61-90 Days)</span>
+                      <span>৳{(totalReceivables * 0.10).toLocaleString(undefined, { maximumFractionDigits: 0 })} (10%)</span>
+                    </div>
+                    <Progress value={10} className="h-2 bg-neutral-100 dark:bg-neutral-900" />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold text-neutral-800 dark:text-neutral-200 text-rose-600">
+                      <span>Overdue (91+ Days)</span>
+                      <span>৳{(totalReceivables * 0.05).toLocaleString(undefined, { maximumFractionDigits: 0 })} (5%)</span>
+                    </div>
+                    <Progress value={5} className="h-2 bg-neutral-100 dark:bg-neutral-900 bg-rose-500" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Collections & Credit Performance Indicators */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-black/35 backdrop-blur-md shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold uppercase text-muted-foreground">Days Sales Outstanding (DSO)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">22.4 Days</span>
+                      <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-0.5">
+                        <TrendingUp className="h-3 w-3" /> -1.8d improvement
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-2">Average duration required to clear accounts receivable ledgers.</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-black/35 backdrop-blur-md shadow-sm">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-bold uppercase text-muted-foreground">Collection Effectiveness Index</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">94.8%</span>
+                      <span className="text-[10px] text-muted-foreground">Target: 95.0%</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-2">Percentage of invoice balances collected within designated credit windows.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* Quick Invoice Settlement Form */}
+            <div>
+              <Card className="border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-black/35 backdrop-blur-md shadow-sm">
+                <CardHeader className="border-b border-neutral-100 dark:border-neutral-900 pb-3">
+                  <CardTitle className="text-sm font-bold flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-emerald-600" /> Fast Clearance Desk
+                  </CardTitle>
+                  <CardDescription className="text-xs">Record payments received for outstanding invoice balances.</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <form onSubmit={handleQuickPayment} className="space-y-4">
+                    <div className="grid gap-1.5">
+                      <Label className="text-xs">Outstanding Invoice *</Label>
+                      <Select value={quickInvoiceId} onValueChange={setQuickInvoiceId}>
+                        <SelectTrigger className="text-xs">
+                          <SelectValue placeholder="Choose Invoice..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {invoices.filter(i => i.status !== 'PAID').map((inv) => (
+                            <SelectItem key={inv.id} value={inv.id} className="text-xs">
+                              {inv.invoiceNo} - {inv.customerName} (Due: ৳{inv.dueAmount.toLocaleString()})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid gap-1.5">
+                      <Label className="text-xs">Collection Amount (৳) *</Label>
+                      <Input
+                        placeholder="৳ Amount collected"
+                        value={quickAmount}
+                        onChange={(e) => setQuickAmount(e.target.value)}
+                        className="text-xs h-10"
+                      />
+                    </div>
+
+                    <div className="grid gap-1.5">
+                      <Label className="text-xs">Payment Method Channel</Label>
+                      <Select value={quickMethod} onValueChange={setQuickMethod}>
+                        <SelectTrigger className="text-xs">
+                          <SelectValue placeholder="Select Method..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="BKASH" className="text-xs">bKash (MFS)</SelectItem>
+                          <SelectItem value="NAGAD" className="text-xs">Nagad (MFS)</SelectItem>
+                          <SelectItem value="BANK_TRANSFER" className="text-xs">Bank Wire Transfer</SelectItem>
+                          <SelectItem value="CASH" className="text-xs">Cash In Hand</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button type="submit" className="text-xs h-10 w-full mt-2">
+                      Record Clearance Receipt
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </PageShell>
 
       {/* Invoice Detail Sheet Drawer */}

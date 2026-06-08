@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTheme } from 'next-themes';
-import { Bell, Sun, Moon, Laptop, ShieldAlert, Sparkles, Database, Search } from 'lucide-react';
+import { Bell, Sun, Moon, Laptop, ShieldAlert, Sparkles, Database, Search, CreditCard } from 'lucide-react';
 
 export function ErpNavbar() {
   const { user } = useAuthStore();
@@ -41,6 +41,43 @@ export function ErpNavbar() {
       cancelable: true,
     });
     document.dispatchEvent(event);
+  };
+
+  const [notifications, setNotifications] = React.useState([
+    {
+      id: '1',
+      title: 'AgroAI Demand Forecast Ready',
+      desc: 'Market demand for potato has spiked by 18% in Bogura region.',
+      time: '2 mins ago',
+      type: 'info',
+      read: false,
+    },
+    {
+      id: '2',
+      title: 'Low Stock Alert',
+      desc: 'NPK Fertilizer (50kg) is below safe threshold in Dhaka Warehouse.',
+      time: '1 hour ago',
+      type: 'warning',
+      read: false,
+    },
+    {
+      id: '3',
+      title: 'Invoice Payment Received',
+      desc: 'Invoice #INV-2026-004 has been paid in full via bKash.',
+      time: '3 hours ago',
+      type: 'success',
+      read: false,
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const toggleRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
   };
 
   return (
@@ -107,35 +144,65 @@ export function ErpNavbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border cursor-pointer">
               <Bell className="h-4 w-4" />
-              <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-primary" />
+              {unreadCount > 0 && (
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
+              )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80" align="end">
             <div className="flex items-center justify-between px-4 py-2 border-b">
               <span className="text-sm font-semibold">Notifications</span>
-              <span className="text-xs text-primary cursor-pointer hover:underline">Mark all read</span>
+              {unreadCount > 0 && (
+                <button
+                  onClick={markAllRead}
+                  className="text-xs text-primary cursor-pointer hover:underline bg-none border-none font-medium"
+                >
+                  Mark all read
+                </button>
+              )}
             </div>
             <div className="py-1 max-h-[300px] overflow-y-auto">
-              <div className="flex items-start gap-3 px-4 py-3 hover:bg-muted/40 cursor-pointer transition-colors">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-500/10 text-blue-500 mt-0.5">
-                  <Sparkles className="h-4 w-4" />
+              {notifications.map((n) => {
+                let iconEl = <Sparkles className="h-4 w-4" />;
+                let iconBg = 'bg-blue-500/10 text-blue-500';
+
+                if (n.type === 'warning') {
+                  iconEl = <ShieldAlert className="h-4 w-4" />;
+                  iconBg = 'bg-amber-500/10 text-amber-500';
+                } else if (n.type === 'success') {
+                  iconEl = <CreditCard className="h-4 w-4" />;
+                  iconBg = 'bg-emerald-500/10 text-emerald-600';
+                }
+
+                return (
+                  <div
+                    key={n.id}
+                    onClick={() => toggleRead(n.id)}
+                    className={`flex items-start gap-3 px-4 py-3 hover:bg-muted/40 cursor-pointer transition-colors relative border-b last:border-b-0 ${
+                      !n.read ? 'bg-indigo-500/5 dark:bg-indigo-500/10' : ''
+                    }`}
+                  >
+                    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full mt-0.5 ${iconBg}`}>
+                      {iconEl}
+                    </div>
+                    <div className="flex-1 grid gap-1 pr-4">
+                      <p className={`text-xs font-semibold ${!n.read ? 'text-indigo-600 dark:text-indigo-400' : ''}`}>
+                        {n.title}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">{n.desc}</p>
+                      <p className="text-[9px] text-muted-foreground">{n.time}</p>
+                    </div>
+                    {!n.read && (
+                      <span className="absolute right-3 top-4 h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                    )}
+                  </div>
+                );
+              })}
+              {notifications.length === 0 && (
+                <div className="px-4 py-6 text-center text-xs text-muted-foreground">
+                  No notifications.
                 </div>
-                <div className="flex-1 grid gap-1">
-                  <p className="text-xs font-semibold">AgroAI Demand Forecast Ready</p>
-                  <p className="text-[10px] text-muted-foreground">Market demand for potato has spiked by 18% in Bogura region.</p>
-                  <p className="text-[9px] text-muted-foreground">2 mins ago</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 px-4 py-3 hover:bg-muted/40 cursor-pointer transition-colors border-t">
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/10 text-amber-500 mt-0.5">
-                  <ShieldAlert className="h-4 w-4" />
-                </div>
-                <div className="flex-1 grid gap-1">
-                  <p className="text-xs font-semibold">Low Stock Alert</p>
-                  <p className="text-[10px] text-muted-foreground">NPK Fertilizer (50kg) is below safe threshold in Dhaka Warehouse.</p>
-                  <p className="text-[9px] text-muted-foreground">1 hour ago</p>
-                </div>
-              </div>
+              )}
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
