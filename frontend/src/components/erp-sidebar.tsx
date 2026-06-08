@@ -27,11 +27,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 import { navigationRegistry } from '@/lib/navigation';
 import { useAuthStore } from '@/store/auth-store';
 import { useOrganizationStore } from '@/store/organization-store';
 import { LucideIcon } from './lucide-icon';
-import { LogOut, ChevronsUpDown, Building, User, Key, Settings } from 'lucide-react';
+import { LogOut, ChevronsUpDown, Building, User, Settings, Plus, ChevronRight } from 'lucide-react';
+import { Permission } from '@/types/permission';
 
 export function ErpSidebar() {
   const pathname = usePathname();
@@ -42,12 +45,10 @@ export function ErpSidebar() {
   const filteredNavigation = React.useMemo(() => {
     return navigationRegistry
       .map((item) => {
-        // If user doesn't have permission for parent, return null
         if (item.permission && !hasPermission(item.permission)) {
           return null;
         }
 
-        // If it has sub-items, filter them too
         if (item.items) {
           const filteredItems = item.items.filter(
             (sub) => !sub.permission || hasPermission(sub.permission)
@@ -63,6 +64,30 @@ export function ErpSidebar() {
       .filter((item): item is typeof navigationRegistry[0] => item !== null);
   }, [hasPermission]);
 
+  // Dynamically extract all quick-create actions from navigation registry
+  const quickCreateActions = React.useMemo(() => {
+    const actions: { label: string; href: string; icon?: string; permission?: Permission }[] = [];
+    
+    const scan = (items: typeof navigationRegistry) => {
+      for (const item of items) {
+        if (item.quickCreate) {
+          actions.push({
+            label: item.quickCreate.label,
+            href: item.href,
+            icon: item.quickCreate.icon,
+            permission: item.quickCreate.permission,
+          });
+        }
+        if (item.items) {
+          scan(item.items);
+        }
+      }
+    };
+
+    scan(navigationRegistry);
+    return actions.filter((act) => !act.permission || hasPermission(act.permission));
+  }, [hasPermission]);
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -75,7 +100,7 @@ export function ErpSidebar() {
   return (
     <Sidebar collapsible="icon">
       {/* Business Switcher / Logo Header */}
-      <SidebarHeader className="border-b border-sidebar-border/50 py-3">
+      <SidebarHeader className="border-b border-sidebar-border/50 py-3 gap-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -112,9 +137,38 @@ export function ErpSidebar() {
             </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        {/* Dynamic Quick Create Dropdown Menu */}
+        {quickCreateActions.length > 0 && (
+          <div className="px-1.5 py-1 group-data-[collapsible=icon]:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  className="w-full justify-start gap-2 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary border border-primary/20 cursor-pointer font-bold shadow-none" 
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Quick Create</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="start" side="bottom" sideOffset={4}>
+                <DropdownMenuLabel>ERP Schedulers</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {quickCreateActions.map((action) => (
+                  <DropdownMenuItem key={action.label} asChild className="cursor-pointer gap-2">
+                    <Link href={action.href}>
+                      {action.icon && <LucideIcon name={action.icon} className="h-4 w-4 text-muted-foreground" />}
+                      {action.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </SidebarHeader>
 
-      {/* Main Navigation Content */}
+      {/* Collapsible Main Navigation */}
       <SidebarContent className="py-2">
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 py-2 text-xs font-semibold text-muted-foreground group-data-[collapsible=icon]:hidden">
@@ -125,9 +179,9 @@ export function ErpSidebar() {
               const hasSubItems = item.items && item.items.length > 0;
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
-              return (
-                <SidebarMenuItem key={item.href}>
-                  {!hasSubItems ? (
+              if (!hasSubItems) {
+                return (
+                  <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
                       tooltip={item.title}
@@ -138,19 +192,30 @@ export function ErpSidebar() {
                         <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
-                  ) : (
-                    <React.Fragment>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={item.title}
-                        className={isActive ? 'text-primary font-medium' : 'text-muted-foreground'}
-                      >
-                        <div className="flex items-center gap-3 w-full cursor-pointer">
+                  </SidebarMenuItem>
+                );
+              }
+
+              // Collapsible Group for Items with Submenus
+              return (
+                <Collapsible
+                  key={item.href}
+                  asChild
+                  defaultOpen={isActive}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton tooltip={item.title} className={isActive ? 'text-primary font-medium' : ''}>
+                        <div className="flex items-center gap-3 w-full">
                           {item.icon && <LucideIcon name={item.icon} className="h-4 w-4" />}
                           <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                          <ChevronRight className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                         </div>
                       </SidebarMenuButton>
-                      <SidebarMenuSub className="group-data-[collapsible=icon]:hidden">
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
                         {item.items?.map((sub) => {
                           const isSubActive = pathname === sub.href;
                           return (
@@ -169,9 +234,9 @@ export function ErpSidebar() {
                           );
                         })}
                       </SidebarMenuSub>
-                    </React.Fragment>
-                  )}
-                </SidebarMenuItem>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
               );
             })}
           </SidebarMenu>

@@ -5,7 +5,7 @@ export const navigationRegistry: NavigationItem[] = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: 'LayoutDashboard',
-    permission: 'PRODUCT_VIEW', // Minimum read permission
+    permission: 'PRODUCT_VIEW',
   },
   {
     title: 'Organization',
@@ -22,6 +22,11 @@ export const navigationRegistry: NavigationItem[] = [
         title: 'Warehouses',
         href: '/organization/warehouses',
         permission: 'INVENTORY_VIEW',
+        quickCreate: {
+          label: 'Register Warehouse',
+          permission: 'ORG_MANAGE',
+          icon: 'Warehouse',
+        },
       },
     ],
   },
@@ -35,11 +40,21 @@ export const navigationRegistry: NavigationItem[] = [
         title: 'Users',
         href: '/team/users',
         permission: 'TEAM_VIEW',
+        quickCreate: {
+          label: 'Invite Member',
+          permission: 'TEAM_MANAGE',
+          icon: 'UserPlus',
+        },
       },
       {
         title: 'Roles',
         href: '/team/roles',
         permission: 'TEAM_MANAGE',
+        quickCreate: {
+          label: 'Define Custom Role',
+          permission: 'TEAM_MANAGE',
+          icon: 'Shield',
+        },
       },
       {
         title: 'Permissions',
@@ -63,6 +78,11 @@ export const navigationRegistry: NavigationItem[] = [
         title: 'Products',
         href: '/catalog/products',
         permission: 'PRODUCT_VIEW',
+        quickCreate: {
+          label: 'Add Product SKU',
+          permission: 'PRODUCT_CREATE',
+          icon: 'PlusCircle',
+        },
       },
     ],
   },
@@ -86,6 +106,11 @@ export const navigationRegistry: NavigationItem[] = [
         title: 'Adjustments',
         href: '/inventory/adjustments',
         permission: 'INVENTORY_ADJUST',
+        quickCreate: {
+          label: 'Log Stock Adjustment',
+          permission: 'INVENTORY_ADJUST',
+          icon: 'Sliders',
+        },
       },
       {
         title: 'Reservations',
@@ -99,30 +124,55 @@ export const navigationRegistry: NavigationItem[] = [
     href: '/customers',
     icon: 'Contact',
     permission: 'PRODUCT_VIEW',
+    quickCreate: {
+      label: 'Register Customer',
+      permission: 'PRODUCT_CREATE',
+      icon: 'UserPlus',
+    },
   },
   {
     title: 'Orders',
     href: '/orders',
     icon: 'ShoppingCart',
     permission: 'ORDER_VIEW',
+    quickCreate: {
+      label: 'New Sales Order',
+      permission: 'ORDER_CREATE',
+      icon: 'ShoppingBag',
+    },
   },
   {
     title: 'Invoices',
     href: '/invoices',
     icon: 'FileText',
     permission: 'INVOICE_VIEW',
+    quickCreate: {
+      label: 'Issue Tax Invoice',
+      permission: 'INVOICE_CREATE',
+      icon: 'Receipt',
+    },
   },
   {
     title: 'Payments',
     href: '/payments',
     icon: 'CreditCard',
     permission: 'PAYMENT_VIEW',
+    quickCreate: {
+      label: 'Record Payment Entry',
+      permission: 'PAYMENT_PROCESS',
+      icon: 'DollarSign',
+    },
   },
   {
     title: 'Expenses',
     href: '/expenses',
     icon: 'TrendingDown',
     permission: 'EXPENSE_VIEW',
+    quickCreate: {
+      label: 'Log Expense Voucher',
+      permission: 'EXPENSE_CREATE',
+      icon: 'Scale',
+    },
   },
   {
     title: 'Reports & Analytics',
