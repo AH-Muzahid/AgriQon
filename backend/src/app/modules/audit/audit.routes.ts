@@ -1,13 +1,17 @@
-import { Router } from 'express';
-import { AuditController } from './audit.controller';
-import { auth } from '../../middleware/auth.middleware';
-import { Role } from '../../../generated/client';
+import { Router } from "express";
+import { AuditController } from "./audit.controller";
+import { extractAuth, attachBusinessRole, authorizeAny } from "../../middleware/rbac.middleware";
+import { requireTenant } from "../../middleware/tenant.middleware";
+import { AUDIT_VIEW } from "../../constants/permissions";
 
 const router = Router();
 
 router.get(
-  '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.SELLER),
+  "/",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(AUDIT_VIEW),
   AuditController.getAuditLogs
 );
 
