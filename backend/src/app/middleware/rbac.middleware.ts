@@ -1,11 +1,11 @@
-import { PlatformRole, BusinessRole, Role } from '../../generated/client';
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../../config/env';
-import { AppError } from '../errors/AppError';
-import { prisma } from '../lib/prisma';
-import { PermissionKey } from '../constants/permissions';
-import { PermissionService } from '../services/permission.service';
+import { PlatformRole, BusinessRole, Role } from "../../generated/client";
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../../config/env";
+import { AppError } from "../errors/AppError";
+import { prisma } from "../lib/prisma";
+import { PermissionKey } from "../constants/permissions";
+import { PermissionService } from "../services/permission.service";
 
 export interface AuthRequest extends Request {
   user?: {
@@ -26,11 +26,15 @@ export interface AuthRequest extends Request {
  * Supports both Bearer token and HttpOnly cookie transport.
  * Does NOT enforce authentication — use requireAuth for that.
  */
-export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const extractAuth = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   let token: string | undefined;
 
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader && authHeader.startsWith("Bearer ")) {
     token = authHeader.substring(7);
   }
 
@@ -41,7 +45,9 @@ export const extractAuth = (req: AuthRequest, res: Response, next: NextFunction)
   if (!token) return next();
 
   try {
-    const decoded = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] }) as any;
+    const decoded = jwt.verify(token, env.jwtSecret, {
+      algorithms: ["HS256"],
+    }) as any;
 
     req.user = {
       id: decoded.sub || decoded.id,
@@ -99,7 +105,7 @@ export const attachBusinessRole = async (
     next();
   } catch (err) {
     // FAIL CLOSED — RBAC lookup errors must not silently pass through
-    next(new AppError('RBAC role lookup failed. Access denied.', 403));
+    next(new AppError("RBAC role lookup failed. Access denied.", 403));
   }
 };
 
@@ -108,9 +114,13 @@ export const attachBusinessRole = async (
 /**
  * Require basic authentication (user must be logged in).
  */
-export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const requireAuth = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   if (!req.user) {
-    return next(new AppError('Unauthorized. Please login.', 401));
+    return next(new AppError("Unauthorized. Please login.", 401));
   }
   next();
 };
@@ -127,14 +137,16 @@ export const authorizeAny = (...requiredPermissions: PermissionKey[]) => {
       const authError = getAuthAndRoleError(req);
       if (authError) return next(authError);
 
-      const grantedKeys = await PermissionService.getPermissionsForRole(req.businessRole!);
+      const grantedKeys = await PermissionService.getPermissionsForRole(
+        req.businessRole!,
+      );
       const grantedSet = new Set(grantedKeys);
 
       const hasSome = requiredPermissions.some((key) => grantedSet.has(key));
       if (!hasSome) {
         return next(
           new AppError(
-            `Forbidden. Requires one of: ${requiredPermissions.join(', ')}`,
+            `Forbidden. Requires one of: ${requiredPermissions.join(", ")}`,
             403,
           ),
         );
@@ -144,7 +156,7 @@ export const authorizeAny = (...requiredPermissions: PermissionKey[]) => {
     } catch (err) {
       if (err instanceof AppError) return next(err);
       // Fail closed on unexpected errors
-      next(new AppError('Permission check failed. Access denied.', 403));
+      next(new AppError("Permission check failed. Access denied.", 403));
     }
   };
 };
@@ -159,14 +171,16 @@ export const authorizeAll = (...requiredPermissions: PermissionKey[]) => {
       const authError = getAuthAndRoleError(req);
       if (authError) return next(authError);
 
-      const grantedKeys = await PermissionService.getPermissionsForRole(req.businessRole!);
+      const grantedKeys = await PermissionService.getPermissionsForRole(
+        req.businessRole!,
+      );
       const grantedSet = new Set(grantedKeys);
 
       const hasAll = requiredPermissions.every((key) => grantedSet.has(key));
       if (!hasAll) {
         return next(
           new AppError(
-            `Forbidden. Requires all of: ${requiredPermissions.join(', ')}`,
+            `Forbidden. Requires all of: ${requiredPermissions.join(", ")}`,
             403,
           ),
         );
@@ -175,7 +189,7 @@ export const authorizeAll = (...requiredPermissions: PermissionKey[]) => {
       next();
     } catch (err) {
       if (err instanceof AppError) return next(err);
-      next(new AppError('Permission check failed. Access denied.', 403));
+      next(new AppError("Permission check failed. Access denied.", 403));
     }
   };
 };
@@ -188,13 +202,39 @@ export const authorizeAll = (...requiredPermissions: PermissionKey[]) => {
  */
 function getAuthAndRoleError(req: AuthRequest): AppError | null {
   if (!req.user) {
-    return new AppError('Unauthorized. Please login.', 401);
+    return new AppError("Unauthorized. Please login.", 401);
   }
   if (!req.businessRole) {
-    return new AppError('Forbidden. No business role assigned.', 403);
+    return new AppError("Forbidden. No business role assigned.", 403);
   }
   return null;
 }
+
+// ─── Platform Admin Guard ────────────────────────────────────────────
+
+/**
+ * Require platform-level administrator access.
+ * Accepts both PlatformRole.SUPER_ADMIN (new model) and the legacy 'ADMIN'
+ * Role value so existing JWTs are honoured during the migration window.
+ *
+ * Use ONLY on routes that operate outside of tenant scope (global
+ * reconciliation, platform data fixes, etc.).
+ *
+ * Must run AFTER extractAuth + requireAuth.
+ */
+export const requirePlatformAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const role = req.user?.role;
+  if (role !== PlatformRole.SUPER_ADMIN && role !== ("ADMIN" as string)) {
+    return next(
+      new AppError("Forbidden. Platform administrator access required.", 403),
+    );
+  }
+  next();
+};
 
 // ─── Backward Compatibility ─────────────────────────────────────────
 
@@ -203,4 +243,5 @@ function getAuthAndRoleError(req: AuthRequest): AppError | null {
  * This alias exists solely to prevent build breakage while routes are migrated.
  * It accepts any strings and delegates to authorizeAny.
  */
-export const authorize = (...keys: any[]) => authorizeAny(...(keys as PermissionKey[]));
+export const authorize = (...keys: any[]) =>
+  authorizeAny(...(keys as PermissionKey[]));

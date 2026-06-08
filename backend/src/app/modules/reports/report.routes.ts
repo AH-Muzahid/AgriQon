@@ -1,37 +1,54 @@
-import express from 'express';
-import { auth } from '../../middleware/auth.middleware';
-import * as ReportController from './report.controller';
+import express from "express";
+import { extractAuth, attachBusinessRole, authorizeAny } from "../../middleware/rbac.middleware";
+import { requireTenant } from "../../middleware/tenant.middleware";
+import { REPORT_VIEW } from "../../constants/permissions";
+import * as ReportController from "./report.controller";
 
 const router = express.Router();
 
 router.get(
-  '/inventory-valuation',
-  auth('ADMIN', 'MANAGER', 'SELLER'),
-  ReportController.getInventoryValuationReport
+  "/inventory-valuation",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getInventoryValuationReport,
 );
 
 router.get(
-  '/procurement',
-  auth('ADMIN', 'MANAGER', 'SELLER'),
-  ReportController.getProcurementReport
+  "/procurement",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getProcurementReport,
 );
 
 router.get(
-  '/profit-loss',
-  auth('ADMIN', 'MANAGER', 'SELLER'),
-  ReportController.getProfitAndLossReport
+  "/profit-loss",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getProfitAndLossReport,
 );
 
 router.get(
-  '/balance-sheet',
-  auth('ADMIN', 'MANAGER', 'SELLER'),
-  ReportController.getBalanceSheetReport
+  "/balance-sheet",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getBalanceSheetReport,
 );
 
 router.get(
-  '/trial-balance',
-  auth('ADMIN', 'MANAGER', 'SELLER'),
-  ReportController.getTrialBalanceReport
+  "/trial-balance",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getTrialBalanceReport,
 );
 
 export const ReportRoutes = router;

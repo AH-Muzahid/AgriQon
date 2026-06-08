@@ -85,6 +85,9 @@ export const AUDIT_MANAGE = 'audit.manage' as const;
 // ─── AI ──────────────────────────────────────────────────────────────
 export const AI_VIEW = 'ai.view' as const;
 export const AI_MANAGE = 'ai.manage' as const;
+export const AI_LOGS_VIEW = 'ai.logs_view' as const;
+export const AI_EMBEDDING_MANAGE = 'ai.embedding_manage' as const;
+export const AI_CHAT_USE = 'ai.chat_use' as const;
 
 // ─── Brand ───────────────────────────────────────────────────────────
 export const BRAND_VIEW = 'brand.view' as const;
@@ -152,7 +155,7 @@ export type PermissionKey =
   | typeof STOCK_MOVEMENT_VIEW | typeof STOCK_MOVEMENT_CREATE | typeof STOCK_MOVEMENT_MANAGE
   | typeof REPORT_VIEW | typeof REPORT_MANAGE
   | typeof AUDIT_VIEW | typeof AUDIT_MANAGE
-  | typeof AI_VIEW | typeof AI_MANAGE
+  | typeof AI_VIEW | typeof AI_MANAGE | typeof AI_LOGS_VIEW | typeof AI_EMBEDDING_MANAGE | typeof AI_CHAT_USE
   | typeof BRAND_VIEW | typeof BRAND_CREATE | typeof BRAND_UPDATE | typeof BRAND_DELETE | typeof BRAND_MANAGE
   | typeof CATEGORY_VIEW | typeof CATEGORY_CREATE | typeof CATEGORY_UPDATE | typeof CATEGORY_DELETE | typeof CATEGORY_MANAGE
   | typeof NOTIFICATION_VIEW | typeof NOTIFICATION_MANAGE
@@ -230,6 +233,9 @@ export const ALL_PERMISSION_KEYS: ReadonlyArray<{ key: PermissionKey; descriptio
   // AI
   { key: AI_VIEW, description: 'Use AI features' },
   { key: AI_MANAGE, description: 'Full AI management' },
+  { key: AI_LOGS_VIEW, description: 'View AI logs' },
+  { key: AI_EMBEDDING_MANAGE, description: 'Manage AI embeddings' },
+  { key: AI_CHAT_USE, description: 'Use AI chat' },
   // Brand
   { key: BRAND_VIEW, description: 'View brands' },
   { key: BRAND_CREATE, description: 'Create brands' },
@@ -319,7 +325,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<'OWNER' | 'MANAGER' | 'STAFF', rea
     // Notifications
     NOTIFICATION_VIEW,
     // AI
-    AI_VIEW,
+    AI_VIEW, AI_EMBEDDING_MANAGE, AI_CHAT_USE,
     // Reviews
     REVIEW_VIEW, REVIEW_DELETE,
     // Upload
