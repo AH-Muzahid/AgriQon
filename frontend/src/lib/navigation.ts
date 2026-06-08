@@ -49,7 +49,7 @@ export const navigationRegistry: NavigationItem[] = [
     ],
   },
   {
-    title: 'Product Catalog',
+    title: 'Catalog',
     href: '/catalog',
     icon: 'BookOpen',
     permission: 'PRODUCT_VIEW',

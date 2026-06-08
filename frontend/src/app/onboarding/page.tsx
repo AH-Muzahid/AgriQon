@@ -122,7 +122,7 @@ export default function OnboardingPage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-800/40 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6">
-              <Sparkles size={12} /> Seller Setup
+              <Sparkles size={12} /> Workspace Setup
             </div>
             <h1 className="text-4xl lg:text-5xl font-black leading-tight tracking-tight mb-6">
               Welcome, <br />
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
                           className="pl-12 h-12 bg-slate-50 border-slate-200 text-slate-500 rounded-xl cursor-not-allowed shadow-sm"
                         />
                       </div>
-                      <p className="text-[10px] text-slate-400 font-bold ml-1">Currently restricted to BDT for Bangladesh marketplace transactions.</p>
+                      <p className="text-[10px] text-slate-400 font-bold ml-1">Currently restricted to BDT for standard transaction ledgers.</p>
                     </div>
 
                     <div className="space-y-2.5">

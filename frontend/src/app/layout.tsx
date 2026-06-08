@@ -1,28 +1,22 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { AuthProvider } from "@/context/auth-context";
-import CartProvider from "@/context/cart-context";
-import { WishlistProvider } from "@/context/wishlist-context";
-import { Manrope, Noto_Sans_Bengali } from "next/font/google";
-import { cn } from "@/lib/utils";
-import Navbar from "@/components/home/navbar";
-import { Footer } from "@/components/home/footer";
-import { Toaster } from "react-hot-toast";
-import { AiAssistant } from "@/components/ui/ai-assistant";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import type { Metadata } from 'next';
+import './globals.css';
+import { AuthProvider } from '@/context/auth-context';
+import { Manrope, Noto_Sans_Bengali } from 'next/font/google';
+import { cn } from '@/lib/utils';
+import { Toaster } from 'react-hot-toast';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
-
-const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
+const manrope = Manrope({ subsets: ['latin'], variable: '--font-sans' });
 const notoBengali = Noto_Sans_Bengali({
-  subsets: ["bengali"],
-  variable: "--font-bengali",
-  weight: ["400", "500", "600", "700", "800"],
+  subsets: ['bengali'],
+  variable: '--font-bengali',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
-  title: "Agriqon | AI Agriculture Marketplace",
+  title: 'Agriqon ERP | Multi-Tenant Agriculture ERP SaaS',
   description:
-    "AI-powered marketplace for farmers, buyers, semantic product discovery, and RAG assistance.",
+    'Production-grade multi-tenant ERP platform for agricultural logistics, stock tracking, and financial ledgers.',
 };
 
 export default function RootLayout({
@@ -31,22 +25,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="bn" className={cn("h-full antialiased", "font-sans", manrope.variable, notoBengali.variable)} data-scroll-behavior="smooth">
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn('h-full antialiased', 'font-sans', manrope.variable, notoBengali.variable)}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground" suppressHydrationWarning>
         <TooltipProvider>
           <AuthProvider>
-            <CartProvider>
-              <WishlistProvider>
-                <Navbar />
-                <div className="flex-1">
-                  {children}
-                </div>
-                <Footer />
-                <Toaster position="bottom-right" />
-                <AiAssistant />
-
-              </WishlistProvider>
-            </CartProvider>
+            <div className="flex-1 flex flex-col">
+              {children}
+            </div>
+            <Toaster position="bottom-right" />
           </AuthProvider>
         </TooltipProvider>
       </body>

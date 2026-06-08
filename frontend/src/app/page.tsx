@@ -1,5 +1,5 @@
-import { MarketplaceHome } from "@/components/marketplace/marketplace-home";
+import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  return <MarketplaceHome />;
+  redirect('/dashboard');
 }
