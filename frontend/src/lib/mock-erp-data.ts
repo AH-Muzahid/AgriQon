@@ -475,3 +475,254 @@ export const MOCK_PAYMENTS: MockPayment[] = [
     status: 'SUCCESS',
   },
 ];
+
+export interface MockWarehouse {
+  id: string;
+  name: string;
+  code: string;
+  manager: string;
+  capacity: number;
+  usedCapacity: number;
+  status: 'ACTIVE' | 'INACTIVE';
+  address: string;
+}
+
+export interface MockUser {
+  name: string;
+  email: string;
+  role: string;
+  warehouse: string;
+  status: 'ACTIVE' | 'PENDING' | 'SUSPENDED';
+  lastActive: string;
+}
+
+export interface MockRole {
+  name: string;
+  roleType: 'System' | 'Custom';
+  userCount: number;
+  permissionsCount: number;
+  createdBy: string;
+}
+
+export interface MockAuditLog {
+  id: string;
+  user: string;
+  action: string;
+  module: string;
+  timestamp: string;
+  ipAddress: string;
+  status: 'SUCCESS' | 'FAILED';
+}
+
+export interface MockSubscriptionUsage {
+  planName: 'Starter' | 'Growth' | 'Enterprise';
+  usersLimit: number;
+  usersUsed: number;
+  warehousesLimit: number;
+  warehousesUsed: number;
+  productsLimit: number;
+  productsUsed: number;
+  storageLimitGB: number;
+  storageUsedGB: number;
+  apiLimit: number;
+  apiUsed: number;
+  renewalDate: string;
+}
+
+// 9. Mock Warehouses
+export const MOCK_WAREHOUSES: MockWarehouse[] = [
+  {
+    id: 'wh_dhaka_main',
+    name: 'Dhaka Central Warehouse',
+    code: 'WH-DAC-01',
+    manager: 'Siddik Ali',
+    capacity: 1000,
+    usedCapacity: 750,
+    status: 'ACTIVE',
+    address: 'Tejgaon Industrial Area, Dhaka',
+  },
+  {
+    id: 'wh_bogura_cold',
+    name: 'Bogura Cold Storage',
+    code: 'WH-BOG-02',
+    manager: 'Salim Khan',
+    capacity: 500,
+    usedCapacity: 225,
+    status: 'ACTIVE',
+    address: 'Sherpur Road, Bogura',
+  },
+  {
+    id: 'wh_jessore_hub',
+    name: 'Jessore Distribution Hub',
+    code: 'WH-JES-03',
+    manager: 'Fahim Ahmed',
+    capacity: 800,
+    usedCapacity: 120,
+    status: 'ACTIVE',
+    address: 'Palbari, Jessore',
+  },
+  {
+    id: 'wh_rajshahi_hub',
+    name: 'Rajshahi Agricultural Hub',
+    code: 'WH-RAJ-04',
+    manager: 'Motiur Rahman',
+    capacity: 600,
+    usedCapacity: 0,
+    status: 'INACTIVE',
+    address: 'Sopura Industrial Area, Rajshahi',
+  },
+];
+
+// 10. Mock Users
+export const MOCK_USERS: MockUser[] = [
+  {
+    name: 'Muzahidul Islam',
+    email: 'muzahid@agroai.com',
+    role: 'Owner',
+    warehouse: 'Dhaka Central Warehouse',
+    status: 'ACTIVE',
+    lastActive: 'Just now',
+  },
+  {
+    name: 'Siddik Ali',
+    email: 'siddik.ali@agroai.com',
+    role: 'Admin',
+    warehouse: 'Dhaka Central Warehouse',
+    status: 'ACTIVE',
+    lastActive: '10 mins ago',
+  },
+  {
+    name: 'Salim Khan',
+    email: 'salim.khan@agroai.com',
+    role: 'Manager',
+    warehouse: 'Bogura Cold Storage',
+    status: 'ACTIVE',
+    lastActive: '1 hour ago',
+  },
+  {
+    name: 'Sharmin Akhter',
+    email: 'sharmin@agroai.com',
+    role: 'Accountant',
+    warehouse: 'Dhaka Central Warehouse',
+    status: 'ACTIVE',
+    lastActive: '2 hours ago',
+  },
+  {
+    name: 'Abul Kalam',
+    email: 'kalam@agroai.com',
+    role: 'Cashier',
+    warehouse: 'Bogura Cold Storage',
+    status: 'ACTIVE',
+    lastActive: '1 day ago',
+  },
+  {
+    name: 'Rahat Hossain',
+    email: 'rahat@agroai.com',
+    role: 'Warehouse Operator',
+    warehouse: 'Jessore Distribution Hub',
+    status: 'PENDING',
+    lastActive: 'Never',
+  },
+  {
+    name: 'Jamil Ahmed',
+    email: 'jamil@agroai.com',
+    role: 'Sales Executive',
+    warehouse: 'Dhaka Central Warehouse',
+    status: 'SUSPENDED',
+    lastActive: '3 days ago',
+  },
+];
+
+// 11. Mock Roles
+export const MOCK_ROLES: MockRole[] = [
+  { name: 'Owner', roleType: 'System', userCount: 1, permissionsCount: 54, createdBy: 'System' },
+  { name: 'Admin', roleType: 'System', userCount: 1, permissionsCount: 48, createdBy: 'System' },
+  { name: 'Manager', roleType: 'System', userCount: 1, permissionsCount: 36, createdBy: 'System' },
+  { name: 'Accountant', roleType: 'System', userCount: 1, permissionsCount: 24, createdBy: 'System' },
+  { name: 'Cashier', roleType: 'System', userCount: 1, permissionsCount: 12, createdBy: 'System' },
+  { name: 'Warehouse Operator', roleType: 'System', userCount: 1, permissionsCount: 10, createdBy: 'System' },
+  { name: 'Sales Executive', roleType: 'Custom', userCount: 1, permissionsCount: 15, createdBy: 'muzahid@agroai.com' },
+];
+
+// 12. Mock Audit Logs
+export const MOCK_AUDIT_LOGS: MockAuditLog[] = [
+  {
+    id: 'log_001',
+    user: 'muzahid@agroai.com',
+    action: 'User Login',
+    module: 'Auth',
+    timestamp: '2026-06-08T12:45:00Z',
+    ipAddress: '192.168.1.101',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'log_002',
+    user: 'siddik.ali@agroai.com',
+    action: 'Inventory Adjustment',
+    module: 'Inventory',
+    timestamp: '2026-06-08T11:20:00Z',
+    ipAddress: '192.168.1.102',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'log_003',
+    user: 'sharmin@agroai.com',
+    action: 'Invoice Paid',
+    module: 'Invoices',
+    timestamp: '2026-06-08T10:15:00Z',
+    ipAddress: '192.168.1.105',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'log_004',
+    user: 'muzahid@agroai.com',
+    action: 'Role Updated',
+    module: 'Team',
+    timestamp: '2026-06-07T16:30:00Z',
+    ipAddress: '192.168.1.101',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'log_005',
+    user: 'muzahid@agroai.com',
+    action: 'Warehouse Created',
+    module: 'Organization',
+    timestamp: '2026-06-07T14:10:00Z',
+    ipAddress: '192.168.1.101',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'log_006',
+    user: 'jamil@agroai.com',
+    action: 'Order Delivered',
+    module: 'Orders',
+    timestamp: '2026-06-07T09:05:00Z',
+    ipAddress: '192.168.1.110',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'log_007',
+    user: 'unknown',
+    action: 'Failed Login Attempt',
+    module: 'Auth',
+    timestamp: '2026-06-07T08:00:00Z',
+    ipAddress: '203.0.113.5',
+    status: 'FAILED',
+  },
+];
+
+// 13. Mock Subscription & Usage
+export const MOCK_SUBSCRIPTION_USAGE: MockSubscriptionUsage = {
+  planName: 'Growth',
+  usersLimit: 10,
+  usersUsed: 5,
+  warehousesLimit: 5,
+  warehousesUsed: 3,
+  productsLimit: 1000,
+  productsUsed: 324,
+  storageLimitGB: 25,
+  storageUsedGB: 8.2,
+  apiLimit: 50000,
+  apiUsed: 14230,
+  renewalDate: '2026-07-01',
+};
