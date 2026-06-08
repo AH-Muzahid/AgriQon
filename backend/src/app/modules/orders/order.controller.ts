@@ -3,7 +3,7 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import { OrderService } from './order.service';
 import { OrderRepository } from './order.repository';
 import { OrderStatus, Role } from '../../../generated/client';
@@ -14,7 +14,7 @@ const orderRepository = new OrderRepository();
 const orderService = new OrderService(orderRepository);
 
 const getAllOrders = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const status = req.query.status as OrderStatus | undefined;
@@ -32,7 +32,7 @@ const getAllOrders = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const getOrderById = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const { id } = req.params;
 
   const result = await orderService.getOrderById(id, businessId);
@@ -46,7 +46,7 @@ const getOrderById = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const createOrder = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const userId = req.user!.id;
 
   const result = await orderService.createOrder({
@@ -64,7 +64,7 @@ const createOrder = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const updateOrderStatus = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const { id } = req.params;
   const { status } = req.body;
 
@@ -79,7 +79,7 @@ const updateOrderStatus = catchAsync(async (req: AuthRequest, res: Response) => 
 });
 
 const cancelOrder = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const { id } = req.params;
 
   const result = await orderService.cancelOrder(id, businessId);

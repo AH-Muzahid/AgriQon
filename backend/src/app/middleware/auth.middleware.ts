@@ -3,19 +3,19 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import { env } from '../../config/env';
 import { AppError } from '../errors/AppError';
 import catchAsync from '../shared/utils/catchAsync';
-import { Role } from '../../generated/client';
+import { Role, PlatformRole } from '../../generated/client';
 
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    role: Role;
+    role: Role | PlatformRole;
     email?: string;
     businessId?: string | null;
     organizationId?: string | null;
   };
 }
 
-export const auth = (...roles: Role[]) => {
+export const auth = (...roles: (Role | PlatformRole)[]) => {
   return catchAsync(async (req: AuthRequest, res: Response, next: NextFunction) => {
     let token: string | undefined;
 

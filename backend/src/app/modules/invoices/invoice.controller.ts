@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import { InvoiceService } from './invoice.service';
 import { InvoiceRepository } from './invoice.repository';
 
@@ -9,7 +9,7 @@ const invoiceRepository = new InvoiceRepository();
 const invoiceService = new InvoiceService(invoiceRepository);
 
 const getAllInvoices = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
   const customerId = req.query.customerId as string | undefined;
@@ -26,7 +26,7 @@ const getAllInvoices = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const getInvoiceById = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const { id } = req.params;
 
   const result = await invoiceService.getInvoiceById(id, businessId);
@@ -40,7 +40,7 @@ const getInvoiceById = catchAsync(async (req: AuthRequest, res: Response) => {
 });
 
 const getInvoiceByOrderId = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const { orderId } = req.params;
 
   const result = await invoiceService.getInvoiceByOrderId(orderId, businessId);
@@ -54,7 +54,7 @@ const getInvoiceByOrderId = catchAsync(async (req: AuthRequest, res: Response) =
 });
 
 const updateInvoice = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user!.businessId!;
+  const businessId = req.businessId!;
   const { id } = req.params;
 
   const result = await invoiceService.updateInvoice(id, businessId, req.body);

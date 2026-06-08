@@ -54,7 +54,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 };
 
 export const authorize =
-  (...roles: Role[]) =>
+  (...roles: (Role | PlatformRole)[]) =>
   (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ message: 'Authentication required' });

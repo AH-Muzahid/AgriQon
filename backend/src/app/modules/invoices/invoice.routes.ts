@@ -1,20 +1,21 @@
 import { Router } from 'express';
-import { auth } from '../../middleware/auth.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
+import { INVOICE_VIEW, INVOICE_MANAGE } from '../../constants/permissions';
 import { InvoiceController } from './invoice.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { invoiceQuerySchema, updateInvoiceSchema } from './invoice.validation';
-import { Role } from '../../../generated/client';
 
 const router = Router();
 
-router.use(auth(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT, Role.CASHIER, Role.SELLER));
+router.use(extractAuth, requireTenant, attachBusinessRole);
 
-router.get('/', validateRequest(invoiceQuerySchema), InvoiceController.getAllInvoices);
-router.get('/order/:orderId', InvoiceController.getInvoiceByOrderId);
-router.get('/:id', InvoiceController.getInvoiceById);
+router.get('/', authorizeAny(INVOICE_VIEW), validateRequest(invoiceQuerySchema), InvoiceController.getAllInvoices);
+router.get('/order/:orderId', authorizeAny(INVOICE_VIEW), InvoiceController.getInvoiceByOrderId);
+router.get('/:id', authorizeAny(INVOICE_VIEW), InvoiceController.getInvoiceById);
 router.patch(
   '/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.ACCOUNTANT, Role.SELLER),
+  authorizeAny(INVOICE_MANAGE),
   validateRequest(updateInvoiceSchema),
   InvoiceController.updateInvoice
 );
