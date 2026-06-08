@@ -33,48 +33,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state on mount (avoid react-hooks/set-state-in-effect by not calling async function directly)
+  // Initialize auth state on mount
   useEffect(() => {
     let cancelled = false;
 
     const init = async () => {
       try {
-        const supabase = createClient();
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        // If we have a Supabase session, set token first so apiClient sends auth header.
-        // If we have a Supabase session, do NOT use Supabase access_token directly
-        // (it may be signed with a different algorithm). The proper flow is to
-        // exchange the idToken with the backend via /auth/oauth-callback which
-        // will issue a backend-signed token. The callback page performs that
-        // exchange after OAuth redirect; here we log for debugging and rely on
-        // backend cookies/localStorage to be present instead.
-        if (session?.access_token) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.debug('[Auth init] Supabase session present; skipping direct token set (will rely on backend exchange).', { supabaseUser: session.user?.email });
-          }
+        // Skip auto-init on OAuth callback pages — the success page handles token setup.
+        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback')) {
+          console.debug('[Auth init] On callback page, skipping auto /auth/me');
+          if (!cancelled) setIsLoading(false);
+          return;
         }
 
-        // Do not rely on localStorage for tokens. Backend sets httpOnly cookies
-        // which are sent automatically (`withCredentials: true`).
+        // Check if there's a token in localStorage (set by prior login or OAuth callback)
+        const hasToken = typeof window !== 'undefined' &&
+          (localStorage.getItem('token') || localStorage.getItem('authToken'));
 
-        if (!cancelled) {
-          try {
-            const response = await apiClient.client.get('/auth/me');
-            setUser(response.data);
-            useAuthStore.getState().setUser(translateBackendUser(response.data));
-          } catch (err) {
-            // Not authenticated or endpoint failed; log and clear user
-            console.debug('Failed to fetch /auth/me:', err);
+        if (!hasToken) {
+          // No token available — user is not authenticated
+          console.debug('[Auth init] No token in localStorage, skipping /auth/me');
+          if (!cancelled) {
             setUser(null);
             useAuthStore.getState().setUser(null);
           }
+          return;
+        }
 
+        if (!cancelled) {
+          try {
+            // The response interceptor already unwraps response.data,
+            // so this returns the API body: { success, data: { ...user }, message }
+            const apiResponse = await apiClient.client.get('/auth/me') as any;
+            const userData = apiResponse?.data || apiResponse;
+
+            if (userData && userData.id) {
+              setUser(userData);
+              useAuthStore.getState().setUser(translateBackendUser(userData));
+            } else {
+              setUser(null);
+              useAuthStore.getState().setUser(null);
+            }
+          } catch (err) {
+            // Not authenticated or endpoint failed
+            console.debug('[Auth init] Failed to fetch /auth/me:', err);
+            setUser(null);
+            useAuthStore.getState().setUser(null);
+          }
         }
       } catch (error) {
-        console.error('Error checking user:', error);
+        console.error('[Auth init] Error:', error);
         if (!cancelled) {
           setUser(null);
           useAuthStore.getState().setUser(null);

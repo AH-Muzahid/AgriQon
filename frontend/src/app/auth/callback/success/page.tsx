@@ -2,8 +2,9 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { apiClient, ApiResponse } from '@/lib/api-client';
-import { useAuth, User } from '@/context/auth-context';
+import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/context/auth-context';
+import { useAuthStore, translateBackendUser } from '@/store/auth-store';
 import { motion } from 'framer-motion';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -18,19 +19,29 @@ function SuccessHandler() {
     const handleSuccess = async () => {
       try {
         const token = searchParams.get('token');
-        if (token) {
-          apiClient.setToken(token);
+        if (!token) {
+          throw new Error('No authentication token received from callback');
         }
 
-        // Backend has set httpOnly cookies. Fetch current user from backend.
-        const response = (await apiClient.client.get('/auth/me')) as unknown as ApiResponse<User>;
-        const userData = response?.data;
+        // Set the token FIRST so all subsequent requests include it
+        apiClient.setToken(token);
 
-        if (!userData) {
-          throw new Error('Failed to load user after OAuth callback');
+        // Now fetch user profile using the bearer token.
+        // The response interceptor already unwraps response.data,
+        // so the result IS the API response body: { success, data, message }
+        const apiResponse = await apiClient.get('/auth/me') as any;
+
+        // apiResponse is already unwrapped by interceptor:
+        // could be { success, data: { user fields } } or { id, email, ... } directly
+        const userData = apiResponse?.data || apiResponse;
+
+        if (!userData || !userData.id) {
+          throw new Error('Failed to load user profile after authentication');
         }
 
+        // Sync both auth systems
         setUser(userData);
+        useAuthStore.getState().setUser(translateBackendUser(userData));
         setStatus('success');
 
         // Small delay for the success animation to show
@@ -42,7 +53,7 @@ function SuccessHandler() {
               router.push('/dashboard');
             }
           } else {
-            router.push('/');
+            router.push('/dashboard');
           }
         }, 1200);
       } catch (err) {
@@ -56,7 +67,8 @@ function SuccessHandler() {
     };
 
     handleSuccess();
-  }, [router, searchParams, setUser]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="relative z-10 space-y-6">
@@ -117,7 +129,7 @@ function SuccessHandler() {
         <div className="h-1 w-full bg-slate-200 rounded-full overflow-hidden">
           <motion.div 
             initial={{ width: "0%" }}
-            animate={{ width: status === 'success' ? "100%" : "60%" }}
+            animate={{ width: status === 'success' ? "100%" : status === 'error' ? "100%" : "60%" }}
             transition={{ duration: 2 }}
             className={`h-full ${status === 'error' ? 'bg-red-500' : 'bg-emerald-600'}`}
           />
