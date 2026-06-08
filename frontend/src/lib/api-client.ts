@@ -30,14 +30,41 @@ instance.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptor for error handling
+// Add response interceptor for error handling and 401 session expiry
 instance.interceptors.response.use(
   (response) => response.data,
   (error) => {
+    const status = error.response?.status;
+    const requestUrl = error.config?.url || '';
     const message = error.response?.data?.message || 'Something went wrong';
+
     if (process.env.NODE_ENV !== 'production') {
-      console.debug('[api-client] Response error', { url: error.config?.url, status: error.response?.status, message });
+      console.debug('[api-client] Response error', { url: requestUrl, status, message });
     }
+
+    // Handle 401 Unauthorized — clear auth state and redirect to login.
+    // Skip redirect for auth endpoints to prevent redirect loops.
+    if (status === 401 && typeof window !== 'undefined') {
+      const isAuthEndpoint = /\/auth\/(login|register|oauth-callback|me)/.test(requestUrl);
+      if (!isAuthEndpoint) {
+        console.warn('[api-client] 401 received — clearing session and redirecting to login.');
+        // Clear localStorage tokens
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        // Clear Authorization header from future requests
+        delete instance.defaults.headers.common['Authorization'];
+        // Clear Zustand auth store (lazy import to avoid circular deps)
+        try {
+          const { useAuthStore } = require('@/store/auth-store');
+          useAuthStore.getState().logout();
+        } catch {
+          // Store may not be available during SSR/edge cases
+        }
+        // Redirect to login
+        window.location.href = '/auth/login';
+      }
+    }
+
     return Promise.reject(new Error(message));
   }
 );
