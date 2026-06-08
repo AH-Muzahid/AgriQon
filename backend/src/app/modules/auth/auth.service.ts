@@ -162,16 +162,39 @@ export class AuthService {
 
     let verifiedEmail: string | undefined;
     try {
+      // Primary: verify the Supabase access_token with the project JWT secret (HS256).
       const verified = jwt.verify(data.idToken, env.supabaseJwtSecret, {
         algorithms: ["HS256"],
       }) as any;
-      // Extract email from verified token payload in a defensive manner
       verifiedEmail = verified?.email || verified?.user?.email || undefined;
-    } catch (err: any) {
-      throw new AppError(
-        `Invalid OAuth token: ${err?.message ?? "verification failed"}`,
-        401,
+    } catch (jwtErr: any) {
+      // Fallback: use Supabase Admin API to validate the token.
+      // This handles algorithm mismatches or misconfigured JWT secret.
+      console.warn(
+        `[AuthService] JWT verify failed (${jwtErr?.message}), falling back to Supabase Admin API`,
       );
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const supabaseAdmin = createClient(
+          env.supabaseUrl!,
+          env.supabaseServiceRoleKey!,
+        );
+        const { data: userData, error: supaErr } =
+          await supabaseAdmin.auth.getUser(data.idToken);
+        if (supaErr || !userData?.user) {
+          throw new AppError(
+            `OAuth token validation failed: ${supaErr?.message ?? "no user returned"}`,
+            401,
+          );
+        }
+        verifiedEmail = userData.user.email;
+      } catch (fallbackErr: any) {
+        if (fallbackErr instanceof AppError) throw fallbackErr;
+        throw new AppError(
+          `Invalid OAuth token: ${jwtErr?.message ?? "verification failed"}`,
+          401,
+        );
+      }
     }
 
     if (verifiedEmail && verifiedEmail !== data.email) {
