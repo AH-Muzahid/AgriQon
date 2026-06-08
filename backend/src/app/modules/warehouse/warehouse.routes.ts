@@ -1,83 +1,110 @@
-import express from 'express';
-import validateRequest from '../../middleware/validateRequest';
-import { WarehouseValidation } from './warehouse.validation';
-import { WarehouseController } from './warehouse.controller';
-import { WarehouseTransferController } from './transfer.controller';
-import { auth } from '../../middleware/auth.middleware';
-import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
-import { requireTenant } from '../../middleware/tenant.middleware';
-import { Role } from '../../../generated/client';
+import express from "express";
+import validateRequest from "../../middleware/validateRequest";
+import { WarehouseValidation } from "./warehouse.validation";
+import { WarehouseController } from "./warehouse.controller";
+import { WarehouseTransferController } from "./transfer.controller";
+import {
+  extractAuth,
+  attachBusinessRole,
+  authorizeAny,
+} from "../../middleware/rbac.middleware";
+import { requireTenant } from "../../middleware/tenant.middleware";
 import {
   WAREHOUSE_VIEW,
   WAREHOUSE_CREATE,
   WAREHOUSE_UPDATE,
-} from '../../constants/permissions';
+  WAREHOUSE_DELETE,
+  STOCK_MOVEMENT_VIEW,
+  STOCK_MOVEMENT_CREATE,
+  STOCK_MOVEMENT_MANAGE,
+} from "../../constants/permissions";
 
 const router = express.Router();
 
 router.get(
-  '/',
+  "/",
   extractAuth,
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_VIEW),
-  WarehouseController.getWarehouses
+  WarehouseController.getWarehouses,
 );
 
-// Transfers — not migrated in Phase 1.3B; legacy role auth retained
+// Transfers
 router.get(
-  '/transfers',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
-  WarehouseTransferController.getAllTransfers
+  "/transfers",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_VIEW),
+  WarehouseTransferController.getAllTransfers,
 );
 
 router.get(
-  '/transfers/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
-  WarehouseTransferController.getTransferById
+  "/transfers/:id",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_VIEW),
+  WarehouseTransferController.getTransferById,
 );
 
 router.post(
-  '/transfers',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
+  "/transfers",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_CREATE),
   validateRequest(WarehouseValidation.initiateTransferSchema),
-  WarehouseTransferController.initiateTransfer
+  WarehouseTransferController.initiateTransfer,
 );
 
 router.patch(
-  '/transfers/:id/status',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
+  "/transfers/:id/status",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_MANAGE),
   validateRequest(WarehouseValidation.updateTransferStatusSchema),
-  WarehouseTransferController.updateTransferStatus
+  WarehouseTransferController.updateTransferStatus,
 );
 
 router.get(
-  '/:id',
+  "/:id",
   extractAuth,
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_VIEW),
-  WarehouseController.getWarehouseById
+  WarehouseController.getWarehouseById,
 );
 
 router.post(
-  '/',
+  "/",
   extractAuth,
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_CREATE),
   validateRequest(WarehouseValidation.createWarehouseSchema),
-  WarehouseController.createWarehouse
+  WarehouseController.createWarehouse,
 );
 
 router.patch(
-  '/:id',
+  "/:id",
   extractAuth,
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_UPDATE),
   validateRequest(WarehouseValidation.updateWarehouseSchema),
-  WarehouseController.updateWarehouse
+  WarehouseController.updateWarehouse,
+);
+
+router.delete(
+  "/:id",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(WAREHOUSE_DELETE),
+  WarehouseController.deleteWarehouse,
 );
 
 export const WarehouseRoutes = router;

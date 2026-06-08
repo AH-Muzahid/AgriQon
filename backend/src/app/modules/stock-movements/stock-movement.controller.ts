@@ -3,15 +3,14 @@ import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
 import { StockMovementService } from './stock-movement.service';
 import { StockMovementRepository } from './stock-movement.repository';
-import { AuthRequest } from '../../middleware/auth.middleware';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import { AppError } from '../../errors/AppError';
 
 const stockMovementRepository = new StockMovementRepository();
 const stockMovementService = new StockMovementService(stockMovementRepository);
 
 const getMovements = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.user?.businessId;
-  if (!businessId) throw new AppError('Business ID is required', 400);
+  const businessId = req.businessId!;
 
   const { inventoryId, itemId, warehouseId, limit, skip } = req.query;
 

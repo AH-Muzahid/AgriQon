@@ -4,10 +4,8 @@ import { ProductController } from './product.controller';
 import { ProductBatchController } from './batch.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { createProductSchema, updateProductSchema } from './product.validation';
-import { auth } from '../../middleware/auth.middleware';
 import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
 import { requireTenant } from '../../middleware/tenant.middleware';
-import { Role } from '../../../generated/client';
 import {
   PRODUCT_VIEW,
   PRODUCT_CREATE,
@@ -17,28 +15,40 @@ import {
 
 const router = Router();
 
-// Batches — not migrated in Phase 1.3B; legacy role auth retained
+// Batches
 router.get(
   '/batches',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PRODUCT_VIEW),
   ProductBatchController.getAllBatches
 );
 
 router.get(
   '/batches/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PRODUCT_VIEW),
   ProductBatchController.getBatchById
 );
 
 router.post(
   '/batches',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PRODUCT_CREATE),
   ProductBatchController.createBatch
 );
 
 router.delete(
   '/batches/:id',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER),
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PRODUCT_DELETE),
   ProductBatchController.deleteBatch
 );
 

@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
 import { ProductBatchService } from './batch.service';
 
-const createBatch = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
+const createBatch = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
   const result = await ProductBatchService.createBatch({
     ...req.body,
     businessId,
@@ -18,10 +19,10 @@ const createBatch = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAllBatches = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
+const getAllBatches = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
   const { itemId } = req.query;
-  const result = await ProductBatchService.getAllBatches(businessId!, itemId as string);
+  const result = await ProductBatchService.getAllBatches(businessId, itemId as string);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

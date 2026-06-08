@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient } from '../../../generated/client';
-import { prisma } from '../../lib/prisma';
+import { Prisma, PrismaClient } from "../../../generated/client";
+import { prisma } from "../../lib/prisma";
 
 export class WarehouseRepository {
   private prisma: PrismaClient;
@@ -26,10 +26,26 @@ export class WarehouseRepository {
     });
   }
 
-  async update(id: string, businessId: string, data: Prisma.WarehouseUpdateInput) {
+  async update(
+    id: string,
+    businessId: string,
+    data: Prisma.WarehouseUpdateInput,
+  ) {
     return await this.prisma.warehouse.update({
       where: { id, businessId },
       data,
+    });
+  }
+
+  async countInventory(warehouseId: string): Promise<number> {
+    return await this.prisma.inventory.count({
+      where: { warehouseId },
+    });
+  }
+
+  async delete(id: string, businessId: string) {
+    return await this.prisma.warehouse.delete({
+      where: { id, businessId },
     });
   }
 }

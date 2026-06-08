@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import catchAsync from '../../shared/utils/catchAsync';
 import sendResponse from '../../shared/utils/sendResponse';
 import { WarehouseTransferService } from './transfer.service';
 
-const initiateTransfer = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
+const initiateTransfer = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
   const result = await WarehouseTransferService.initiateTransfer({
     ...req.body,
     businessId,
@@ -18,9 +19,9 @@ const initiateTransfer = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAllTransfers = catchAsync(async (req: Request, res: Response) => {
-  const businessId = req.user?.businessId;
-  const result = await WarehouseTransferService.getAllTransfers(businessId!);
+const getAllTransfers = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId!;
+  const result = await WarehouseTransferService.getAllTransfers(businessId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

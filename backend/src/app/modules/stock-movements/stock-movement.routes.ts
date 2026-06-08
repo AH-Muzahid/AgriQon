@@ -1,14 +1,22 @@
-import express from 'express';
-import { StockMovementController } from './stock-movement.controller';
-import { auth } from '../../middleware/auth.middleware';
-import { Role } from '../../../generated/client';
+import express from "express";
+import { StockMovementController } from "./stock-movement.controller";
+import {
+  extractAuth,
+  attachBusinessRole,
+  authorizeAny,
+} from "../../middleware/rbac.middleware";
+import { requireTenant } from "../../middleware/tenant.middleware";
+import { STOCK_MOVEMENT_VIEW } from "../../constants/permissions";
 
 const router = express.Router();
 
 router.get(
-  '/',
-  auth(Role.ADMIN, Role.MANAGER, Role.WAREHOUSE_KEEPER, Role.SELLER),
-  StockMovementController.getMovements
+  "/",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(STOCK_MOVEMENT_VIEW),
+  StockMovementController.getMovements,
 );
 
 export const StockMovementRoutes = router;
