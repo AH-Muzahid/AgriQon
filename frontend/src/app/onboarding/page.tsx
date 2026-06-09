@@ -23,6 +23,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuthStore, translateBackendUser } from '@/store/auth-store';
 
 export default function OnboardingPage() {
   const { user, setUser } = useAuth();
@@ -75,19 +76,47 @@ export default function OnboardingPage() {
         currency: formData.currency,
       });
 
-      // 2. Fetch updated profile (so businessId is populated)
+      // 2. Token refresh is required because backend controllers (e.g., Accounting, AI)
+      // rely directly on req.user.businessId claims encoded within the JWT.
+      const refreshRes = await apiClient.client.post('/auth/refresh') as any;
+      const responseData = refreshRes?.data || refreshRes;
+      const newAccessToken = responseData?.accessToken;
+      if (newAccessToken) {
+        apiClient.setToken(newAccessToken);
+      }
+
+      // 3. Fetch updated profile (so businessId is populated)
       const userRes = (await apiClient.client.get('/auth/me')) as unknown as ApiResponse<User>;
 
       // Axios interceptor unwraps response to return response.data
       const updatedUser = userRes.data;
+
+      // 4. Verify that the updated user payload contains the business information
+      if (!updatedUser || !updatedUser.businessId) {
+        throw new Error('Onboarding failed: businessId was not populated in the retrieved user profile.');
+      }
+      
+      const enrichedUser = updatedUser as any;
+      if (!enrichedUser.businessRole) {
+        throw new Error('Onboarding failed: businessRole was not populated in the retrieved user profile.');
+      }
+
+      if (!enrichedUser.permissions || !Array.isArray(enrichedUser.permissions) || enrichedUser.permissions.length === 0) {
+        throw new Error('Onboarding failed: permissions were not populated in the retrieved user profile.');
+      }
+
+      // 5. Update Auth Context (React State)
       setUser(updatedUser);
+
+      // 6. Update Zustand Auth Store (Global state used by api-client interceptors)
+      useAuthStore.getState().setUser(translateBackendUser(updatedUser));
 
       toast.success('AgroAI Business set up successfully!');
 
-      // 3. Transition to success step
+      // 7. Transition to success step
       setStep(3);
 
-      // 4. Redirect after brief delay
+      // 8. Redirect to dashboard only after auth refresh completes
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
