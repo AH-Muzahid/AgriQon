@@ -71,8 +71,55 @@ const handleRefund = catchAsync(async (req: AuthRequest, res: Response) => {
   });
 });
 
+const getAllPayments = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId;
+  if (!businessId) throw new AppError("Business context required", 400);
+
+  const filters = req.query;
+
+  const result = await PaymentService.getAllPayments({
+    businessId,
+    page: Number(filters.page || 1),
+    limit: Number(filters.limit || 10),
+    startDate: filters.startDate as string | undefined,
+    endDate: filters.endDate as string | undefined,
+    status: filters.status as any,
+    invoiceId: filters.invoiceId as string | undefined,
+    customerId: filters.customerId as string | undefined,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Payments retrieved successfully",
+    meta: {
+      page: Number(filters.page || 1),
+      limit: Number(filters.limit || 10),
+      total: result.total,
+    },
+    data: result.items,
+  });
+});
+
+const getPaymentById = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId;
+  if (!businessId) throw new AppError("Business context required", 400);
+
+  const { id } = req.params;
+  const result = await PaymentService.getPaymentById(id, businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Payment retrieved successfully",
+    data: result,
+  });
+});
+
 export const PaymentController = {
   initiatePayment,
   handleWebhook,
   handleRefund,
+  getAllPayments,
+  getPaymentById,
 };

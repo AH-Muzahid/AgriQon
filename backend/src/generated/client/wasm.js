@@ -582,6 +582,73 @@ exports.Prisma.ReportCacheScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PlanScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  price: 'price',
+  interval: 'interval',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PlanFeatureScalarFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  featureKey: 'featureKey',
+  value: 'value',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SubscriptionScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  planId: 'planId',
+  status: 'status',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  trialStart: 'trialStart',
+  trialEnd: 'trialEnd',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UsageMetricScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  metricKey: 'metricKey',
+  value: 'value',
+  limit: 'limit',
+  resetAt: 'resetAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SubscriptionEventScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  eventType: 'eventType',
+  payload: 'payload',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CustomRoleScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  description: 'description',
+  permissions: 'permissions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserCustomRoleScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  customRoleId: 'customRoleId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -935,6 +1002,53 @@ exports.Prisma.ReportCacheOrderByRelevanceFieldEnum = {
   businessId: 'businessId',
   reportType: 'reportType'
 };
+
+exports.Prisma.PlanOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  interval: 'interval'
+};
+
+exports.Prisma.PlanFeatureOrderByRelevanceFieldEnum = {
+  id: 'id',
+  planId: 'planId',
+  featureKey: 'featureKey',
+  value: 'value'
+};
+
+exports.Prisma.SubscriptionOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  planId: 'planId',
+  status: 'status'
+};
+
+exports.Prisma.UsageMetricOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  metricKey: 'metricKey'
+};
+
+exports.Prisma.SubscriptionEventOrderByRelevanceFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  eventType: 'eventType'
+};
+
+exports.Prisma.CustomRoleOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  name: 'name',
+  description: 'description',
+  permissions: 'permissions'
+};
+
+exports.Prisma.UserCustomRoleOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  customRoleId: 'customRoleId'
+};
 exports.PlatformRole = exports.$Enums.PlatformRole = {
   USER: 'USER',
   SUPER_ADMIN: 'SUPER_ADMIN'
@@ -1040,7 +1154,14 @@ exports.Prisma.ModelName = {
   JournalEntry: 'JournalEntry',
   JournalLine: 'JournalLine',
   ReconciliationLog: 'ReconciliationLog',
-  ReportCache: 'ReportCache'
+  ReportCache: 'ReportCache',
+  Plan: 'Plan',
+  PlanFeature: 'PlanFeature',
+  Subscription: 'Subscription',
+  UsageMetric: 'UsageMetric',
+  SubscriptionEvent: 'SubscriptionEvent',
+  CustomRole: 'CustomRole',
+  UserCustomRole: 'UserCustomRole'
 };
 
 /**

@@ -182,3 +182,66 @@ The API uses standard HTTP status codes:
   "stack": "..." (only in development)
 }
 ```
+
+---
+
+## Phase 2.2 — Extended Module APIs
+
+### Dashboard & Analytics
+Provides business analytics and performance tracking.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/dashboard/summary` | Get high-level summary (Revenue, Orders Count, Customers Count, Inventory Value, Low Stock Alerts) | `report.view` |
+| GET | `/analytics/financial-trend` | Get monthly revenue, expense trends, and profit summaries | `report.view` |
+
+### Payments Ledger
+Maintains payments as first-class ledger records.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/payments` | Paginated payments list with status, date, invoice, and customer filters | `payment.view` |
+| GET | `/payments/:id` | Detailed payment information, invoice mapping, and audit logs | `payment.view` |
+
+### Organization Users
+Manage tenant-isolated memberships and roles.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/organization/users` | List tenant members, roles, status, and warehouse assignments | `business.view` |
+| POST | `/organization/users/invite` | Invite a new user to the business tenant (simulated email invite) | `business.manage` |
+
+### Custom Roles
+Exposes dynamic RBAC configurations.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/roles` | List all built-in system roles and custom tenant roles | `business.view` |
+| POST | `/roles` | Create a new custom role with custom permission keys | `business.manage` |
+| PATCH | `/roles/:id` | Update description or permissions of a custom role | `business.manage` |
+| DELETE | `/roles/:id` | Delete a custom role | `business.manage` |
+
+### Permissions
+Lists available system catalog capabilities.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/permissions` | Retrieve module permissions, action permissions, and role-to-permission mappings | `business.view` |
+
+### Subscription Foundation
+Tracks subscription plans and resource limits.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/subscription` | Get active tenant subscription and plan features | `business.view` |
+| GET | `/subscription/usage` | Compare actual counts (users, warehouses, products) against plan limits | `business.view` |
+
+### Reporting Aggregates
+Exposes advanced transactional aggregate reports.
+
+| Method | Endpoint | Description | Permissions |
+| :--- | :--- | :--- | :--- |
+| GET | `/reports/sales` | Detailed sales performance, taxes, discounts, and item breakdowns | `report.view` |
+| GET | `/reports/inventory` | Inventory valuation, warehouse breakdown, and low stock warnings | `report.view` |
+| GET | `/reports/financial` | Revenue, expenses, net profit, and general ledger references | `report.view` |
+

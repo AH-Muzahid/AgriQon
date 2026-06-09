@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import axios from "axios";
 import { env } from "../../../config/env";
 import { AppError } from "../../errors/AppError";
 import { UserRepository } from "./user.repository";
@@ -160,42 +161,7 @@ export class AuthService {
       throw new AppError("Missing idToken from OAuth provider", 400);
     }
 
-    let verifiedEmail: string | undefined;
-    try {
-      // Primary: verify the Supabase access_token with the project JWT secret (HS256).
-      const verified = jwt.verify(data.idToken, env.supabaseJwtSecret, {
-        algorithms: ["HS256"],
-      }) as any;
-      verifiedEmail = verified?.email || verified?.user?.email || undefined;
-    } catch (jwtErr: any) {
-      // Fallback: use Supabase Admin API to validate the token.
-      // This handles algorithm mismatches or misconfigured JWT secret.
-      console.warn(
-        `[AuthService] JWT verify failed (${jwtErr?.message}), falling back to Supabase Admin API`,
-      );
-      try {
-        const { createClient } = await import("@supabase/supabase-js");
-        const supabaseAdmin = createClient(
-          env.supabaseUrl!,
-          env.supabaseServiceRoleKey!,
-        );
-        const { data: userData, error: supaErr } =
-          await supabaseAdmin.auth.getUser(data.idToken);
-        if (supaErr || !userData?.user) {
-          throw new AppError(
-            `OAuth token validation failed: ${supaErr?.message ?? "no user returned"}`,
-            401,
-          );
-        }
-        verifiedEmail = userData.user.email;
-      } catch (fallbackErr: any) {
-        if (fallbackErr instanceof AppError) throw fallbackErr;
-        throw new AppError(
-          `Invalid OAuth token: ${jwtErr?.message ?? "verification failed"}`,
-          401,
-        );
-      }
-    }
+    const verifiedEmail = await this.verifySupabaseToken(data.idToken);
 
     if (verifiedEmail && verifiedEmail !== data.email) {
       throw new AppError(
@@ -225,6 +191,94 @@ export class AuthService {
     await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
 
     return { user, accessToken, refreshToken: token };
+  }
+
+  private async verifySupabaseToken(idToken: string): Promise<string> {
+    const decoded = jwt.decode(idToken, { complete: true }) as any;
+    
+    if (decoded && decoded.header) {
+      const { alg, kid } = decoded.header;
+      console.log(`[AuthService] Verifying Supabase token. Alg: ${alg}, Kid: ${kid}`);
+
+      if (alg === "ES256") {
+        try {
+          // Fetch JWKS keys from Supabase project
+          const jwksUrl = `${env.supabaseUrl}/auth/v1/.well-known/jwks.json`;
+          console.log(`[AuthService] Fetching JWKS keys from ${jwksUrl}...`);
+          const response = await axios.get(jwksUrl);
+          const jwks = response.data;
+          const jwk = jwks?.keys?.find((k: any) => k.kid === kid);
+          if (!jwk) {
+            throw new Error(`No matching key found in JWKS for kid: ${kid}`);
+          }
+
+          const publicKey = crypto.createPublicKey({
+            format: "jwk",
+            key: jwk,
+          });
+
+          const verified = jwt.verify(idToken, publicKey, {
+            algorithms: ["ES256"],
+          }) as any;
+
+          const email = verified?.email || verified?.user?.email;
+          if (!email) {
+            throw new Error("Token payload does not contain email");
+          }
+          console.log("[AuthService] Token verified successfully via JWKS ES256");
+          return email;
+        } catch (err: any) {
+          console.warn(`[AuthService] ES256 verification failed: ${err.message}. Falling back...`);
+        }
+      }
+    } else {
+      console.log("[AuthService] Token is not a valid JWT or could not be decoded. Skipping ES256 check.");
+    }
+
+    // HS256 fallback (legacy or local dev)
+    try {
+      const verified = jwt.verify(idToken, env.supabaseJwtSecret, {
+        algorithms: ["HS256"],
+      }) as any;
+      const email = verified?.email || verified?.user?.email;
+      if (!email) {
+        throw new Error("Token payload does not contain email");
+      }
+      console.log("[AuthService] Token verified successfully via HS256 local secret");
+      return email;
+    } catch (jwtErr: any) {
+      // Fallback: use Supabase Admin API to validate the token.
+      console.warn(
+        `[AuthService] HS256 JWT verify failed (${jwtErr?.message}), falling back to Supabase Admin API`,
+      );
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        if (!env.supabaseUrl || !env.supabaseServiceRoleKey) {
+          throw new Error("Supabase client is not fully configured (missing URL or Service Role Key)");
+        }
+        const supabaseAdmin = createClient(
+          env.supabaseUrl,
+          env.supabaseServiceRoleKey
+        );
+        const { data: userData, error: supaErr } =
+          await supabaseAdmin.auth.getUser(idToken);
+        if (supaErr || !userData?.user?.email) {
+          throw new AppError(
+            `OAuth token validation failed: ${supaErr?.message ?? "no user returned"}`,
+            401,
+          );
+        }
+        console.log("[AuthService] Token verified successfully via Supabase Admin API fallback");
+        return userData.user.email;
+      } catch (fallbackErr: any) {
+        console.error("[AuthService] Supabase Admin fallback verification failed:", fallbackErr);
+        if (fallbackErr instanceof AppError) throw fallbackErr;
+        throw new AppError(
+          `Invalid OAuth token: ${jwtErr?.message ?? "verification failed"}`,
+          401,
+        );
+      }
+    }
   }
 
   private generateAccessToken(user: any) {

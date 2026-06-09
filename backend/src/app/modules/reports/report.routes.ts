@@ -51,4 +51,31 @@ router.get(
   ReportController.getTrialBalanceReport,
 );
 
+router.get(
+  "/sales",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getSalesReport,
+);
+
+router.get(
+  "/inventory",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getInventoryReport,
+);
+
+router.get(
+  "/financial",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  ReportController.getFinancialReport,
+);
+
 export const ReportRoutes = router;

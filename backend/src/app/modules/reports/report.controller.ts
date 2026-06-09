@@ -82,3 +82,51 @@ export const getTrialBalanceReport = catchAsync(async (req: AuthRequest, res: Re
     data: result
   });
 });
+
+export const getSalesReport = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const { startDate, endDate } = req.query;
+
+  const result = await reportService.getSalesReport(
+    businessId,
+    new Date(startDate as string || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)),
+    new Date(endDate as string || new Date())
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Sales report generated successfully',
+    data: result
+  });
+});
+
+export const getInventoryReport = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const result = await reportService.getInventoryReport(businessId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Inventory report generated successfully',
+    data: result
+  });
+});
+
+export const getFinancialReport = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const { startDate, endDate } = req.query;
+
+  const result = await reportService.getFinancialReport(
+    businessId,
+    new Date(startDate as string || new Date(new Date().getFullYear(), 0, 1)),
+    new Date(endDate as string || new Date())
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Financial report generated successfully',
+    data: result
+  });
+});

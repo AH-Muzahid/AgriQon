@@ -22,6 +22,11 @@ import { UploadsRoutes } from '../modules/uploads/uploads.routes';
 import { ReportRoutes } from '../modules/reports/report.routes';
 import { ReconciliationRoutes } from '../modules/reconciliation/reconciliation.routes';
 import { PaymentRoutes } from '../modules/payments/payment.routes';
+import { AnalyticsRoutes } from '../modules/analytics/analytics.routes';
+import { OrganizationRoutes } from '../modules/organization/organization.routes';
+import { RoleRoutes } from '../modules/roles/role.routes';
+import { PermissionRoutes } from '../modules/permissions/permission.routes';
+import { SubscriptionRoutes } from '../modules/subscriptions/subscription.routes';
 
 const router = Router();
 
@@ -49,6 +54,12 @@ const moduleRoutes = [
   { path: '/uploads', route: UploadsRoutes },
   { path: '/reports', route: ReportRoutes },
   { path: '/reconciliation', route: ReconciliationRoutes },
+  { path: '/dashboard', route: AnalyticsRoutes },
+  { path: '/analytics', route: AnalyticsRoutes },
+  { path: '/organization', route: OrganizationRoutes },
+  { path: '/roles', route: RoleRoutes },
+  { path: '/permissions', route: PermissionRoutes },
+  { path: '/subscription', route: SubscriptionRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

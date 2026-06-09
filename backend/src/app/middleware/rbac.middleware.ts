@@ -137,9 +137,11 @@ export const authorizeAny = (...requiredPermissions: PermissionKey[]) => {
       const authError = getAuthAndRoleError(req);
       if (authError) return next(authError);
 
-      const grantedKeys = await PermissionService.getPermissionsForRole(
-        req.businessRole!,
-      );
+      const businessId = req.businessId || req.user?.businessId;
+      const getPermissionsForUser = (PermissionService as any).getPermissionsForUser;
+      const grantedKeys = (getPermissionsForUser && businessId)
+        ? await getPermissionsForUser(req.user!.id, businessId)
+        : await PermissionService.getPermissionsForRole(req.businessRole!);
       const grantedSet = new Set(grantedKeys);
 
       const hasSome = requiredPermissions.some((key) => grantedSet.has(key));
@@ -171,9 +173,11 @@ export const authorizeAll = (...requiredPermissions: PermissionKey[]) => {
       const authError = getAuthAndRoleError(req);
       if (authError) return next(authError);
 
-      const grantedKeys = await PermissionService.getPermissionsForRole(
-        req.businessRole!,
-      );
+      const businessId = req.businessId || req.user?.businessId;
+      const getPermissionsForUser = (PermissionService as any).getPermissionsForUser;
+      const grantedKeys = (getPermissionsForUser && businessId)
+        ? await getPermissionsForUser(req.user!.id, businessId)
+        : await PermissionService.getPermissionsForRole(req.businessRole!);
       const grantedSet = new Set(grantedKeys);
 
       const hasAll = requiredPermissions.every((key) => grantedSet.has(key));

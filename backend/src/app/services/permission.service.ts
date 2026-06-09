@@ -31,5 +31,48 @@ export class PermissionService {
       throw new AppError('Permission lookup failed. Access denied.', 403);
     }
   }
+
+  /**
+   * Retrieve combined permissions (standard + custom) for a user within a business.
+   */
+  static async getPermissionsForUser(userId: string, businessId: string): Promise<string[]> {
+    try {
+      let permissions: string[] = [];
+
+      // 1. Fetch standard role permissions
+      const ubr = await prisma.userBusinessRole.findUnique({
+        where: { userId_businessId: { userId, businessId } },
+        select: { role: true }
+      });
+
+      if (ubr) {
+        const standardPerms = await this.getPermissionsForRole(ubr.role);
+        permissions = [...standardPerms];
+      }
+
+      // 2. Fetch custom roles permissions
+      const customUserRoles = await prisma.userCustomRole.findMany({
+        where: {
+          userId,
+          customRole: { businessId }
+        },
+        select: {
+          customRole: {
+            select: { permissions: true }
+          }
+        }
+      });
+
+      for (const cur of customUserRoles) {
+        if (cur.customRole && Array.isArray(cur.customRole.permissions)) {
+          permissions = [...permissions, ...cur.customRole.permissions];
+        }
+      }
+
+      return Array.from(new Set(permissions));
+    } catch (e) {
+      throw new AppError('Permission lookup failed. Access denied.', 403);
+    }
+  }
 }
 

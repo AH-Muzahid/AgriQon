@@ -30,7 +30,7 @@ router.get(
 router.post(
   "/",
   extractAuth,
-  requireOrganizationAuth(Role.ADMIN, Role.MANAGER),
+  requireOrganizationAuth(Role.ADMIN, Role.MANAGER, Role.USER),
   validateRequest(BusinessValidation.createBusinessSchema),
   BusinessController.createBusiness,
 );

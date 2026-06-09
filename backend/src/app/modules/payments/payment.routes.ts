@@ -6,7 +6,9 @@ import {
   authorizeAny,
 } from "../../middleware/rbac.middleware";
 import { requireTenant } from "../../middleware/tenant.middleware";
-import { PAYMENT_CREATE, PAYMENT_MANAGE } from "../../constants/permissions";
+import { PAYMENT_CREATE, PAYMENT_MANAGE, PAYMENT_VIEW } from "../../constants/permissions";
+import validateRequest from "../../middleware/validateRequest";
+import { PaymentValidation } from "./payment.validation";
 
 const router = express.Router();
 
@@ -43,6 +45,35 @@ router.post(
   attachBusinessRole,
   authorizeAny(PAYMENT_MANAGE),
   PaymentController.handleRefund,
+);
+
+/**
+ * GET /payments
+ * Paginated list of payments with filtering.
+ * Requires: payment.view
+ */
+router.get(
+  "/",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PAYMENT_VIEW),
+  validateRequest(PaymentValidation.queryPaymentSchema),
+  PaymentController.getAllPayments
+);
+
+/**
+ * GET /payments/:id
+ * Retrieve a payment by its ID.
+ * Requires: payment.view
+ */
+router.get(
+  "/:id",
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(PAYMENT_VIEW),
+  PaymentController.getPaymentById
 );
 
 export const PaymentRoutes = router;

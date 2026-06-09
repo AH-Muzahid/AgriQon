@@ -6,6 +6,7 @@ import { AppError } from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { PAYMENT_STATUS } from './payment.constants';
 import { DomainEvents, emitDomainEvent } from '../../../shared/events/domain-events';
+import { PaymentRepository } from './payment.repository';
 
 /**
  * Service orchestrator for Payments.
@@ -238,9 +239,34 @@ const handleRefund = async (params: { paymentId: string; amount: number; reason?
   });
 };
 
+const paymentRepository = new PaymentRepository();
+
+const getAllPayments = async (params: {
+  businessId: string;
+  page: number;
+  limit: number;
+  startDate?: string;
+  endDate?: string;
+  status?: any;
+  invoiceId?: string;
+  customerId?: string;
+}) => {
+  return await paymentRepository.findAll(params);
+};
+
+const getPaymentById = async (id: string, businessId: string) => {
+  const payment = await paymentRepository.findById(id, businessId);
+  if (!payment) {
+    throw new AppError('Payment not found', httpStatus.NOT_FOUND);
+  }
+  return payment;
+};
+
 export const PaymentService = {
   initiatePayment,
   handlePaymentSuccess,
   verifyAndHandleWebhook,
   handleRefund,
+  getAllPayments,
+  getPaymentById,
 };

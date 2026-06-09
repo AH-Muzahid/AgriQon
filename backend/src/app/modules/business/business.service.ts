@@ -16,17 +16,31 @@ export class BusinessService {
     this.accountingService = new AccountingService();
   }
 
-  async createBusiness(data: CreateBusinessDTO & { organizationId: string; userId?: string }) {
+  async createBusiness(data: CreateBusinessDTO & { organizationId?: string; userId?: string }) {
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      let orgId = data.organizationId;
+      if (!orgId) {
+        const organization = await tx.organization.create({
+          data: {
+            name: `${data.name} Organization`,
+          },
+        });
+        orgId = organization.id;
+      }
+
       // 1. Create Business using transaction repo
+      const { userId, ...businessData } = data;
       const businessRepoTx = new BusinessRepository(tx);
-      const business = await businessRepoTx.create(data);
+      const business = await businessRepoTx.create({
+        ...businessData,
+        organizationId: orgId,
+      });
       
       // 2. Assign the creator as OWNER of this business if userId is provided
-      if (data.userId) {
+      if (userId) {
         await tx.userBusinessRole.create({
           data: {
-            userId: data.userId,
+            userId,
             businessId: business.id,
             role: 'OWNER',
           },
@@ -34,7 +48,7 @@ export class BusinessService {
 
         // Update the User's businessId to link them to the new business
         await tx.user.update({
-          where: { id: data.userId },
+          where: { id: userId },
           data: { businessId: business.id },
         });
       }

@@ -26,7 +26,10 @@ async function enrichUser(user: any) {
     });
     if (ubr) {
       businessRole = ubr.role;
-      permissions = await PermissionService.getPermissionsForRole(ubr.role);
+      const getPermissionsForUser = (PermissionService as any).getPermissionsForUser;
+      permissions = getPermissionsForUser
+        ? await getPermissionsForUser(user.id, user.businessId)
+        : await PermissionService.getPermissionsForRole(ubr.role);
     }
   }
   

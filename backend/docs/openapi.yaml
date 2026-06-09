@@ -1,0 +1,343 @@
+openapi: 3.0.3
+info:
+  title: AgriQon Extended API
+  description: API specifications for Dashboard Analytics, Payments Ledger, Organization Users, Roles & Permissions, Subscriptions, and Reporting Aggregates.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development server
+paths:
+  /dashboard/summary:
+    get:
+      summary: Get dashboard summary metrics
+      description: Returns consolidated KPI metrics for the active tenant (revenue, order/customer counts, inventory value, low stock warnings).
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: KPI summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      revenue:
+                        type: number
+                      ordersCount:
+                        type: integer
+                      customersCount:
+                        type: integer
+                      inventoryValue:
+                        type: number
+                      lowStockAlerts:
+                        type: integer
+
+  /analytics/financial-trend:
+    get:
+      summary: Get financial trends
+      description: Retrieve monthly summaries of revenue, expenses, and net profit.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Trends retrieved successfully
+
+  /payments:
+    get:
+      summary: Get paginated payments list
+      description: Query the ledger with pagination, date, status, customer, and invoice filters.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, PARTIAL, COMPLETED, FAILED, REFUNDED]
+        - name: invoiceId
+          in: query
+          schema:
+            type: string
+        - name: customerId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated payments retrieved successfully
+
+  /payments/{id}:
+    get:
+      summary: Get payment details
+      description: Retrieve complete payment metadata, related invoice, transaction references, and audit logs.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payment details retrieved successfully
+
+  /organization/users:
+    get:
+      summary: List tenant users
+      description: Return all members linked to the active business tenant with their standard and custom roles.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: User listing retrieved successfully
+
+  /organization/users/invite:
+    post:
+      summary: Invite user
+      description: Send an invitation to a user mapping them to a tenant role.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                role:
+                  type: string
+                  enum: [OWNER, MANAGER, STAFF]
+                  default: STAFF
+      responses:
+        '201':
+          description: User invited successfully
+
+  /roles:
+    get:
+      summary: Get all roles
+      description: List both system roles (OWNER, MANAGER, STAFF) and custom tenant roles.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: Roles listing retrieved successfully
+    post:
+      summary: Create custom role
+      description: Create a dynamic role unique to this tenant.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                permissions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Custom role created successfully
+
+  /roles/{id}:
+    patch:
+      summary: Update custom role
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                permissions:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Role updated successfully
+    delete:
+      summary: Delete custom role
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role deleted successfully
+
+  /permissions:
+    get:
+      summary: List permission catalog
+      description: Returns the entire catalog of module and action capabilities alongside role mappings.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: Permission catalog metadata retrieved successfully
+
+  /subscription:
+    get:
+      summary: Retrieve subscription plan details
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: Active subscription plan details retrieved successfully
+
+  /subscription/usage:
+    get:
+      summary: Check plan usage limits
+      description: Compares actual user, warehouse, and product counts in the database to plan quotas.
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: Plan limit metrics compiled successfully
+
+  /reports/sales:
+    get:
+      summary: Get sales aggregate report
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Sales report compiled successfully
+
+  /reports/inventory:
+    get:
+      summary: Get stock status report
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      responses:
+        '200':
+          description: Inventory report compiled successfully
+
+  /reports/financial:
+    get:
+      summary: Get financial performance report
+      security:
+        - BearerAuth: []
+        - TenantHeader: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Financial report compiled successfully
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    TenantHeader:
+      type: apiKey
+      in: header
+      name: x-business-id

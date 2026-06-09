@@ -33,7 +33,20 @@ const refundPaymentSchema = z.object({
   }),
 });
 
+const queryPaymentSchema = z.object({
+  query: z.object({
+    page: z.coerce.number().positive().default(1),
+    limit: z.coerce.number().positive().max(100).default(10),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    status: z.enum(['PENDING', 'PARTIAL', 'COMPLETED', 'FAILED', 'REFUNDED'] as const).optional(),
+    invoiceId: z.string().optional(),
+    customerId: z.string().optional(),
+  }),
+});
+
 export const PaymentValidation = {
   initiatePaymentSchema,
   refundPaymentSchema,
+  queryPaymentSchema,
 };

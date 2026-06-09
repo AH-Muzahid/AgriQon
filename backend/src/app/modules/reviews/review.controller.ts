@@ -68,8 +68,11 @@ const deleteReview = asyncHandler(async (req: AuthRequest, res: Response) => {
 
   // Derive moderator flag from RBAC permissions — no raw role string check
   let isModerator = false;
-  if (req.businessRole) {
-    const granted = await PermissionService.getPermissionsForRole(req.businessRole);
+  if (userId && businessId) {
+    const getPermissionsForUser = (PermissionService as any).getPermissionsForUser;
+    const granted = getPermissionsForUser
+      ? await getPermissionsForUser(userId, businessId)
+      : (req.businessRole ? await PermissionService.getPermissionsForRole(req.businessRole) : []);
     isModerator = granted.includes(REVIEW_MANAGE);
   }
 

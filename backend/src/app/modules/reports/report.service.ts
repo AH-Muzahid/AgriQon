@@ -1,5 +1,6 @@
 import { prisma } from '../../lib/prisma';
 import { Account, AccountType, Category, Inventory, Item, JournalLine, Order, PurchaseOrder, Supplier } from '../../../generated/client';
+import { ReportRepository } from './report.repository';
 
 export class ReportService {
   /**
@@ -246,6 +247,187 @@ export class ReportService {
       totalDebit: details.reduce((sum: number, d: { debit: number }) => sum + d.debit, 0),
       totalCredit: details.reduce((sum: number, d: { credit: number }) => sum + d.credit, 0),
       details
+    };
+  }
+
+  private reportRepository = new ReportRepository();
+
+  /**
+   * Generates a detailed sales report
+   */
+  async getSalesReport(businessId: string, startDate: Date, endDate: Date) {
+    const orders = await this.reportRepository.getSalesOrders(businessId, startDate, endDate);
+
+    let totalRevenue = 0;
+    let totalTax = 0;
+    let totalDiscount = 0;
+    const statusSummary: Record<string, number> = {};
+    const itemBreakdown: Record<string, { name: string; sku: string; quantity: number; total: number }> = {};
+    const customerBreakdown: Record<string, { name: string; email: string; ordersCount: number; total: number }> = {};
+
+    for (const order of orders) {
+      const orderTotal = Number(order.total);
+      totalRevenue += orderTotal;
+      totalTax += Number(order.taxAmount || 0);
+      totalDiscount += Number(order.discount || 0);
+
+      // Status summary
+      statusSummary[order.status] = (statusSummary[order.status] || 0) + 1;
+
+      // Item breakdown
+      for (const orderItem of order.items) {
+        const itemId = orderItem.itemId;
+        const qty = orderItem.quantity;
+        const price = Number(orderItem.unitPrice);
+        const itemTotal = qty * price;
+
+        if (!itemBreakdown[itemId]) {
+          itemBreakdown[itemId] = {
+            name: orderItem.item.title,
+            sku: orderItem.item.sku || 'N/A',
+            quantity: 0,
+            total: 0
+          };
+        }
+        itemBreakdown[itemId].quantity += qty;
+        itemBreakdown[itemId].total += itemTotal;
+      }
+
+      // Customer breakdown
+      if (order.customer) {
+        const custId = order.customer.id;
+        if (!customerBreakdown[custId]) {
+          customerBreakdown[custId] = {
+            name: order.customer.name,
+            email: order.customer.email || 'N/A',
+            ordersCount: 0,
+            total: 0
+          };
+        }
+        customerBreakdown[custId].ordersCount++;
+        customerBreakdown[custId].total += orderTotal;
+      }
+    }
+
+    return {
+      period: { startDate, endDate },
+      summary: {
+        totalOrders: orders.length,
+        totalRevenue,
+        totalTax,
+        totalDiscount,
+        netSales: totalRevenue - totalTax - totalDiscount,
+        statusSummary
+      },
+      itemsSold: Object.values(itemBreakdown).sort((a, b) => b.quantity - a.quantity),
+      customerSales: Object.values(customerBreakdown).sort((a, b) => b.total - a.total)
+    };
+  }
+
+  /**
+   * Generates a detailed inventory report
+   */
+  async getInventoryReport(businessId: string) {
+    const items = await this.reportRepository.getInventoryItems(businessId);
+
+    const warehouseBreakdown: Record<string, { name: string; totalItems: number; totalStock: number; totalValue: number }> = {};
+    const lowStockAlerts = [];
+    let totalItemsCount = items.length;
+    let grandTotalStock = 0;
+    let grandTotalValue = 0;
+
+    const details = [];
+
+    for (const item of items) {
+      const itemStock = item.inventory.reduce((sum: number, inv: any) => sum + inv.availableStock, 0);
+      const unitCost = Number(item.costPrice || 0);
+      const itemValue = itemStock * unitCost;
+
+      grandTotalStock += itemStock;
+      grandTotalValue += itemValue;
+
+      // Check low stock
+      if (itemStock < item.lowStockThreshold) {
+        lowStockAlerts.push({
+          id: item.id,
+          name: item.title,
+          sku: item.sku || 'N/A',
+          currentStock: itemStock,
+          threshold: item.lowStockThreshold
+        });
+      }
+
+      // Warehouse breakdown
+      for (const inv of item.inventory) {
+        const whId = inv.warehouseId;
+        if (!warehouseBreakdown[whId]) {
+          warehouseBreakdown[whId] = {
+            name: inv.warehouse.name,
+            totalItems: 0,
+            totalStock: 0,
+            totalValue: 0
+          };
+        }
+        warehouseBreakdown[whId].totalItems++;
+        warehouseBreakdown[whId].totalStock += inv.availableStock;
+        warehouseBreakdown[whId].totalValue += inv.availableStock * unitCost;
+      }
+
+      details.push({
+        id: item.id,
+        name: item.title,
+        sku: item.sku || 'N/A',
+        category: item.category?.name || 'Uncategorized',
+        stock: itemStock,
+        unitCost,
+        totalValue: itemValue
+      });
+    }
+
+    return {
+      generatedAt: new Date(),
+      summary: {
+        totalItems: totalItemsCount,
+        totalStock: grandTotalStock,
+        totalValue: grandTotalValue,
+        lowStockItemsCount: lowStockAlerts.length
+      },
+      warehouses: Object.values(warehouseBreakdown),
+      lowStockAlerts,
+      details
+    };
+  }
+
+  /**
+   * Generates a comprehensive financial status report
+   */
+  async getFinancialReport(businessId: string, startDate: Date, endDate: Date) {
+    const [payments, purchases] = await Promise.all([
+      this.reportRepository.getPaymentsInPeriod(businessId, startDate, endDate),
+      this.reportRepository.getPurchasesInPeriod(businessId, startDate, endDate)
+    ]);
+
+    const totalRevenue = payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0);
+    const totalExpenses = purchases.reduce((sum: number, p: any) => sum + Number(p.total), 0);
+
+    // Get P&L from ledger to compare
+    const profitLoss = await this.getProfitAndLossReport(businessId, startDate, endDate);
+    const trialBalance = await this.getTrialBalanceReport(businessId);
+
+    return {
+      period: { startDate, endDate },
+      summary: {
+        totalRevenue,
+        totalExpenses,
+        netProfit: totalRevenue - totalExpenses
+      },
+      ledgerReference: {
+        postedRevenue: profitLoss.totalRevenue,
+        postedExpenses: profitLoss.totalExpenses,
+        ledgerNetProfit: profitLoss.netProfit,
+        trialBalanceDebit: trialBalance.totalDebit,
+        trialBalanceCredit: trialBalance.totalCredit
+      }
     };
   }
 }
