@@ -2,6 +2,8 @@ import { Prisma, MovementType } from '../../../generated/client';
 import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
+import { UsageGuardService } from '../subscriptions/usage-guard.service';
+import { ResourceType } from '../subscriptions/types/resource.types';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
 import { DomainEvents, emitDomainEvent } from '../../../shared/events/domain-events';
@@ -10,7 +12,8 @@ export class ProductService {
   constructor(
     private productRepo: ProductRepository,
     private inventoryService: InventoryService,
-    private subscriptionGuard: SubscriptionGuardService
+    private subscriptionGuard: SubscriptionGuardService,
+    private usageGuard?: UsageGuardService,
   ) {}
 
   /**
@@ -19,12 +22,18 @@ export class ProductService {
   async createProduct(params: {
     businessId: string;
     data: Prisma.ItemUncheckedCreateInput & { initialStock?: number; warehouseId?: string };
+    actorId?: string;
   }) {
-    const { businessId, data } = params;
+    const { businessId, data, actorId } = params;
     const { initialStock, warehouseId, ...productData } = data;
 
     // Phase S3: Subscription enforcement
     await this.subscriptionGuard.validateBusinessSubscription(businessId);
+
+    // Phase S5: Usage limit enforcement
+    if (this.usageGuard) {
+      await this.usageGuard.validateUsageLimit(businessId, ResourceType.PRODUCTS, actorId);
+    }
 
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const productRepo = new ProductRepository(tx);

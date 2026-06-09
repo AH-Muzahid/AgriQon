@@ -3,53 +3,49 @@ import { AuthRequest } from '../../middleware/rbac.middleware';
 import catchAsync from '../../shared/utils/catchAsync';
 import { sendResponse } from '../../shared/utils/sendResponse';
 import { OrganizationService } from './organization.service';
-import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import httpStatus from 'http-status';
 import { AppError } from '../../errors/AppError';
 
-const subscriptionGuard = new SubscriptionGuardService();
-const organizationService = new OrganizationService(subscriptionGuard);
+export class OrganizationController {
+  constructor(private organizationService: OrganizationService) {}
 
-const getBusinessUsers = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.businessId || req.user?.businessId;
-  if (!businessId) {
-    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
-  }
+  getBusinessUsers = catchAsync(async (req: AuthRequest, res: Response) => {
+    const businessId = req.businessId || req.user?.businessId;
+    if (!businessId) {
+      throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+    }
 
-  const result = await organizationService.getBusinessUsers(businessId);
+    const result = await this.organizationService.getBusinessUsers(businessId);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Organization users retrieved successfully',
-    data: result,
-  });
-});
-
-const inviteUser = catchAsync(async (req: AuthRequest, res: Response) => {
-  const businessId = req.businessId || req.user?.businessId;
-  if (!businessId) {
-    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
-  }
-
-  const { email, name, role } = req.body;
-
-  const result = await organizationService.inviteUser({
-    email,
-    name,
-    role,
-    businessId,
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Organization users retrieved successfully',
+      data: result,
+    });
   });
 
-  sendResponse(res, {
-    statusCode: httpStatus.CREATED,
-    success: true,
-    message: 'User invited successfully',
-    data: result,
-  });
-});
+  inviteUser = catchAsync(async (req: AuthRequest, res: Response) => {
+    const businessId = req.businessId || req.user?.businessId;
+    if (!businessId) {
+      throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+    }
 
-export const OrganizationController = {
-  getBusinessUsers,
-  inviteUser,
-};
+    const { email, name, role } = req.body;
+
+    const result = await this.organizationService.inviteUser({
+      email,
+      name,
+      role,
+      businessId,
+      actorId: req.user?.id,
+    });
+
+    sendResponse(res, {
+      statusCode: httpStatus.CREATED,
+      success: true,
+      message: 'User invited successfully',
+      data: result,
+    });
+  });
+}

@@ -7,9 +7,16 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   let message = 'Something went wrong!';
   let errorMessages: any[] = [];
 
+  let resource: string | undefined;
+  let current: number | undefined;
+  let limit: number | undefined;
+
   if (err instanceof AppError) {
     statusCode = err.statusCode;
     message = err.message;
+    resource = err.resource;
+    current = err.current;
+    limit = err.limit;
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
     // Handle Prisma specific errors
     if (err.code === 'P2002') {
@@ -30,6 +37,9 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     message,
+    ...(resource !== undefined ? { resource } : {}),
+    ...(current !== undefined ? { current } : {}),
+    ...(limit !== undefined ? { limit } : {}),
     errorMessages,
     stack: process.env.NODE_ENV === 'development' ? err?.stack : null,
   });

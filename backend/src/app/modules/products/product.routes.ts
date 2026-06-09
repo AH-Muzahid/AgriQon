@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { ProductController } from './product.controller';
+import { ProductService } from './product.service';
+import { ProductRepository } from './product.repository';
+import { InventoryService } from '../inventory/inventory.service';
+import { InventoryRepository } from '../inventory/inventory.repository';
+import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
+import { UsageGuardService } from '../subscriptions/usage-guard.service';
+import { SubscriptionRepository } from '../subscriptions/subscription.repository';
 import { ProductBatchController } from './batch.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { createProductSchema, updateProductSchema } from './product.validation';
@@ -14,6 +21,21 @@ import {
 } from '../../constants/permissions';
 
 const router = Router();
+
+// Dependency Injection Wiring
+const subscriptionRepository = new SubscriptionRepository();
+const subscriptionGuard = new SubscriptionGuardService(subscriptionRepository);
+const usageGuard = new UsageGuardService(subscriptionRepository);
+const productRepository = new ProductRepository();
+const inventoryRepository = new InventoryRepository();
+const inventoryService = new InventoryService(inventoryRepository);
+const productService = new ProductService(
+  productRepository,
+  inventoryService,
+  subscriptionGuard,
+  usageGuard
+);
+const productController = new ProductController(productService);
 
 // Batches
 router.get(
@@ -59,7 +81,7 @@ router.post(
   attachBusinessRole,
   authorizeAny(PRODUCT_CREATE),
   validateRequest(z.object({ body: createProductSchema })),
-  ProductController.createProduct
+  productController.createProduct
 );
 
 router.get(
@@ -68,7 +90,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(PRODUCT_VIEW),
-  ProductController.getAllProducts
+  productController.getAllProducts
 );
 
 router.get(
@@ -77,7 +99,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(PRODUCT_VIEW),
-  ProductController.getProductById
+  productController.getProductById
 );
 
 router.patch(
@@ -87,7 +109,7 @@ router.patch(
   attachBusinessRole,
   authorizeAny(PRODUCT_UPDATE),
   validateRequest(z.object({ body: updateProductSchema })),
-  ProductController.updateProduct
+  productController.updateProduct
 );
 
 router.delete(
@@ -96,7 +118,7 @@ router.delete(
   requireTenant,
   attachBusinessRole,
   authorizeAny(PRODUCT_DELETE),
-  ProductController.deleteProduct
+  productController.deleteProduct
 );
 
 export const ProductRoutes = router;

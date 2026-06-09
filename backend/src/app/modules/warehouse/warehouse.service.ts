@@ -2,6 +2,8 @@ import { WarehouseRepository } from "./warehouse.repository";
 import { Prisma } from "../../../generated/client";
 import { SubscriptionGuardService } from "../subscriptions/subscription-guard.service";
 import { FeatureGuardService } from "../subscriptions/feature-guard.service";
+import { UsageGuardService } from "../subscriptions/usage-guard.service";
+import { ResourceType } from "../subscriptions/types/resource.types";
 import { FeatureCode } from "../subscriptions/types/feature.types";
 import { AppError } from "../../errors/AppError";
 
@@ -10,6 +12,7 @@ export class WarehouseService {
     private warehouseRepo: WarehouseRepository,
     private subscriptionGuard?: SubscriptionGuardService,
     private featureGuard?: FeatureGuardService,
+    private usageGuard?: UsageGuardService,
   ) {}
 
   async createWarehouse(data: Prisma.WarehouseUncheckedCreateInput, userId?: string) {
@@ -24,6 +27,11 @@ export class WarehouseService {
       if (existingCount >= 1) {
         await this.featureGuard.validateFeatureAccess(data.businessId, FeatureCode.MULTI_BRANCH, userId);
       }
+    }
+
+    // Phase S5: Usage limit enforcement
+    if (this.usageGuard) {
+      await this.usageGuard.validateUsageLimit(data.businessId, ResourceType.WAREHOUSES, userId);
     }
 
     return await this.warehouseRepo.create(data);

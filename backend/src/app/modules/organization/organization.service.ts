@@ -1,15 +1,22 @@
 import { OrganizationRepository } from './organization.repository';
 import { BusinessRole } from '../../../generated/client';
 import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
+import { UsageGuardService } from '../subscriptions/usage-guard.service';
+import { ResourceType } from '../subscriptions/types/resource.types';
 import logger from '../../lib/logger';
 
 export class OrganizationService {
   private organizationRepository: OrganizationRepository;
   private subscriptionGuard: SubscriptionGuardService;
+  private usageGuard?: UsageGuardService;
 
-  constructor(subscriptionGuard?: SubscriptionGuardService) {
+  constructor(
+    subscriptionGuard?: SubscriptionGuardService,
+    usageGuard?: UsageGuardService,
+  ) {
     this.organizationRepository = new OrganizationRepository();
     this.subscriptionGuard = subscriptionGuard || new SubscriptionGuardService();
+    this.usageGuard = usageGuard;
   }
 
   /**
@@ -42,11 +49,22 @@ export class OrganizationService {
     name: string;
     role: BusinessRole;
     businessId: string;
+    actorId?: string;
   }) {
     // Phase S3: Subscription enforcement
     await this.subscriptionGuard.validateBusinessSubscription(params.businessId);
 
-    const result = await this.organizationRepository.inviteUser(params);
+    // Phase S5: Usage limit enforcement
+    if (this.usageGuard) {
+      await this.usageGuard.validateUsageLimit(params.businessId, ResourceType.USERS, params.actorId);
+    }
+
+    const result = await this.organizationRepository.inviteUser({
+      email: params.email,
+      name: params.name,
+      role: params.role,
+      businessId: params.businessId,
+    });
 
     // Mock Email sending
     logger.info(`[EMAIL SIMULATOR] Invitation email sent to ${params.email} (${params.name}) for role ${params.role} in business ${params.businessId}`);

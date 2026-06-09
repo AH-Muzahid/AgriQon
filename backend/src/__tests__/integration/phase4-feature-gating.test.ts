@@ -29,11 +29,14 @@ const mockWarehouseCreate = jest.fn();
 const mockAccountCreate = jest.fn();
 const mockJournalEntryCreate = jest.fn();
 const mockAuditLogCreate = jest.fn();
+const mockUserRoleCount = jest.fn().mockResolvedValue(0);
+const mockItemCount = jest.fn().mockResolvedValue(0);
 
 jest.mock('../../app/lib/prisma', () => ({
   prisma: {
     userBusinessRole: {
       findUnique: (...a: any[]) => mockFindUniqueUserBizRole(...a),
+      count: () => mockUserRoleCount(),
     },
     subscription: {
       findUnique: (...a: any[]) => mockSubscriptionFindUnique(...a),
@@ -41,6 +44,9 @@ jest.mock('../../app/lib/prisma', () => ({
     warehouse: {
       count: (...a: any[]) => mockWarehouseCount(...a),
       create: (...a: any[]) => mockWarehouseCreate(...a),
+    },
+    item: {
+      count: () => mockItemCount(),
     },
     account: {
       create: (...a: any[]) => mockAccountCreate(...a),
@@ -91,6 +97,7 @@ describe('Phase S4 — Feature Gating Integration Tests', () => {
   }
 
   function mockSubscriptionWithFeatures(planCode: string, features: FeatureCode[]) {
+    const isTrial = planCode === 'TRIAL';
     mockSubscriptionFindUnique.mockResolvedValue({
       id: 'sub-1',
       businessId: 'biz-1',
@@ -102,6 +109,9 @@ describe('Phase S4 — Feature Gating Integration Tests', () => {
         id: 'plan-1',
         code: planCode,
         name: planCode + ' Plan',
+        maxUsers: isTrial ? 3 : 20,
+        maxProducts: isTrial ? 100 : 5000,
+        maxWarehouses: isTrial ? 1 : 10,
         features: features.map((featureKey) => ({
           id: `feat-${featureKey}`,
           planId: 'plan-1',

@@ -6,6 +6,7 @@ import { WarehouseService } from "./warehouse.service";
 import { WarehouseRepository } from "./warehouse.repository";
 import { SubscriptionGuardService } from "../subscriptions/subscription-guard.service";
 import { FeatureGuardService } from "../subscriptions/feature-guard.service";
+import { UsageGuardService } from "../subscriptions/usage-guard.service";
 import { SubscriptionRepository } from "../subscriptions/subscription.repository";
 import { WarehouseTransferController } from "./transfer.controller";
 import {
@@ -30,8 +31,14 @@ const router = express.Router();
 const subscriptionRepository = new SubscriptionRepository();
 const subscriptionGuard = new SubscriptionGuardService(subscriptionRepository);
 const featureGuard = new FeatureGuardService(subscriptionRepository);
+const usageGuard = new UsageGuardService(subscriptionRepository);
 const warehouseRepository = new WarehouseRepository();
-const warehouseService = new WarehouseService(warehouseRepository, subscriptionGuard, featureGuard);
+const warehouseService = new WarehouseService(
+  warehouseRepository,
+  subscriptionGuard,
+  featureGuard,
+  usageGuard
+);
 const warehouseController = new WarehouseController(warehouseService);
 
 router.get(
