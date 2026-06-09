@@ -2,6 +2,11 @@ import express from "express";
 import validateRequest from "../../middleware/validateRequest";
 import { WarehouseValidation } from "./warehouse.validation";
 import { WarehouseController } from "./warehouse.controller";
+import { WarehouseService } from "./warehouse.service";
+import { WarehouseRepository } from "./warehouse.repository";
+import { SubscriptionGuardService } from "../subscriptions/subscription-guard.service";
+import { FeatureGuardService } from "../subscriptions/feature-guard.service";
+import { SubscriptionRepository } from "../subscriptions/subscription.repository";
 import { WarehouseTransferController } from "./transfer.controller";
 import {
   extractAuth,
@@ -21,13 +26,21 @@ import {
 
 const router = express.Router();
 
+// Dependency Injection Wiring
+const subscriptionRepository = new SubscriptionRepository();
+const subscriptionGuard = new SubscriptionGuardService(subscriptionRepository);
+const featureGuard = new FeatureGuardService(subscriptionRepository);
+const warehouseRepository = new WarehouseRepository();
+const warehouseService = new WarehouseService(warehouseRepository, subscriptionGuard, featureGuard);
+const warehouseController = new WarehouseController(warehouseService);
+
 router.get(
   "/",
   extractAuth,
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_VIEW),
-  WarehouseController.getWarehouses,
+  warehouseController.getWarehouses,
 );
 
 // Transfers
@@ -75,7 +88,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_VIEW),
-  WarehouseController.getWarehouseById,
+  warehouseController.getWarehouseById,
 );
 
 router.post(
@@ -85,7 +98,7 @@ router.post(
   attachBusinessRole,
   authorizeAny(WAREHOUSE_CREATE),
   validateRequest(WarehouseValidation.createWarehouseSchema),
-  WarehouseController.createWarehouse,
+  warehouseController.createWarehouse,
 );
 
 router.patch(
@@ -95,7 +108,7 @@ router.patch(
   attachBusinessRole,
   authorizeAny(WAREHOUSE_UPDATE),
   validateRequest(WarehouseValidation.updateWarehouseSchema),
-  WarehouseController.updateWarehouse,
+  warehouseController.updateWarehouse,
 );
 
 router.delete(
@@ -104,7 +117,7 @@ router.delete(
   requireTenant,
   attachBusinessRole,
   authorizeAny(WAREHOUSE_DELETE),
-  WarehouseController.deleteWarehouse,
+  warehouseController.deleteWarehouse,
 );
 
 export const WarehouseRoutes = router;

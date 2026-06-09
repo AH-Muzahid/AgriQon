@@ -6,14 +6,16 @@ import { AiProvider } from './providers/base.provider';
 import { GeminiProvider } from './providers/gemini.provider';
 import { OpenAIProvider } from './providers/openai.provider';
 import { retry } from '../../lib/retry';
+import { FeatureGuardService } from '../subscriptions/feature-guard.service';
+import { FeatureCode } from '../subscriptions/types/feature.types';
 
 export class AiService {
   private aiRepo: AiRepository;
   private primaryProvider: AiProvider;
   private fallbackProvider?: AiProvider;
 
-  constructor() {
-    this.aiRepo = new AiRepository();
+  constructor(aiRepo?: AiRepository, private featureGuard?: FeatureGuardService) {
+    this.aiRepo = aiRepo || new AiRepository();
     
     const geminiApiKey = env.geminiApiKey || '';
     const gemini = new GeminiProvider(geminiApiKey);
@@ -67,6 +69,9 @@ export class AiService {
    * Generates a response based on a prompt and context (RAG)
    */
   async generateChatResponse(businessId: string, prompt: string, userId?: string) {
+    if (this.featureGuard) {
+      await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.AI_CHAT, userId);
+    }
     try {
       // 1. Get enriched business context
       const businessContext = await this.getEnrichedBusinessContext(businessId);
@@ -261,7 +266,7 @@ ${itemContext}
     }
   }
 
-  async getAiLogs(businessId: string, page: number, limit: number) {
+  async getAiLogs(businessId: string, page: number, limit: number, userId?: string) {
     const skip = (page - 1) * limit;
     const { items, total } = await this.aiRepo.findLogs(businessId, skip, limit);
 

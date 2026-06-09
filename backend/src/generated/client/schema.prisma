@@ -818,44 +818,54 @@ model ReportCache {
   @@index([businessId, reportType])
 }
 
-model Plan {
-  id            String         @id @default(cuid())
-  name          String         @unique
-  description   String?
-  price         Decimal        @db.Decimal(15, 2)
-  interval      String         @default("MONTHLY") // "MONTHLY" | "YEARLY"
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  GRACE_PERIOD
+  SUSPENDED
+  CANCELLED
+}
+
+model SubscriptionPlan {
+  id            String         @id @default(uuid())
+  code          String         @unique
+  name          String
+  isTrial       Boolean        @default(false)
+  maxUsers      Int?
+  maxProducts   Int?
+  maxWarehouses Int?
   createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  updatedAt     DateTime       @default(now()) @updatedAt
   features      PlanFeature[]
   subscriptions Subscription[]
 }
 
 model PlanFeature {
-  id         String   @id @default(cuid())
+  id         String           @id @default(cuid())
   planId     String
   featureKey String
   value      String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  plan       Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   @@unique([planId, featureKey])
 }
 
 model Subscription {
-  id         String              @id @default(cuid())
-  businessId String              @unique
-  planId     String
-  status     String              @default("ACTIVE") // ACTIVE, PAST_DUE, CANCELED
-  startDate  DateTime            @default(now())
-  endDate    DateTime?
-  trialStart DateTime?
-  trialEnd   DateTime?
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
-  business   Business            @relation(fields: [businessId], references: [id])
-  plan       Plan                @relation(fields: [planId], references: [id])
-  events     SubscriptionEvent[]
+  id          String              @id @default(uuid())
+  businessId  String              @unique
+  planId      String
+  status      SubscriptionStatus  @default(TRIAL)
+  startsAt    DateTime            @default(now())
+  trialEndsAt DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  business    Business            @relation(fields: [businessId], references: [id])
+  plan        SubscriptionPlan    @relation(fields: [planId], references: [id])
+  events      SubscriptionEvent[]
 }
 
 model UsageMetric {

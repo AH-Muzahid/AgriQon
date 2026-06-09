@@ -89,7 +89,7 @@ jest.mock('../../app/lib/prisma', () => ({
       findUnique: (...a: any[]) => mockSubscriptionFindUnique(...a),
       create: (...a: any[]) => mockSubscriptionCreate(...a),
     },
-    plan: {
+    subscriptionPlan: {
       findUnique: (...a: any[]) => mockPlanFindUnique(...a),
       create: (...a: any[]) => mockPlanCreate(...a),
     },
@@ -349,6 +349,15 @@ describe('Phase 2.2 Integration Tests - Backend Gap Closure', () => {
     it('POST /api/v1/organization/users/invite - creates invited user and audits the invitation', async () => {
       setTestPermissions(['business.manage']);
 
+      // Phase S3: Guard requires an active subscription to allow invites
+      mockSubscriptionFindUnique.mockResolvedValue({
+        id: 'sub-test',
+        businessId: TEST_BIZ_ID,
+        status: 'TRIAL',
+        planId: 'plan-trial',
+        plan: { id: 'plan-trial', code: 'TRIAL', name: 'Trial', isTrial: true, features: [] },
+      });
+
       mockUserFindUnique.mockResolvedValue(null);
       mockUserCreate.mockResolvedValue({
         id: 'user-invited-123',
@@ -439,19 +448,22 @@ describe('Phase 2.2 Integration Tests - Backend Gap Closure', () => {
       setTestPermissions(['business.view']);
 
       mockSubscriptionFindUnique.mockResolvedValue(null);
-      mockPlanFindUnique.mockResolvedValue(null);
-      mockPlanCreate.mockResolvedValue({
+      mockPlanFindUnique.mockResolvedValue({
         id: 'plan-growth-trial',
+        code: 'TRIAL',
         name: 'Growth Trial Plan',
+        maxUsers: 10,
+        maxProducts: 500,
+        maxWarehouses: 3,
       });
       mockSubscriptionCreate.mockResolvedValue({
         id: 'sub-new-trial',
-        status: 'ACTIVE',
+        status: 'TRIAL',
+        startsAt: new Date(),
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         plan: {
           name: 'Growth Trial Plan',
-          features: [
-            { featureKey: 'max_users', value: '10' }
-          ]
+          features: []
         }
       });
 
@@ -472,13 +484,14 @@ describe('Phase 2.2 Integration Tests - Backend Gap Closure', () => {
       mockSubscriptionFindUnique.mockResolvedValue({
         id: 'sub-active',
         status: 'ACTIVE',
+        startsAt: new Date(),
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         plan: {
           name: 'Growth Trial Plan',
-          features: [
-            { featureKey: 'max_users', value: '10' },
-            { featureKey: 'max_warehouses', value: '3' },
-            { featureKey: 'max_products', value: '500' }
-          ]
+          maxUsers: 10,
+          maxWarehouses: 3,
+          maxProducts: 500,
+          features: []
         }
       });
 

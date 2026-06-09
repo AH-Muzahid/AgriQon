@@ -43,9 +43,16 @@ export class WarehouseRepository {
     });
   }
 
+  async count(businessId: string): Promise<number> {
+    return await this.prisma.warehouse.count({
+      where: { businessId },
+    });
+  }
+
   async delete(id: string, businessId: string) {
     return await this.prisma.warehouse.delete({
       where: { id, businessId },
     });
   }
 }
+

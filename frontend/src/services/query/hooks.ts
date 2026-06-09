@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productsMock } from '../mock/products.mock';
-import { inventoryMock } from '../mock/inventory.mock';
-import { customersMock } from '../mock/customers.mock';
-import { ordersMock } from '../mock/orders.mock';
-import { invoicesMock } from '../mock/invoices.mock';
-import { paymentsMock } from '../mock/payments.mock';
-import { organizationMock } from '../mock/organization.mock';
+import { productsService } from '../api/products.service';
+import { inventoryService } from '../api/inventory.service';
+import { customersService } from '../api/customers.service';
+import { ordersService } from '../api/orders.service';
+import { invoicesService } from '../api/invoices.service';
+import { paymentsService } from '../api/payments.service';
+import { organizationService } from '../api/organization.service';
+import { apiClient } from '../api/client';
 
 import {
   productKeys,
@@ -18,7 +19,6 @@ import {
 } from './query-keys';
 
 import { CreateProductInput, UpdateProductInput } from '@/types/contracts/product.contract';
-import { CreateStockAdjustmentInput } from '@/types/contracts/inventory.contract';
 import { CreateCustomerInput, UpdateCustomerInput } from '@/types/contracts/customer.contract';
 import { CreateOrderInput } from '@/types/contracts/order.contract';
 import { CreateInvoiceInput } from '@/types/contracts/invoice.contract';
@@ -29,14 +29,14 @@ import { UpdateOrganizationInput } from '@/types/contracts/organization.contract
 export function useProducts() {
   return useQuery({
     queryKey: productKeys.lists(),
-    queryFn: () => productsMock.list(),
+    queryFn: () => productsService.list(),
   });
 }
 
 export function useProduct(sku: string) {
   return useQuery({
     queryKey: productKeys.detail(sku),
-    queryFn: () => productsMock.getById(sku),
+    queryFn: () => productsService.getById(sku),
     enabled: !!sku,
   });
 }
@@ -44,7 +44,7 @@ export function useProduct(sku: string) {
 export function useCreateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateProductInput) => productsMock.create(input),
+    mutationFn: (input: CreateProductInput) => productsService.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
@@ -54,7 +54,7 @@ export function useCreateProduct() {
 export function useUpdateProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ sku, input }: { sku: string; input: UpdateProductInput }) => productsMock.update(sku, input),
+    mutationFn: ({ sku, input }: { sku: string; input: UpdateProductInput }) => productsService.update(sku, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
@@ -64,7 +64,7 @@ export function useUpdateProduct() {
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (sku: string) => productsMock.delete(sku),
+    mutationFn: (sku: string) => productsService.delete(sku),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
@@ -75,14 +75,14 @@ export function useDeleteProduct() {
 export function useInventory() {
   return useQuery({
     queryKey: inventoryKeys.lists(),
-    queryFn: () => inventoryMock.list(),
+    queryFn: () => inventoryService.list(),
   });
 }
 
 export function useCreateInventory() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: any) => inventoryMock.create(input),
+    mutationFn: (input: any) => inventoryService.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
@@ -92,7 +92,7 @@ export function useCreateInventory() {
 export function useUpdateInventory(sku: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: any) => inventoryMock.update(sku, input),
+    mutationFn: (input: any) => inventoryService.update(sku, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
@@ -103,14 +103,14 @@ export function useUpdateInventory(sku: string) {
 export function useCustomers() {
   return useQuery({
     queryKey: customerKeys.lists(),
-    queryFn: () => customersMock.list(),
+    queryFn: () => customersService.list(),
   });
 }
 
 export function useCustomer(id: string) {
   return useQuery({
     queryKey: customerKeys.detail(id),
-    queryFn: () => customersMock.getById(id),
+    queryFn: () => customersService.getById(id),
     enabled: !!id,
   });
 }
@@ -118,7 +118,7 @@ export function useCustomer(id: string) {
 export function useCreateCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateCustomerInput) => customersMock.create(input),
+    mutationFn: (input: CreateCustomerInput) => customersService.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all });
     },
@@ -128,7 +128,7 @@ export function useCreateCustomer() {
 export function useUpdateCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: UpdateCustomerInput }) => customersMock.update(id, input),
+    mutationFn: ({ id, input }: { id: string; input: UpdateCustomerInput }) => customersService.update(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all });
     },
@@ -138,7 +138,7 @@ export function useUpdateCustomer() {
 export function useDeleteCustomer() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => customersMock.delete(id),
+    mutationFn: (id: string) => customersService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: customerKeys.all });
     },
@@ -149,14 +149,14 @@ export function useDeleteCustomer() {
 export function useOrders() {
   return useQuery({
     queryKey: orderKeys.lists(),
-    queryFn: () => ordersMock.list(),
+    queryFn: () => ordersService.list(),
   });
 }
 
 export function useOrder(id: string) {
   return useQuery({
     queryKey: orderKeys.detail(id),
-    queryFn: () => ordersMock.getById(id),
+    queryFn: () => ordersService.getById(id),
     enabled: !!id,
   });
 }
@@ -164,7 +164,7 @@ export function useOrder(id: string) {
 export function useCreateOrder() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateOrderInput) => ordersMock.create(input),
+    mutationFn: (input: CreateOrderInput) => ordersService.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
@@ -174,7 +174,7 @@ export function useCreateOrder() {
 export function useUpdateOrder(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: any) => ordersMock.update(id, input),
+    mutationFn: (input: any) => ordersService.update(id, input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.all });
     },
@@ -185,14 +185,14 @@ export function useUpdateOrder(id: string) {
 export function useInvoices() {
   return useQuery({
     queryKey: invoiceKeys.lists(),
-    queryFn: () => invoicesMock.list(),
+    queryFn: () => invoicesService.list(),
   });
 }
 
 export function useInvoice(id: string) {
   return useQuery({
     queryKey: invoiceKeys.detail(id),
-    queryFn: () => invoicesMock.getById(id),
+    queryFn: () => invoicesService.getById(id),
     enabled: !!id,
   });
 }
@@ -200,7 +200,7 @@ export function useInvoice(id: string) {
 export function useCreateInvoice() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreateInvoiceInput) => invoicesMock.create(input),
+    mutationFn: (input: CreateInvoiceInput) => invoicesService.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
     },
@@ -208,17 +208,33 @@ export function useCreateInvoice() {
 }
 
 // --- PAYMENT HOOKS ---
-export function usePayments() {
+export function usePayments(filters?: {
+  page?: number;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+  invoiceId?: string;
+  customerId?: string;
+}) {
   return useQuery({
-    queryKey: paymentKeys.lists(),
-    queryFn: () => paymentsMock.list(),
+    queryKey: paymentKeys.list(filters || {}),
+    queryFn: () => paymentsService.list(filters),
+  });
+}
+
+export function usePayment(id: string) {
+  return useQuery({
+    queryKey: paymentKeys.detail(id),
+    queryFn: () => paymentsService.getById(id),
+    enabled: !!id,
   });
 }
 
 export function useCreatePayment() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: CreatePaymentInput) => paymentsMock.create(input),
+    mutationFn: (input: CreatePaymentInput) => paymentsService.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: paymentKeys.all });
       queryClient.invalidateQueries({ queryKey: invoiceKeys.all });
@@ -230,14 +246,14 @@ export function useCreatePayment() {
 export function useOrganizationDetails() {
   return useQuery({
     queryKey: organizationKeys.profile(),
-    queryFn: () => organizationMock.getDetails(),
+    queryFn: () => organizationService.getDetails(),
   });
 }
 
 export function useUpdateOrganizationDetails() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateOrganizationInput) => organizationMock.updateDetails(input),
+    mutationFn: (input: UpdateOrganizationInput) => organizationService.updateDetails(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: organizationKeys.profile() });
     },
@@ -247,34 +263,70 @@ export function useUpdateOrganizationDetails() {
 export function useWarehouses() {
   return useQuery({
     queryKey: organizationKeys.warehouses(),
-    queryFn: () => organizationMock.listWarehouses(),
+    queryFn: () => organizationService.listWarehouses(),
   });
 }
 
 export function useOrgUsers() {
   return useQuery({
     queryKey: organizationKeys.users(),
-    queryFn: () => organizationMock.listUsers(),
+    queryFn: () => organizationService.listUsers(),
   });
 }
 
 export function useOrgRoles() {
   return useQuery({
     queryKey: organizationKeys.roles(),
-    queryFn: () => organizationMock.listRoles(),
+    queryFn: () => organizationService.listRoles(),
   });
 }
 
 export function useOrgAuditLogs() {
   return useQuery({
     queryKey: organizationKeys.auditLogs(),
-    queryFn: () => organizationMock.listAuditLogs(),
+    queryFn: () => organizationService.listAuditLogs(),
   });
 }
 
 export function useSubscriptionUsage() {
   return useQuery({
     queryKey: [...organizationKeys.all, 'subscriptionUsage'],
-    queryFn: () => organizationMock.getSubscriptionUsage(),
+    queryFn: () => organizationService.getSubscriptionUsage(),
+  });
+}
+
+export function useInviteUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { email: string; name: string; role: 'OWNER' | 'MANAGER' | 'STAFF' }) =>
+      apiClient.post<any>('/organization/users/invite', input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: organizationKeys.users() });
+    },
+  });
+}
+
+// --- ANALYTICS HOOKS ---
+export function useFinancialTrend(startDate?: string, endDate?: string) {
+  return useQuery({
+    queryKey: ['analytics', 'financial-trend', startDate, endDate],
+    queryFn: async () => {
+      const res = await apiClient.client.get('/analytics/financial-trend', {
+        params: { startDate, endDate },
+      });
+      const body = res.data || {};
+      return body.data || body;
+    },
+  });
+}
+
+export function useDashboardSummary() {
+  return useQuery({
+    queryKey: ['analytics', 'dashboard-summary'],
+    queryFn: async () => {
+      const res = await apiClient.client.get('/dashboard/summary');
+      const body = res.data || {};
+      return body.data || body;
+    },
   });
 }

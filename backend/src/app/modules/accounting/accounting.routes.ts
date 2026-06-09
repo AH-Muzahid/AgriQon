@@ -1,5 +1,10 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { AccountingController } from './accounting.controller';
+import { AccountingService } from './accounting.service';
+import { AccountingRepository } from './accounting.repository';
+import { FeatureGuardService } from '../subscriptions/feature-guard.service';
+import { SubscriptionRepository } from '../subscriptions/subscription.repository';
 import { FinancialReportingController } from './financial-reporting.controller';
 import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
 import { requireTenant } from '../../middleware/tenant.middleware';
@@ -14,6 +19,13 @@ import {
 } from '../../constants/permissions';
 
 const router = Router();
+
+// Dependency Injection Wiring
+const subscriptionRepository = new SubscriptionRepository();
+const featureGuard = new FeatureGuardService(subscriptionRepository);
+const accountingRepository = new AccountingRepository();
+const accountingService = new AccountingService(accountingRepository, featureGuard);
+const accountingController = new AccountingController(accountingService);
 
 // Reporting Routes
 router.get(
@@ -49,8 +61,8 @@ router.post(
   requireTenant,
   attachBusinessRole,
   authorizeAny(ACCOUNTING_CREATE, ACCOUNTING_MANAGE),
-  validateRequest(createAccountSchema),
-  AccountingController.createAccount
+  validateRequest(z.object({ body: createAccountSchema })),
+  accountingController.createAccount
 );
 
 router.get(
@@ -59,7 +71,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
-  AccountingController.getAccounts
+  accountingController.getAccounts
 );
 
 router.post(
@@ -68,8 +80,8 @@ router.post(
   requireTenant,
   attachBusinessRole,
   authorizeAny(ACCOUNTING_CREATE, ACCOUNTING_MANAGE),
-  validateRequest(createJournalEntrySchema),
-  AccountingController.createJournalEntry
+  validateRequest(z.object({ body: createJournalEntrySchema })),
+  accountingController.createJournalEntry
 );
 
 router.get(
@@ -78,7 +90,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(ACCOUNTING_VIEW, ACCOUNTING_MANAGE),
-  AccountingController.getLedger
+  accountingController.getLedger
 );
 
 router.get(
@@ -87,7 +99,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(RECONCILIATION_MANAGE, RECONCILIATION_VIEW),
-  AccountingController.reconcileBalances
+  accountingController.reconcileBalances
 );
 
 export const AccountingRoutes = router;

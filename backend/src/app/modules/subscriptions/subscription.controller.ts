@@ -16,11 +16,19 @@ const getSubscription = catchAsync(async (req: AuthRequest, res: Response) => {
 
   const result = await subscriptionService.getSubscription(businessId);
 
+  const compatibleResult = result ? {
+    ...result,
+    startDate: (result as any).startsAt,
+    endDate: (result as any).expiresAt,
+    trialStart: (result as any).startsAt,
+    trialEnd: (result as any).trialEndsAt || (result as any).expiresAt,
+  } : result;
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Subscription details retrieved successfully',
-    data: result,
+    data: compatibleResult,
   });
 });
 

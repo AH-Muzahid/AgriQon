@@ -1,12 +1,15 @@
 import { OrganizationRepository } from './organization.repository';
 import { BusinessRole } from '../../../generated/client';
+import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import logger from '../../lib/logger';
 
 export class OrganizationService {
   private organizationRepository: OrganizationRepository;
+  private subscriptionGuard: SubscriptionGuardService;
 
-  constructor() {
+  constructor(subscriptionGuard?: SubscriptionGuardService) {
     this.organizationRepository = new OrganizationRepository();
+    this.subscriptionGuard = subscriptionGuard || new SubscriptionGuardService();
   }
 
   /**
@@ -40,6 +43,9 @@ export class OrganizationService {
     role: BusinessRole;
     businessId: string;
   }) {
+    // Phase S3: Subscription enforcement
+    await this.subscriptionGuard.validateBusinessSubscription(params.businessId);
+
     const result = await this.organizationRepository.inviteUser(params);
 
     // Mock Email sending

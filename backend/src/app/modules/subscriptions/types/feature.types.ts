@@ -1,0 +1,10 @@
+export enum FeatureCode {
+  INVENTORY = 'INVENTORY',
+  POS = 'POS',
+  CRM = 'CRM',
+  HRM = 'HRM',
+  ACCOUNTING = 'ACCOUNTING',
+  AI_CHAT = 'AI_CHAT',
+  AI_REPORTS = 'AI_REPORTS',
+  MULTI_BRANCH = 'MULTI_BRANCH',
+}

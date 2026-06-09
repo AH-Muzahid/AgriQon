@@ -33,6 +33,7 @@ import {
   useOrgRoles,
   useOrgAuditLogs,
   useSubscriptionUsage,
+  useInviteUser,
 } from '@/services/query/hooks';
 
 export default function OrganizationPage() {
@@ -40,10 +41,12 @@ export default function OrganizationPage() {
   const { data: roles = [], isLoading: rolesLoading } = useOrgRoles();
   const { data: auditLogs = [], isLoading: auditLoading } = useOrgAuditLogs();
   const { data: usage, isLoading: usageLoading } = useSubscriptionUsage();
+  const inviteMutation = useInviteUser();
 
   const [activeTab, setActiveTab] = useState('profile');
   const [roleSearch, setRoleSearch] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserName, setNewUserName] = useState('');
   const [newUserRole, setNewUserRole] = useState('Operator');
 
   const handleUpgrade = () => {
@@ -52,12 +55,36 @@ export default function OrganizationPage() {
 
   const handleInviteUser = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUserEmail) {
-      toast.error('Please specify an invite email');
+    if (!newUserEmail || !newUserName) {
+      toast.error('Please specify both name and email');
       return;
     }
-    toast.success(`Invite sent successfully to ${newUserEmail} as ${newUserRole}!`);
-    setNewUserEmail('');
+
+    let backendRole: 'OWNER' | 'MANAGER' | 'STAFF' = 'STAFF';
+    const normRole = newUserRole.toUpperCase();
+    if (normRole === 'OWNER') {
+      backendRole = 'OWNER';
+    } else if (normRole === 'MANAGER' || normRole === 'ADMIN') {
+      backendRole = 'MANAGER';
+    }
+
+    inviteMutation.mutate(
+      {
+        email: newUserEmail,
+        name: newUserName,
+        role: backendRole,
+      },
+      {
+        onSuccess: () => {
+          toast.success(`Invite sent successfully to ${newUserEmail} as ${newUserRole}!`);
+          setNewUserEmail('');
+          setNewUserName('');
+        },
+        onError: (err: any) => {
+          toast.error(err.message || 'Failed to send invitation');
+        },
+      }
+    );
   };
 
   const auditColumns = [
@@ -381,6 +408,16 @@ export default function OrganizationPage() {
                 <CardContent className="pt-4">
                   <form onSubmit={handleInviteUser} className="space-y-4">
                     <div className="grid gap-1.5">
+                      <Label className="text-xs">Full Name *</Label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Salim Khan"
+                        value={newUserName}
+                        onChange={(e) => setNewUserName(e.target.value)}
+                        className="text-xs h-10"
+                      />
+                    </div>
+                    <div className="grid gap-1.5">
                       <Label className="text-xs">Email Address *</Label>
                       <Input
                         type="email"
@@ -397,15 +434,24 @@ export default function OrganizationPage() {
                           <SelectValue placeholder="Choose Role" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Manager" className="text-xs">Manager</SelectItem>
-                          <SelectItem value="Operator" className="text-xs">Operator</SelectItem>
-                          <SelectItem value="Auditor" className="text-xs">Auditor</SelectItem>
+                          {roles.length > 0 ? (
+                            roles.map((r) => (
+                              <SelectItem key={r.name} value={r.name} className="text-xs">
+                                {r.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <React.Fragment>
+                              <SelectItem value="Manager" className="text-xs">Manager</SelectItem>
+                              <SelectItem value="Operator" className="text-xs">Operator</SelectItem>
+                            </React.Fragment>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <Button type="submit" className="text-xs h-10 w-full mt-2">
-                      Send Secure Invite
+                    <Button type="submit" disabled={inviteMutation.isPending} className="text-xs h-10 w-full mt-2 cursor-pointer">
+                      {inviteMutation.isPending ? 'Sending Invite...' : 'Send Secure Invite'}
                     </Button>
                   </form>
                 </CardContent>

@@ -8,6 +8,8 @@ import { WarehouseService } from '../warehouse/warehouse.service';
 import { WarehouseRepository } from '../warehouse/warehouse.repository';
 import { prisma } from '../../lib/prisma';
 import { Prisma } from '../../../generated/client';
+import { SubscriptionService } from '../subscriptions/subscription.service';
+import { SubscriptionRepository } from '../subscriptions/subscription.repository';
 
 export class BusinessService {
   private accountingService: AccountingService;
@@ -66,6 +68,11 @@ export class BusinessService {
         name: defaultWarehouseName || 'Main Warehouse',
         businessId: business.id,
       } as any);
+
+      // 5. Auto provision Trial Subscription within the transaction
+      const subscriptionRepoTx = new SubscriptionRepository(tx);
+      const subscriptionServiceTx = new SubscriptionService(subscriptionRepoTx);
+      await subscriptionServiceTx.createTrialSubscription({ businessId: business.id }, tx);
 
       return business;
     });

@@ -5,13 +5,15 @@ import { ProductService } from './product.service';
 import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
+import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import { AuthRequest } from '../../middleware/rbac.middleware';
 
 // Dependency Injection (Manual for now, can be moved to a container later)
 const productRepository = new ProductRepository();
 const inventoryRepository = new InventoryRepository();
 const inventoryService = new InventoryService(inventoryRepository);
-const productService = new ProductService(productRepository, inventoryService);
+const subscriptionGuard = new SubscriptionGuardService();
+const productService = new ProductService(productRepository, inventoryService, subscriptionGuard);
 
 const createProduct = catchAsync(async (req: AuthRequest, res: Response) => {
   const businessId = req.businessId!;

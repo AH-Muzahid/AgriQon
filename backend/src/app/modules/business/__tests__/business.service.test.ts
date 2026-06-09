@@ -37,6 +37,16 @@ describe('BusinessService', () => {
         warehouse: {
           create: jest.fn().mockResolvedValue({}),
         },
+        subscription: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({ id: 'sub-123' }),
+        },
+        subscriptionPlan: {
+          findUnique: jest.fn().mockResolvedValue({ id: 'plan-123', code: 'TRIAL', name: 'Trial Plan' }),
+        },
+        auditLog: {
+          create: jest.fn().mockResolvedValue({}),
+        },
       };
 
       (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {

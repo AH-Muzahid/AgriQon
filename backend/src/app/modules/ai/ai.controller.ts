@@ -3,57 +3,54 @@ import { AiService } from './ai.service';
 import { sendResponse } from '../../shared/utils/sendResponse';
 import { asyncHandler } from '../../../middleware/asyncHandler';
 
-const aiService = new AiService();
+export class AiController {
+  constructor(private aiService: AiService) {}
 
-const getAiLogs = asyncHandler(async (req: Request, res: Response) => {
-  const businessId = (req as any).user.businessId;
-  const { page = 1, limit = 10 } = req.query;
+  getAiLogs = asyncHandler(async (req: Request, res: Response) => {
+    const businessId = (req as any).user.businessId;
+    const userId = (req as any).user.id;
+    const { page = 1, limit = 10 } = req.query;
 
-  const result = await aiService.getAiLogs(businessId, Number(page), Number(limit));
+    const result = await this.aiService.getAiLogs(businessId, Number(page), Number(limit), userId);
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'AI logs retrieved successfully',
-    data: result.items,
-    meta: result.meta,
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'AI logs retrieved successfully',
+      data: result.items,
+      meta: result.meta,
+    });
   });
-});
 
-const syncItemEmbedding = asyncHandler(async (req: Request, res: Response) => {
-  const businessId = (req as any).user.businessId;
-  const { itemId, text } = req.body;
+  syncItemEmbedding = asyncHandler(async (req: Request, res: Response) => {
+    const businessId = (req as any).user.businessId;
+    const { itemId, text } = req.body;
 
-  const result = await aiService.updateItemEmbedding(businessId, itemId, text);
+    const result = await this.aiService.updateItemEmbedding(businessId, itemId, text);
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Item embedding synced successfully',
-    data: result,
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Item embedding synced successfully',
+      data: result,
+    });
   });
-});
 
-const generateChat = asyncHandler(async (req: Request, res: Response) => {
-  const { prompt } = req.body;
-  const businessId = (req as any).user.businessId;
-  const userId = (req as any).user.id;
+  generateChat = asyncHandler(async (req: Request, res: Response) => {
+    const { prompt } = req.body;
+    const businessId = (req as any).user.businessId;
+    const userId = (req as any).user.id;
 
-  const result = await aiService.generateChatResponse(businessId, prompt, userId);
+    const result = await this.aiService.generateChatResponse(businessId, prompt, userId);
 
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'AI response generated',
-    data: {
-      content: result.response,
-      source: result.contextSource,
-    },
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'AI response generated',
+      data: {
+        content: result.response,
+        source: result.contextSource,
+      },
+    });
   });
-});
-
-export const AiController = {
-  getAiLogs,
-  syncItemEmbedding,
-  generateChat,
-};
+}

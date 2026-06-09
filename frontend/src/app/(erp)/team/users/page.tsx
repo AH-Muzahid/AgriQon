@@ -14,13 +14,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { UserPlus, Eye, Users, ShieldAlert, Clock, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-import { MOCK_USERS, MOCK_ROLES, MOCK_WAREHOUSES, MockUser } from '@/lib/mock-erp-data';
+import { MOCK_ROLES, MOCK_WAREHOUSES, MockUser } from '@/lib/mock-erp-data';
+import { useOrgUsers, useOrgRoles, useWarehouses, useInviteUser } from '@/services/query/hooks';
+import { UserContract } from '@/types/contracts/organization.contract';
 
 export default function TeamUsersPage() {
-  const [users, setUsers] = useState<MockUser[]>(MOCK_USERS);
+  const { data: usersData = [], isLoading: usersLoading } = useOrgUsers();
+  const { data: roles = [], isLoading: rolesLoading } = useOrgRoles();
+  const { data: warehouses = [], isLoading: whLoading } = useWarehouses();
+  const inviteMutation = useInviteUser();
+
+  const users = usersData;
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
-  const [selectedUser, setSelectedUser] = useState<MockUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserContract | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
@@ -64,18 +71,35 @@ export default function TeamUsersPage() {
   };
 
   const handleSendInvite = () => {
-    const newUser: MockUser = {
-      name: inviteName,
-      email: inviteEmail,
-      role: inviteRole,
-      warehouse: inviteWarehouse,
-      status: 'PENDING',
-      lastActive: 'Never',
-    };
+    if (!inviteEmail || !inviteName) {
+      toast.error('Name and email are required');
+      return;
+    }
 
-    setUsers([newUser, ...users]);
-    setStep(5);
-    toast.success(`Invitation sent to ${inviteEmail}!`);
+    let backendRole: 'OWNER' | 'MANAGER' | 'STAFF' = 'STAFF';
+    const normRole = inviteRole.toUpperCase();
+    if (normRole === 'OWNER') {
+      backendRole = 'OWNER';
+    } else if (normRole === 'MANAGER' || normRole === 'ADMIN') {
+      backendRole = 'MANAGER';
+    }
+
+    inviteMutation.mutate(
+      {
+        email: inviteEmail,
+        name: inviteName,
+        role: backendRole,
+      },
+      {
+        onSuccess: () => {
+          setStep(5);
+          toast.success(`Invitation sent to ${inviteEmail}!`);
+        },
+        onError: (err: any) => {
+          toast.error(err.message || 'Failed to send invitation');
+        },
+      }
+    );
   };
 
   const handleCloseInvite = () => {
@@ -91,7 +115,7 @@ export default function TeamUsersPage() {
   const columns = [
     {
       header: 'Staff Member',
-      accessor: (row: MockUser) => (
+      accessor: (row: UserContract) => (
         <div className="grid gap-0.5">
           <span className="font-semibold text-foreground">{row.name}</span>
           <span className="text-[10px] text-muted-foreground">{row.email}</span>
@@ -100,31 +124,31 @@ export default function TeamUsersPage() {
     },
     {
       header: 'Role Title',
-      accessor: (row: MockUser) => (
+      accessor: (row: UserContract) => (
         <span className="font-medium text-slate-700">{row.role}</span>
       ),
     },
     {
       header: 'Assigned Node',
-      accessor: (row: MockUser) => (
+      accessor: (row: UserContract) => (
         <span className="text-muted-foreground text-xs">{row.warehouse}</span>
       ),
     },
     {
       header: 'Last Active',
-      accessor: (row: MockUser) => (
+      accessor: (row: UserContract) => (
         <span className="text-muted-foreground text-xs">{row.lastActive}</span>
       ),
     },
     {
       header: 'Status',
-      accessor: (row: MockUser) => (
+      accessor: (row: UserContract) => (
         <StatusBadge status={row.status === 'ACTIVE' ? 'ACTIVE' : row.status === 'PENDING' ? 'PENDING' : 'FAILED'} />
       ),
     },
     {
       header: 'Actions',
-      accessor: (row: MockUser) => (
+      accessor: (row: UserContract) => (
         <Button
           variant="outline"
           size="sm"
@@ -214,7 +238,7 @@ export default function TeamUsersPage() {
                         <SelectValue placeholder="Choose systemic role..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {MOCK_ROLES.map((r) => (
+                        {roles.map((r) => (
                           <SelectItem key={r.name} value={r.name} className="text-xs">
                             {r.name} ({r.roleType} role)
                           </SelectItem>
@@ -232,7 +256,7 @@ export default function TeamUsersPage() {
                         <SelectValue placeholder="Select warehouse..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {MOCK_WAREHOUSES.map((wh) => (
+                        {warehouses.map((wh) => (
                           <SelectItem key={wh.id} value={wh.name} className="text-xs">
                             {wh.name} ({wh.code})
                           </SelectItem>

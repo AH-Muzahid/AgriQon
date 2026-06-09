@@ -3,10 +3,12 @@ import { AuthRequest } from '../../middleware/rbac.middleware';
 import catchAsync from '../../shared/utils/catchAsync';
 import { sendResponse } from '../../shared/utils/sendResponse';
 import { OrganizationService } from './organization.service';
+import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import httpStatus from 'http-status';
 import { AppError } from '../../errors/AppError';
 
-const organizationService = new OrganizationService();
+const subscriptionGuard = new SubscriptionGuardService();
+const organizationService = new OrganizationService(subscriptionGuard);
 
 const getBusinessUsers = catchAsync(async (req: AuthRequest, res: Response) => {
   const businessId = req.businessId || req.user?.businessId;

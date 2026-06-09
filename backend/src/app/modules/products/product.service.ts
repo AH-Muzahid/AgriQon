@@ -1,6 +1,7 @@
 import { Prisma, MovementType } from '../../../generated/client';
 import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
+import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
 import { DomainEvents, emitDomainEvent } from '../../../shared/events/domain-events';
@@ -8,7 +9,8 @@ import { DomainEvents, emitDomainEvent } from '../../../shared/events/domain-eve
 export class ProductService {
   constructor(
     private productRepo: ProductRepository,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private subscriptionGuard: SubscriptionGuardService
   ) {}
 
   /**
@@ -20,6 +22,9 @@ export class ProductService {
   }) {
     const { businessId, data } = params;
     const { initialStock, warehouseId, ...productData } = data;
+
+    // Phase S3: Subscription enforcement
+    await this.subscriptionGuard.validateBusinessSubscription(businessId);
 
     return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const productRepo = new ProductRepository(tx);

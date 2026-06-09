@@ -582,12 +582,14 @@ exports.Prisma.ReportCacheScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.PlanScalarFieldEnum = {
+exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   id: 'id',
+  code: 'code',
   name: 'name',
-  description: 'description',
-  price: 'price',
-  interval: 'interval',
+  isTrial: 'isTrial',
+  maxUsers: 'maxUsers',
+  maxProducts: 'maxProducts',
+  maxWarehouses: 'maxWarehouses',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -606,10 +608,9 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   businessId: 'businessId',
   planId: 'planId',
   status: 'status',
-  startDate: 'startDate',
-  endDate: 'endDate',
-  trialStart: 'trialStart',
-  trialEnd: 'trialEnd',
+  startsAt: 'startsAt',
+  trialEndsAt: 'trialEndsAt',
+  expiresAt: 'expiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -1003,11 +1004,10 @@ exports.Prisma.ReportCacheOrderByRelevanceFieldEnum = {
   reportType: 'reportType'
 };
 
-exports.Prisma.PlanOrderByRelevanceFieldEnum = {
+exports.Prisma.SubscriptionPlanOrderByRelevanceFieldEnum = {
   id: 'id',
-  name: 'name',
-  description: 'description',
-  interval: 'interval'
+  code: 'code',
+  name: 'name'
 };
 
 exports.Prisma.PlanFeatureOrderByRelevanceFieldEnum = {
@@ -1020,8 +1020,7 @@ exports.Prisma.PlanFeatureOrderByRelevanceFieldEnum = {
 exports.Prisma.SubscriptionOrderByRelevanceFieldEnum = {
   id: 'id',
   businessId: 'businessId',
-  planId: 'planId',
-  status: 'status'
+  planId: 'planId'
 };
 
 exports.Prisma.UsageMetricOrderByRelevanceFieldEnum = {
@@ -1113,6 +1112,15 @@ exports.JournalStatus = exports.$Enums.JournalStatus = {
   POSTED: 'POSTED'
 };
 
+exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
+  TRIAL: 'TRIAL',
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  GRACE_PERIOD: 'GRACE_PERIOD',
+  SUSPENDED: 'SUSPENDED',
+  CANCELLED: 'CANCELLED'
+};
+
 exports.Prisma.ModelName = {
   Organization: 'Organization',
   Business: 'Business',
@@ -1155,7 +1163,7 @@ exports.Prisma.ModelName = {
   JournalLine: 'JournalLine',
   ReconciliationLog: 'ReconciliationLog',
   ReportCache: 'ReportCache',
-  Plan: 'Plan',
+  SubscriptionPlan: 'SubscriptionPlan',
   PlanFeature: 'PlanFeature',
   Subscription: 'Subscription',
   UsageMetric: 'UsageMetric',

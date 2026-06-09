@@ -14,12 +14,17 @@ import { AppError } from '../../errors/AppError';
 import { prisma } from '../../lib/prisma';
 import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
+import { FeatureGuardService } from '../subscriptions/feature-guard.service';
+import { FeatureCode } from '../subscriptions/types/feature.types';
 
 export class AccountingService {
   private accountingRepository: AccountingRepository;
   private auditService: AuditService;
 
-  constructor(accountingRepository?: AccountingRepository) {
+  constructor(
+    accountingRepository?: AccountingRepository,
+    private featureGuard?: FeatureGuardService,
+  ) {
     this.accountingRepository = accountingRepository || new AccountingRepository();
     this.auditService = new AuditService();
   }
@@ -55,7 +60,10 @@ export class AccountingService {
     return results;
   }
 
-  async createAccount(businessId: string, data: any) {
+  async createAccount(businessId: string, data: any, userId?: string) {
+    if (this.featureGuard) {
+      await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
+    }
     return this.accountingRepository.createAccount({
       ...data,
       businessId,
@@ -71,6 +79,9 @@ export class AccountingService {
    * Replaces the legacy single-entry recordTransaction.
    */
   async createJournalEntry(businessId: string, userId: string, data: any) {
+    if (this.featureGuard) {
+      await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
+    }
     const { description, reference, source, lines, status } = data;
 
     const entry = await this.accountingRepository.createJournalEntry({
@@ -94,7 +105,10 @@ export class AccountingService {
     return entry;
   }
 
-  async reconcileBalances(businessId: string) {
+  async reconcileBalances(businessId: string, userId?: string) {
+    if (this.featureGuard) {
+      await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
+    }
     const accounts = await this.accountingRepository.findAccounts(businessId);
     const results = [];
 
@@ -148,6 +162,9 @@ export class AccountingService {
   }
 
   async postJournalEntry(id: string, businessId: string, userId: string) {
+    if (this.featureGuard) {
+      await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
+    }
     const entry = await this.accountingRepository.postJournalEntry(id, businessId, userId);
     
     // Log Audit

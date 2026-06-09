@@ -1,6 +1,7 @@
-import { PrismaClient, PlatformRole, BusinessRole, OrderStatus, PaymentStatus, MovementType, ProcessingStatus, AccountType } from '../src/generated/client';
+import { PrismaClient, PlatformRole, BusinessRole, OrderStatus, PaymentStatus, MovementType, ProcessingStatus, AccountType, SubscriptionStatus } from '../src/generated/client';
 import { faker } from '@faker-js/faker';
 import { seedPermissions } from './seed-permissions';
+import { FeatureCode } from '../src/app/modules/subscriptions/types/feature.types';
 
 const prisma = new PrismaClient();
 
@@ -9,7 +10,98 @@ async function main() {
 
   // Seed permission catalog and role mappings first
   await seedPermissions();
-  // Clean existing data (Optional but recommended for a fresh seed)
+
+  console.log('💳 Seeding subscription plans...');
+  const trialPlan = await prisma.subscriptionPlan.upsert({
+    where: { code: 'TRIAL' },
+    update: {
+      name: 'Trial Plan',
+      isTrial: true,
+      maxUsers: 3,
+      maxProducts: 100,
+      maxWarehouses: 1,
+    },
+    create: {
+      code: 'TRIAL',
+      name: 'Trial Plan',
+      isTrial: true,
+      maxUsers: 3,
+      maxProducts: 100,
+      maxWarehouses: 1,
+    },
+  });
+
+  const proPlan = await prisma.subscriptionPlan.upsert({
+    where: { code: 'PRO' },
+    update: {
+      name: 'Pro Plan',
+      isTrial: false,
+      maxUsers: 20,
+      maxProducts: 5000,
+      maxWarehouses: 10,
+    },
+    create: {
+      code: 'PRO',
+      name: 'Pro Plan',
+      isTrial: false,
+      maxUsers: 20,
+      maxProducts: 5000,
+      maxWarehouses: 10,
+    },
+  });
+
+  const trialFeatures = [
+    FeatureCode.INVENTORY,
+    FeatureCode.POS,
+    FeatureCode.CRM,
+  ];
+
+  const proFeatures = [
+    FeatureCode.INVENTORY,
+    FeatureCode.POS,
+    FeatureCode.CRM,
+    FeatureCode.HRM,
+    FeatureCode.ACCOUNTING,
+    FeatureCode.AI_CHAT,
+    FeatureCode.AI_REPORTS,
+    FeatureCode.MULTI_BRANCH,
+  ];
+
+  console.log('🗝️ Seeding trial plan features...');
+  for (const feature of trialFeatures) {
+    await prisma.planFeature.upsert({
+      where: {
+        planId_featureKey: {
+          planId: trialPlan.id,
+          featureKey: feature,
+        },
+      },
+      update: { value: 'true' },
+      create: {
+        planId: trialPlan.id,
+        featureKey: feature,
+        value: 'true',
+      },
+    });
+  }
+
+  console.log('🗝️ Seeding pro plan features...');
+  for (const feature of proFeatures) {
+    await prisma.planFeature.upsert({
+      where: {
+        planId_featureKey: {
+          planId: proPlan.id,
+          featureKey: feature,
+        },
+      },
+      update: { value: 'true' },
+      create: {
+        planId: proPlan.id,
+        featureKey: feature,
+        value: 'true',
+      },
+    });
+  }
   // await prisma.$executeRawUnsafe('TRUNCATE TABLE "Organization" CASCADE');
 
   // 1. Create Organization
@@ -31,6 +123,19 @@ async function main() {
       },
     });
     businesses.push(business);
+
+    // Seed default trial subscription for consistency
+    await prisma.subscription.upsert({
+      where: { businessId: business.id },
+      update: {},
+      create: {
+        businessId: business.id,
+        planId: trialPlan.id,
+        status: SubscriptionStatus.TRIAL,
+        startsAt: new Date(),
+        expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      },
+    });
   }
 
   for (const business of businesses) {

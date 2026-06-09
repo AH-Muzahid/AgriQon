@@ -12,19 +12,34 @@ const instance = axios.create({
   withCredentials: true,
 });
 
-// Add interceptor to include auth token if available
+// Add interceptor to include auth token and business ID if available
 instance.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token') || localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    try {
+      const { useAuthStore } = require('@/store/auth-store');
+      const user = useAuthStore.getState().user;
+      const businessId = user?.businessId || localStorage.getItem('businessId');
+      if (businessId) {
+        config.headers['x-business-id'] = businessId;
+      }
+    } catch {
+      const businessId = localStorage.getItem('businessId');
+      if (businessId) {
+        config.headers['x-business-id'] = businessId;
+      }
+    }
   }
-  // Debug: show which requests include auth header (do not log token value)
+  // Debug: show which requests include auth header and business context
   if (process.env.NODE_ENV !== 'production') {
     try {
       const hasAuth = !!config.headers?.Authorization;
-      console.debug('[api-client] Request', { method: config.method, url: config.url, hasAuth });
+      const businessId = config.headers?.['x-business-id'];
+      console.debug('[api-client] Request', { method: config.method, url: config.url, hasAuth, businessId });
     } catch {}
   }
   return config;

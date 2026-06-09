@@ -6,6 +6,7 @@ export interface ApiClient {
   put<T>(url: string, data?: any, config?: any): Promise<T>;
   patch<T>(url: string, data?: any, config?: any): Promise<T>;
   delete<T>(url: string, config?: any): Promise<T>;
+  client: any;
 }
 
 export const apiClient: ApiClient = {
@@ -29,6 +30,7 @@ export const apiClient: ApiClient = {
     const res = await realApiClient.delete<T>(url, config);
     return res.data;
   },
+  client: realApiClient.client,
 };
 
 export default apiClient;

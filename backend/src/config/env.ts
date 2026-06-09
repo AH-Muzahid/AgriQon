@@ -30,4 +30,6 @@ export const env = {
   aiProvider: (process.env.AI_PROVIDER as 'gemini' | 'openai') ?? 'gemini',
   // New: default warehouse name
   defaultWarehouseName: process.env.DEFAULT_WAREHOUSE_NAME ?? 'Main Warehouse',
+  // Subscription trial duration config
+  subscriptionTrialDays: Number(process.env.SUBSCRIPTION_TRIAL_DAYS ?? 14),
 };
