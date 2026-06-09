@@ -52,7 +52,7 @@ export class PermissionService {
       });
 
       if (ubr) {
-        const standardPerms = await this.getPermissionsForRole(ubr.role);
+        const standardPerms = await PermissionService.getPermissionsForRole(ubr.role);
         permissions = [...standardPerms];
       }
 
