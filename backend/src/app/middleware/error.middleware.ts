@@ -10,6 +10,8 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   let resource: string | undefined;
   let current: number | undefined;
   let limit: number | undefined;
+  let code: string | undefined;
+  let subscriptionStatus: string | undefined;
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
@@ -17,6 +19,8 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     resource = err.resource;
     current = err.current;
     limit = err.limit;
+    code = err.code;
+    subscriptionStatus = err.subscriptionStatus;
   } else if (err instanceof Prisma.PrismaClientKnownRequestError) {
     // Handle Prisma specific errors
     if (err.code === 'P2002') {
@@ -37,6 +41,8 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   res.status(statusCode).json({
     success: false,
     message,
+    ...(code !== undefined ? { code } : {}),
+    ...(subscriptionStatus !== undefined ? { subscriptionStatus } : {}),
     ...(resource !== undefined ? { resource } : {}),
     ...(current !== undefined ? { current } : {}),
     ...(limit !== undefined ? { limit } : {}),

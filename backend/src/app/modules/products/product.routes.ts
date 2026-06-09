@@ -7,6 +7,7 @@ import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
 import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import { UsageGuardService } from '../subscriptions/usage-guard.service';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
 import { SubscriptionRepository } from '../subscriptions/subscription.repository';
 import { ProductBatchController } from './batch.controller';
 import validateRequest from '../../middleware/validateRequest';
@@ -26,6 +27,7 @@ const router = Router();
 const subscriptionRepository = new SubscriptionRepository();
 const subscriptionGuard = new SubscriptionGuardService(subscriptionRepository);
 const usageGuard = new UsageGuardService(subscriptionRepository);
+const readOnlyGuard = new ReadOnlyGuardService(subscriptionRepository);
 const productRepository = new ProductRepository();
 const inventoryRepository = new InventoryRepository();
 const inventoryService = new InventoryService(inventoryRepository);
@@ -33,7 +35,8 @@ const productService = new ProductService(
   productRepository,
   inventoryService,
   subscriptionGuard,
-  usageGuard
+  usageGuard,
+  readOnlyGuard
 );
 const productController = new ProductController(productService);
 

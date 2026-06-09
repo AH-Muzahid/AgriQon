@@ -611,6 +611,7 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   startsAt: 'startsAt',
   trialEndsAt: 'trialEndsAt',
   expiresAt: 'expiresAt',
+  graceEndsAt: 'graceEndsAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

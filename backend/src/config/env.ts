@@ -32,4 +32,5 @@ export const env = {
   defaultWarehouseName: process.env.DEFAULT_WAREHOUSE_NAME ?? 'Main Warehouse',
   // Subscription trial duration config
   subscriptionTrialDays: Number(process.env.SUBSCRIPTION_TRIAL_DAYS ?? 14),
+  subscriptionGraceDays: Number(process.env.SUBSCRIPTION_GRACE_DAYS ?? 7),
 };

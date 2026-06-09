@@ -1,9 +1,13 @@
 import { Prisma } from '../../../generated/client';
 import { InvoiceRepository } from './invoice.repository';
 import { AppError } from '../../errors/AppError';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
 
 export class InvoiceService {
-  constructor(private invoiceRepo: InvoiceRepository) {}
+  constructor(
+    private invoiceRepo: InvoiceRepository,
+    private readOnlyGuard?: ReadOnlyGuardService
+  ) {}
 
   async getAllInvoices(params: {
     businessId: string;
@@ -40,7 +44,20 @@ export class InvoiceService {
     return invoice;
   }
 
+  async createInvoice(data: Prisma.InvoiceUncheckedCreateInput, tx?: Prisma.TransactionClient) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(data.businessId);
+    }
+
+    const repo = tx ? new InvoiceRepository(tx) : this.invoiceRepo;
+    return await repo.create(data);
+  }
+
   async updateInvoice(id: string, businessId: string, data: { dueDate?: Date; paidAmount?: number }) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
     const invoice = await this.getInvoiceById(id, businessId);
 
     const newPaidAmount = data.paidAmount !== undefined

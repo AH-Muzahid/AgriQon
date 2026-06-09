@@ -1,42 +1,34 @@
 import { OrganizationRepository } from './organization.repository';
-import { BusinessRole } from '../../../generated/client';
 import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import { UsageGuardService } from '../subscriptions/usage-guard.service';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
 import { ResourceType } from '../subscriptions/types/resource.types';
-import logger from '../../lib/logger';
+import { BusinessRole } from '../../../generated/client';
+import { logger } from '../../lib/logger';
 
 export class OrganizationService {
-  private organizationRepository: OrganizationRepository;
-  private subscriptionGuard: SubscriptionGuardService;
-  private usageGuard?: UsageGuardService;
-
   constructor(
-    subscriptionGuard?: SubscriptionGuardService,
-    usageGuard?: UsageGuardService,
-  ) {
-    this.organizationRepository = new OrganizationRepository();
-    this.subscriptionGuard = subscriptionGuard || new SubscriptionGuardService();
-    this.usageGuard = usageGuard;
-  }
+    private organizationRepository: OrganizationRepository,
+    private subscriptionGuard: SubscriptionGuardService,
+    private usageGuard?: UsageGuardService,
+    private readOnlyGuard?: ReadOnlyGuardService,
+  ) {}
 
-  /**
-   * List all users associated with the active tenant context
-   */
   async getBusinessUsers(businessId: string) {
-    const rawMembers = await this.organizationRepository.findBusinessUsers(businessId);
-
-    return rawMembers.map((member: any) => {
-      const user = member.user;
-      const customRoles = user.customRoles.map((ucr: any) => ucr.customRole.name);
+    const users = await this.organizationRepository.findBusinessUsers(businessId);
+    return users.map((u: any) => {
+      // Map details and custom role arrays to direct permission listings
+      const permissionsSet = new Set<string>();
+      u.user.customRoles.forEach((cr: any) => {
+        cr.customRole.permissions.forEach((p: any) => permissionsSet.add(p));
+      });
 
       return {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: member.role,
-        customRoles,
-        status: user.deletedAt ? 'INACTIVE' : 'ACTIVE',
-        warehouseAssignment: null, // Placeholder as no user-warehouse mapping exists in db
+        id: u.user.id,
+        name: u.user.name,
+        email: u.user.email,
+        role: u.role,
+        permissions: Array.from(permissionsSet),
       };
     });
   }
@@ -51,6 +43,10 @@ export class OrganizationService {
     businessId: string;
     actorId?: string;
   }) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(params.businessId);
+    }
+
     // Phase S3: Subscription enforcement
     await this.subscriptionGuard.validateBusinessSubscription(params.businessId);
 
@@ -78,5 +74,27 @@ export class OrganizationService {
         role: result.role,
       },
     };
+  }
+
+  /**
+   * Revoke a user's access from the business
+   */
+  async revokeUser(userId: string, businessId: string) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
+    return await this.organizationRepository.revokeUser(userId, businessId);
+  }
+
+  /**
+   * Update a user's role within the business
+   */
+  async updateRole(userId: string, businessId: string, role: BusinessRole) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
+    return await this.organizationRepository.updateUserRole(userId, businessId, role);
   }
 }

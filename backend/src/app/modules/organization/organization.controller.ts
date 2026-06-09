@@ -48,4 +48,41 @@ export class OrganizationController {
       data: result,
     });
   });
+
+  revokeUser = catchAsync(async (req: AuthRequest, res: Response) => {
+    const businessId = req.businessId || req.user?.businessId;
+    if (!businessId) {
+      throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+    }
+
+    const { userId } = req.params;
+
+    const result = await this.organizationService.revokeUser(userId, businessId);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'User access revoked successfully',
+      data: result,
+    });
+  });
+
+  updateRole = catchAsync(async (req: AuthRequest, res: Response) => {
+    const businessId = req.businessId || req.user?.businessId;
+    if (!businessId) {
+      throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+    }
+
+    const { userId } = req.params;
+    const { role } = req.body;
+
+    const result = await this.organizationService.updateRole(userId, businessId, role);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'User role updated successfully',
+      data: result,
+    });
+  });
 }

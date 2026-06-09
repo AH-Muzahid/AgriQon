@@ -1,5 +1,9 @@
 import express from "express";
 import { PaymentController } from "./payment.controller";
+import { PaymentService } from "./payment.service";
+import { PaymentRepository } from "./payment.repository";
+import { SubscriptionRepository } from "../subscriptions/subscription.repository";
+import { ReadOnlyGuardService } from "../subscriptions/read-only-guard.service";
 import {
   extractAuth,
   attachBusinessRole,
@@ -12,6 +16,13 @@ import { PaymentValidation } from "./payment.validation";
 
 const router = express.Router();
 
+// Dependency Injection Wiring
+const subscriptionRepository = new SubscriptionRepository();
+const readOnlyGuard = new ReadOnlyGuardService(subscriptionRepository);
+const paymentRepository = new PaymentRepository();
+const paymentService = new PaymentService(paymentRepository, readOnlyGuard);
+const paymentController = new PaymentController(paymentService);
+
 /**
  * POST /payments/initiate
  * Initiates a payment for an order belonging to the authenticated user's tenant.
@@ -23,7 +34,7 @@ router.post(
   requireTenant,
   attachBusinessRole,
   authorizeAny(PAYMENT_CREATE),
-  PaymentController.initiatePayment,
+  paymentController.initiatePayment,
 );
 
 /**
@@ -31,7 +42,7 @@ router.post(
  * Gateway-signed callback — intentionally unauthenticated.
  * Signature verification is performed inside PaymentService.verifyAndHandleWebhook().
  */
-router.post("/webhook/:gateway", PaymentController.handleWebhook);
+router.post("/webhook/:gateway", paymentController.handleWebhook);
 
 /**
  * POST /payments/refund
@@ -44,7 +55,7 @@ router.post(
   requireTenant,
   attachBusinessRole,
   authorizeAny(PAYMENT_MANAGE),
-  PaymentController.handleRefund,
+  paymentController.handleRefund,
 );
 
 /**
@@ -59,7 +70,7 @@ router.get(
   attachBusinessRole,
   authorizeAny(PAYMENT_VIEW),
   validateRequest(PaymentValidation.queryPaymentSchema),
-  PaymentController.getAllPayments
+  paymentController.getAllPayments
 );
 
 /**
@@ -73,7 +84,7 @@ router.get(
   requireTenant,
   attachBusinessRole,
   authorizeAny(PAYMENT_VIEW),
-  PaymentController.getPaymentById
+  paymentController.getPaymentById
 );
 
 export const PaymentRoutes = router;

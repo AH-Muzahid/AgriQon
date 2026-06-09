@@ -71,4 +71,29 @@ export class OrganizationRepository {
       return { user, role: ubr.role };
     });
   }
+
+  async revokeUser(userId: string, businessId: string) {
+    return await prisma.userBusinessRole.delete({
+      where: {
+        userId_businessId: {
+          userId,
+          businessId,
+        },
+      },
+    });
+  }
+
+  async updateUserRole(userId: string, businessId: string, role: BusinessRole) {
+    return await prisma.userBusinessRole.update({
+      where: {
+        userId_businessId: {
+          userId,
+          businessId,
+        },
+      },
+      data: {
+        role,
+      },
+    });
+  }
 }

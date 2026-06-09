@@ -3,6 +3,7 @@ import { ProductRepository } from './product.repository';
 import { InventoryService } from '../inventory/inventory.service';
 import { SubscriptionGuardService } from '../subscriptions/subscription-guard.service';
 import { UsageGuardService } from '../subscriptions/usage-guard.service';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
 import { ResourceType } from '../subscriptions/types/resource.types';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../errors/AppError';
@@ -14,6 +15,7 @@ export class ProductService {
     private inventoryService: InventoryService,
     private subscriptionGuard: SubscriptionGuardService,
     private usageGuard?: UsageGuardService,
+    private readOnlyGuard?: ReadOnlyGuardService,
   ) {}
 
   /**
@@ -26,6 +28,11 @@ export class ProductService {
   }) {
     const { businessId, data, actorId } = params;
     const { initialStock, warehouseId, ...productData } = data;
+
+    // Phase S6: Read-only check
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
 
     // Phase S3: Subscription enforcement
     await this.subscriptionGuard.validateBusinessSubscription(businessId);
@@ -90,6 +97,10 @@ export class ProductService {
   }
 
   async updateProduct(id: string, businessId: string, data: Prisma.ItemUpdateInput) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
     // Check if product exists
     const existing = await this.getProductById(id, businessId);
     
@@ -118,6 +129,10 @@ export class ProductService {
   }
 
   async deleteProduct(id: string, businessId: string) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
     // Check if product exists
     await this.getProductById(id, businessId);
     

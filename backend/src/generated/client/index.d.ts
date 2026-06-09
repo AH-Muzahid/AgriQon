@@ -51072,6 +51072,7 @@ export namespace Prisma {
     startsAt: Date | null
     trialEndsAt: Date | null
     expiresAt: Date | null
+    graceEndsAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -51084,6 +51085,7 @@ export namespace Prisma {
     startsAt: Date | null
     trialEndsAt: Date | null
     expiresAt: Date | null
+    graceEndsAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -51096,6 +51098,7 @@ export namespace Prisma {
     startsAt: number
     trialEndsAt: number
     expiresAt: number
+    graceEndsAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -51110,6 +51113,7 @@ export namespace Prisma {
     startsAt?: true
     trialEndsAt?: true
     expiresAt?: true
+    graceEndsAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -51122,6 +51126,7 @@ export namespace Prisma {
     startsAt?: true
     trialEndsAt?: true
     expiresAt?: true
+    graceEndsAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -51134,6 +51139,7 @@ export namespace Prisma {
     startsAt?: true
     trialEndsAt?: true
     expiresAt?: true
+    graceEndsAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -51219,6 +51225,7 @@ export namespace Prisma {
     startsAt: Date
     trialEndsAt: Date | null
     expiresAt: Date
+    graceEndsAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: SubscriptionCountAggregateOutputType | null
@@ -51248,6 +51255,7 @@ export namespace Prisma {
     startsAt?: boolean
     trialEndsAt?: boolean
     expiresAt?: boolean
+    graceEndsAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
@@ -51264,6 +51272,7 @@ export namespace Prisma {
     startsAt?: boolean
     trialEndsAt?: boolean
     expiresAt?: boolean
+    graceEndsAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
@@ -51278,6 +51287,7 @@ export namespace Prisma {
     startsAt?: boolean
     trialEndsAt?: boolean
     expiresAt?: boolean
+    graceEndsAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -51308,6 +51318,7 @@ export namespace Prisma {
       startsAt: Date
       trialEndsAt: Date | null
       expiresAt: Date
+      graceEndsAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["subscription"]>
@@ -51713,6 +51724,7 @@ export namespace Prisma {
     readonly startsAt: FieldRef<"Subscription", 'DateTime'>
     readonly trialEndsAt: FieldRef<"Subscription", 'DateTime'>
     readonly expiresAt: FieldRef<"Subscription", 'DateTime'>
+    readonly graceEndsAt: FieldRef<"Subscription", 'DateTime'>
     readonly createdAt: FieldRef<"Subscription", 'DateTime'>
     readonly updatedAt: FieldRef<"Subscription", 'DateTime'>
   }
@@ -56479,6 +56491,7 @@ export namespace Prisma {
     startsAt: 'startsAt',
     trialEndsAt: 'trialEndsAt',
     expiresAt: 'expiresAt',
+    graceEndsAt: 'graceEndsAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -60841,6 +60854,7 @@ export namespace Prisma {
     startsAt?: DateTimeFilter<"Subscription"> | Date | string
     trialEndsAt?: DateTimeNullableFilter<"Subscription"> | Date | string | null
     expiresAt?: DateTimeFilter<"Subscription"> | Date | string
+    graceEndsAt?: DateTimeNullableFilter<"Subscription"> | Date | string | null
     createdAt?: DateTimeFilter<"Subscription"> | Date | string
     updatedAt?: DateTimeFilter<"Subscription"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
@@ -60856,6 +60870,7 @@ export namespace Prisma {
     startsAt?: SortOrder
     trialEndsAt?: SortOrderInput | SortOrder
     expiresAt?: SortOrder
+    graceEndsAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     business?: BusinessOrderByWithRelationInput
@@ -60875,6 +60890,7 @@ export namespace Prisma {
     startsAt?: DateTimeFilter<"Subscription"> | Date | string
     trialEndsAt?: DateTimeNullableFilter<"Subscription"> | Date | string | null
     expiresAt?: DateTimeFilter<"Subscription"> | Date | string
+    graceEndsAt?: DateTimeNullableFilter<"Subscription"> | Date | string | null
     createdAt?: DateTimeFilter<"Subscription"> | Date | string
     updatedAt?: DateTimeFilter<"Subscription"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
@@ -60890,6 +60906,7 @@ export namespace Prisma {
     startsAt?: SortOrder
     trialEndsAt?: SortOrderInput | SortOrder
     expiresAt?: SortOrder
+    graceEndsAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: SubscriptionCountOrderByAggregateInput
@@ -60908,6 +60925,7 @@ export namespace Prisma {
     startsAt?: DateTimeWithAggregatesFilter<"Subscription"> | Date | string
     trialEndsAt?: DateTimeNullableWithAggregatesFilter<"Subscription"> | Date | string | null
     expiresAt?: DateTimeWithAggregatesFilter<"Subscription"> | Date | string
+    graceEndsAt?: DateTimeNullableWithAggregatesFilter<"Subscription"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Subscription"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Subscription"> | Date | string
   }
@@ -64808,6 +64826,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     business: BusinessCreateNestedOneWithoutSubscriptionInput
@@ -64823,6 +64842,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
@@ -64834,6 +64854,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSubscriptionNestedInput
@@ -64849,6 +64870,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
@@ -64862,6 +64884,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -64872,6 +64895,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64884,6 +64908,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -68189,6 +68214,7 @@ export namespace Prisma {
     startsAt?: SortOrder
     trialEndsAt?: SortOrder
     expiresAt?: SortOrder
+    graceEndsAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -68201,6 +68227,7 @@ export namespace Prisma {
     startsAt?: SortOrder
     trialEndsAt?: SortOrder
     expiresAt?: SortOrder
+    graceEndsAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -68213,6 +68240,7 @@ export namespace Prisma {
     startsAt?: SortOrder
     trialEndsAt?: SortOrder
     expiresAt?: SortOrder
+    graceEndsAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -74800,6 +74828,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     plan: SubscriptionPlanCreateNestedOneWithoutSubscriptionsInput
@@ -74813,6 +74842,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
@@ -75910,6 +75940,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     plan?: SubscriptionPlanUpdateOneRequiredWithoutSubscriptionsNestedInput
@@ -75923,6 +75954,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
@@ -88685,6 +88717,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     business: BusinessCreateNestedOneWithoutSubscriptionInput
@@ -88698,6 +88731,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     events?: SubscriptionEventUncheckedCreateNestedManyWithoutSubscriptionInput
@@ -88768,6 +88802,7 @@ export namespace Prisma {
     startsAt?: DateTimeFilter<"Subscription"> | Date | string
     trialEndsAt?: DateTimeNullableFilter<"Subscription"> | Date | string | null
     expiresAt?: DateTimeFilter<"Subscription"> | Date | string
+    graceEndsAt?: DateTimeNullableFilter<"Subscription"> | Date | string | null
     createdAt?: DateTimeFilter<"Subscription"> | Date | string
     updatedAt?: DateTimeFilter<"Subscription"> | Date | string
   }
@@ -89181,6 +89216,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     business: BusinessCreateNestedOneWithoutSubscriptionInput
@@ -89195,6 +89231,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -89221,6 +89258,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSubscriptionNestedInput
@@ -89235,6 +89273,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -93032,6 +93071,7 @@ export namespace Prisma {
     startsAt?: Date | string
     trialEndsAt?: Date | string | null
     expiresAt: Date | string
+    graceEndsAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -93066,6 +93106,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSubscriptionNestedInput
@@ -93079,6 +93120,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
@@ -93091,6 +93133,7 @@ export namespace Prisma {
     startsAt?: DateTimeFieldUpdateOperationsInput | Date | string
     trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    graceEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

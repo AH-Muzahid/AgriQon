@@ -16,6 +16,7 @@ import { InventoryService } from '../inventory/inventory.service';
 import { InventoryRepository } from '../inventory/inventory.repository';
 import { FeatureGuardService } from '../subscriptions/feature-guard.service';
 import { FeatureCode } from '../subscriptions/types/feature.types';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
 
 export class AccountingService {
   private accountingRepository: AccountingRepository;
@@ -24,6 +25,7 @@ export class AccountingService {
   constructor(
     accountingRepository?: AccountingRepository,
     private featureGuard?: FeatureGuardService,
+    private readOnlyGuard?: ReadOnlyGuardService,
   ) {
     this.accountingRepository = accountingRepository || new AccountingRepository();
     this.auditService = new AuditService();
@@ -61,6 +63,9 @@ export class AccountingService {
   }
 
   async createAccount(businessId: string, data: any, userId?: string) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
     if (this.featureGuard) {
       await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
     }
@@ -79,6 +84,9 @@ export class AccountingService {
    * Replaces the legacy single-entry recordTransaction.
    */
   async createJournalEntry(businessId: string, userId: string, data: any) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
     if (this.featureGuard) {
       await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
     }
@@ -162,6 +170,9 @@ export class AccountingService {
   }
 
   async postJournalEntry(id: string, businessId: string, userId: string) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
     if (this.featureGuard) {
       await this.featureGuard.validateFeatureAccess(businessId, FeatureCode.ACCOUNTING, userId);
     }

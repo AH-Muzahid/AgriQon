@@ -12,6 +12,7 @@ export enum QueueName {
   RECONCILIATION = 'reconciliation-queue',
   AI = 'ai-queue',
   SEARCH = 'search-queue',
+  SUBSCRIPTION = 'subscription-queue',
 }
 
 // Default Job Options
@@ -35,6 +36,7 @@ export const customerQueue = new Queue(QueueName.CUSTOMERS, { connection: redis,
 export const reconciliationQueue = new Queue(QueueName.RECONCILIATION, { connection: redis, defaultJobOptions });
 export const aiQueue = new Queue(QueueName.AI, { connection: redis, defaultJobOptions });
 export const searchQueue = new Queue(QueueName.SEARCH, { connection: redis, defaultJobOptions });
+export const subscriptionQueue = new Queue(QueueName.SUBSCRIPTION, { connection: redis, defaultJobOptions });
 
 // Centralized Dispatcher (To be used ONLY by OutboxProcessor)
 export const enqueueJob = async (queueName: QueueName, jobName: string, data: any, options?: JobsOptions) => {
@@ -48,6 +50,7 @@ export const enqueueJob = async (queueName: QueueName, jobName: string, data: an
     [QueueName.RECONCILIATION]: reconciliationQueue,
     [QueueName.AI]: aiQueue,
     [QueueName.SEARCH]: searchQueue,
+    [QueueName.SUBSCRIPTION]: subscriptionQueue,
   };
 
   const queue = queueMap[queueName];

@@ -4,6 +4,7 @@ import { AccountingController } from './accounting.controller';
 import { AccountingService } from './accounting.service';
 import { AccountingRepository } from './accounting.repository';
 import { FeatureGuardService } from '../subscriptions/feature-guard.service';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
 import { SubscriptionRepository } from '../subscriptions/subscription.repository';
 import { FinancialReportingController } from './financial-reporting.controller';
 import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
@@ -23,8 +24,9 @@ const router = Router();
 // Dependency Injection Wiring
 const subscriptionRepository = new SubscriptionRepository();
 const featureGuard = new FeatureGuardService(subscriptionRepository);
+const readOnlyGuard = new ReadOnlyGuardService(subscriptionRepository);
 const accountingRepository = new AccountingRepository();
-const accountingService = new AccountingService(accountingRepository, featureGuard);
+const accountingService = new AccountingService(accountingRepository, featureGuard, readOnlyGuard);
 const accountingController = new AccountingController(accountingService);
 
 // Reporting Routes

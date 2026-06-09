@@ -65,4 +65,8 @@ export class InvoiceRepository {
       data: { deletedAt: new Date() },
     });
   }
+
+  async create(data: Prisma.InvoiceUncheckedCreateInput) {
+    return await this.prisma.invoice.create({ data });
+  }
 }

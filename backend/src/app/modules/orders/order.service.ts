@@ -7,6 +7,8 @@ import { InventoryRepository } from '../inventory/inventory.repository';
 import { AppError } from '../../errors/AppError';
 import { AuditService } from '../audit/audit.service';
 import { emitDomainEvent } from '../../../shared/events/domain-events';
+import { ReadOnlyGuardService } from '../subscriptions/read-only-guard.service';
+import { InvoiceService } from '../invoices/invoice.service';
 
 // Rule 5: Service Composition
 // OrderService uses InventoryService for stock operations
@@ -36,7 +38,11 @@ export class OrderService {
   private inventoryService: InventoryService;
   private auditService: AuditService;
 
-  constructor(private orderRepo: OrderRepository) {
+  constructor(
+    private orderRepo: OrderRepository,
+    private readOnlyGuard?: ReadOnlyGuardService,
+    private invoiceService?: InvoiceService
+  ) {
     // Rule 5: Compose with InventoryService
     const inventoryRepo = new InventoryRepository();
     this.inventoryService = new InventoryService(inventoryRepo);
@@ -112,6 +118,10 @@ export class OrderService {
       dueDate,
       pointsToRedeem = 0
     } = input;
+
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
 
     // Rule 13: Check idempotency — prevent duplicate order creation
     if (idempotencyKey) {
@@ -226,8 +236,8 @@ export class OrderService {
 
       // 5. Auto-create Invoice (Rule 5: Service Composition)
       const invoiceNumber = `INV-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-      await tx.invoice.create({
-        data: {
+      if (this.invoiceService) {
+        await this.invoiceService.createInvoice({
           businessId,
           customerId,
           orderId: order.id,
@@ -235,9 +245,22 @@ export class OrderService {
           totalAmount: new Prisma.Decimal(total),
           paidAmount: new Prisma.Decimal(0),
           dueAmount: new Prisma.Decimal(total),
-          dueDate: dueDate ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30-day default
-        },
-      });
+          dueDate: dueDate ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        }, tx);
+      } else {
+        await tx.invoice.create({
+          data: {
+            businessId,
+            customerId,
+            orderId: order.id,
+            invoiceNumber,
+            totalAmount: new Prisma.Decimal(total),
+            paidAmount: new Prisma.Decimal(0),
+            dueAmount: new Prisma.Decimal(total),
+            dueDate: dueDate ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30-day default
+          },
+        });
+      }
 
       // 6. Emit domain event to Outbox (Event-Driven, Rule 10)
       await emitDomainEvent(
@@ -273,6 +296,10 @@ export class OrderService {
   }
 
   async updateOrderStatus(id: string, businessId: string, status: OrderStatus) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
     const order = await this.getOrderById(id, businessId);
 
     if (order.status === status) {
@@ -316,6 +343,10 @@ export class OrderService {
   }
 
   async cancelOrder(id: string, businessId: string) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
+
     const order = await this.getOrderById(id, businessId);
 
     if (([OrderStatus.DELIVERED, OrderStatus.SHIPPED] as OrderStatus[]).includes(order.status)) {

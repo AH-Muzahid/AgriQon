@@ -3,6 +3,7 @@ import { Prisma } from "../../../generated/client";
 import { SubscriptionGuardService } from "../subscriptions/subscription-guard.service";
 import { FeatureGuardService } from "../subscriptions/feature-guard.service";
 import { UsageGuardService } from "../subscriptions/usage-guard.service";
+import { ReadOnlyGuardService } from "../subscriptions/read-only-guard.service";
 import { ResourceType } from "../subscriptions/types/resource.types";
 import { FeatureCode } from "../subscriptions/types/feature.types";
 import { AppError } from "../../errors/AppError";
@@ -13,9 +14,15 @@ export class WarehouseService {
     private subscriptionGuard?: SubscriptionGuardService,
     private featureGuard?: FeatureGuardService,
     private usageGuard?: UsageGuardService,
+    private readOnlyGuard?: ReadOnlyGuardService,
   ) {}
 
   async createWarehouse(data: Prisma.WarehouseUncheckedCreateInput, userId?: string) {
+    // Phase S6: Read-only check
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(data.businessId);
+    }
+
     // Phase S3: Subscription enforcement (skipped during onboarding when guard is not provided)
     if (this.subscriptionGuard) {
       await this.subscriptionGuard.validateBusinessSubscription(data.businessId);
@@ -50,10 +57,16 @@ export class WarehouseService {
     businessId: string,
     data: Prisma.WarehouseUpdateInput,
   ) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
     return await this.warehouseRepo.update(id, businessId, data);
   }
 
   async deleteWarehouse(id: string, businessId: string) {
+    if (this.readOnlyGuard) {
+      await this.readOnlyGuard.validateBusinessWritable(businessId);
+    }
     const warehouse = await this.warehouseRepo.findById(id, businessId);
     if (!warehouse) throw new AppError("Warehouse not found", 404);
     if (warehouse.isDefault) {
