@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { BusinessRole } from '../../generated/client';
 import { AppError } from '../errors/AppError';
+import { logger } from '../lib/logger';
 
 /**
  * Service to resolve permissions for a given business role.
@@ -27,6 +28,11 @@ export class PermissionService {
       });
       return rolePerms.map((rp: { permission: { key: string } }) => rp.permission.key);
     } catch (e) {
+      logger.error('Error in getPermissionsForRole:', {
+        role,
+        error: e instanceof Error ? e.message : e,
+        stack: e instanceof Error ? e.stack : undefined
+      });
       // Fail closed – treat lookup errors as no permissions.
       throw new AppError('Permission lookup failed. Access denied.', 403);
     }
@@ -71,6 +77,12 @@ export class PermissionService {
 
       return Array.from(new Set(permissions));
     } catch (e) {
+      logger.error('Error in getPermissionsForUser:', {
+        userId,
+        businessId,
+        error: e instanceof Error ? e.message : e,
+        stack: e instanceof Error ? e.stack : undefined
+      });
       throw new AppError('Permission lookup failed. Access denied.', 403);
     }
   }
