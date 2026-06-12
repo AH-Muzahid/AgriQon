@@ -22,6 +22,15 @@ export type Permission =
   | 'ORG_MANAGE'
   | 'AI_ACCESS'
   | 'SETTINGS_VIEW'
-  | 'SETTINGS_MANAGE';
+  | 'SETTINGS_MANAGE'
+  | 'PURCHASE_VIEW'
+  | 'PURCHASE_CREATE'
+  | 'PURCHASE_EDIT'
+  | 'PURCHASE_MANAGE'
+  | 'SUPPLIER_VIEW'
+  | 'SUPPLIER_CREATE'
+  | 'SUPPLIER_EDIT'
+  | 'SUPPLIER_MANAGE';
 
 export type UserRole = 'OWNER' | 'ADMIN' | 'MANAGER' | 'OPERATOR' | 'VIEWER' | 'SELLER';
+

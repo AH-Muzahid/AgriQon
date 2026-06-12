@@ -142,6 +142,34 @@ export const navigationRegistry: NavigationItem[] = [
     },
   },
   {
+    title: 'Purchases',
+    href: '/purchases',
+    icon: 'Truck',
+    permission: 'PURCHASE_VIEW',
+    items: [
+      {
+        title: 'Purchase Orders',
+        href: '/purchases',
+        permission: 'PURCHASE_VIEW',
+        quickCreate: {
+          label: 'New Purchase Order',
+          permission: 'PURCHASE_CREATE',
+          icon: 'PlusCircle',
+        },
+      },
+      {
+        title: 'Suppliers',
+        href: '/purchases/suppliers',
+        permission: 'SUPPLIER_VIEW',
+        quickCreate: {
+          label: 'Register Supplier',
+          permission: 'SUPPLIER_CREATE',
+          icon: 'UserPlus',
+        },
+      },
+    ],
+  },
+  {
     title: 'Invoices',
     href: '/invoices',
     icon: 'FileText',
@@ -226,5 +254,22 @@ export const navigationRegistry: NavigationItem[] = [
     href: '/settings',
     icon: 'Settings',
     permission: 'SETTINGS_VIEW',
+    items: [
+      {
+        title: 'General',
+        href: '/settings',
+        permission: 'SETTINGS_VIEW',
+      },
+      {
+        title: 'Billing & Plans',
+        href: '/settings/billing',
+        permission: 'SETTINGS_VIEW',
+      },
+      {
+        title: 'Security',
+        href: '/settings/security',
+        permission: 'SETTINGS_VIEW',
+      },
+    ],
   },
 ];
