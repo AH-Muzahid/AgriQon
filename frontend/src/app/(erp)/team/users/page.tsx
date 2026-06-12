@@ -16,9 +16,22 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { MOCK_ROLES, MOCK_WAREHOUSES, MockUser } from '@/lib/mock-erp-data';
 import { useOrgUsers, useOrgRoles, useWarehouses, useInviteUser } from '@/services/query/hooks';
+import { useSubscriptionStatus, useUsageLimits } from '@/hooks/use-subscription';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { UserContract } from '@/types/contracts/organization.contract';
 
 export default function TeamUsersPage() {
+  const { isReadOnly } = useSubscriptionStatus();
+  const { data: usage } = useUsageLimits();
+
+  const isLimitReached = !!(usage?.users && usage.users.limit > 0 && (usage.users.current + (usage.users.pending ?? 0)) >= usage.users.limit);
+  const isCreateDisabled = isReadOnly || isLimitReached;
+
   const { data: usersData = [], isLoading: usersLoading } = useOrgUsers();
   const { data: roles = [], isLoading: rolesLoading } = useOrgRoles();
   const { data: warehouses = [], isLoading: whLoading } = useWarehouses();
@@ -172,14 +185,18 @@ export default function TeamUsersPage() {
         title="Team Directory"
         description="Invite staff members, allocate regional warehouse permissions, and manage active seat listings."
         actions={
-          <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 cursor-pointer font-semibold shadow-sm" onClick={() => setStep(1)}>
-                <UserPlus className="h-4 w-4" />
-                Invite Member
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2 cursor-pointer font-semibold shadow-sm" onClick={() => setStep(1)} disabled={isCreateDisabled}>
+                        <UserPlus className="h-4 w-4" />
+                        Invite Member
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
               <DialogHeader>
                 <div className="flex justify-between items-center mr-6">
                   <DialogTitle>Invite Staff Member</DialogTitle>
@@ -337,6 +354,19 @@ export default function TeamUsersPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+                </span>
+              </TooltipTrigger>
+              {isCreateDisabled && (
+                <TooltipContent>
+                  <p>
+                    {isReadOnly
+                      ? 'Business is currently in Read-Only Mode'
+                      : 'Invited users quota limit reached'}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         }
       >
         {/* Statistics cards */}
@@ -438,7 +468,7 @@ export default function TeamUsersPage() {
                   <Button
                     variant="destructive"
                     className="w-full text-xs cursor-pointer gap-1.5"
-                    disabled={selectedUser.role === 'Owner'}
+                    disabled={selectedUser.role === 'Owner' || isReadOnly}
                     onClick={() => {
                       toast.success(`Access keys revoked for ${selectedUser.email}`);
                       setSheetOpen(false);

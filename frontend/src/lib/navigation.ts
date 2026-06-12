@@ -204,6 +204,24 @@ export const navigationRegistry: NavigationItem[] = [
     permission: 'AI_ACCESS',
   },
   {
+    title: 'Subscription',
+    href: '/subscription',
+    icon: 'CreditCard',
+    permission: 'ORG_VIEW',
+    items: [
+      {
+        title: 'Plan Quotas',
+        href: '/subscription',
+        permission: 'ORG_VIEW',
+      },
+      {
+        title: 'Billing & Invoices',
+        href: '/subscription/billing',
+        permission: 'ORG_VIEW',
+      },
+    ],
+  },
+  {
     title: 'Settings',
     href: '/settings',
     icon: 'Settings',

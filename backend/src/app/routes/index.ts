@@ -64,4 +64,7 @@ const moduleRoutes = [
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));
 
+import { SubscriptionController } from '../modules/subscriptions/subscription.controller';
+router.post('/webhooks/payments/:gateway', SubscriptionController.postWebhook);
+
 export default router;

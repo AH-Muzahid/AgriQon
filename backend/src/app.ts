@@ -29,6 +29,7 @@ const csrfProtection = csurf({
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (
     req.path.startsWith('/api/v1/auth') ||
+    req.path.startsWith('/api/v1/webhooks/payments') ||
     req.path === '/health' ||
     req.headers.authorization?.startsWith('Bearer ')
   ) {

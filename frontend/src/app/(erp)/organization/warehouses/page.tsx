@@ -15,8 +15,21 @@ import { Progress } from '@/components/ui/progress';
 import { Plus, Eye, Warehouse, Sliders, CheckCircle2, AlertTriangle, MapPin, ShieldAlert } from 'lucide-react';
 import { toast } from 'sonner';
 import { MOCK_WAREHOUSES, MockWarehouse } from '@/lib/mock-erp-data';
+import { useSubscriptionStatus, useUsageLimits } from '@/hooks/use-subscription';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export default function WarehousesPage() {
+  const { isReadOnly } = useSubscriptionStatus();
+  const { data: usage } = useUsageLimits();
+
+  const isLimitReached = !!(usage?.warehouses && usage.warehouses.limit > 0 && usage.warehouses.current >= usage.warehouses.limit);
+  const isCreateDisabled = isReadOnly || isLimitReached;
+
   const [warehouses, setWarehouses] = useState<MockWarehouse[]>(MOCK_WAREHOUSES);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -152,14 +165,18 @@ export default function WarehousesPage() {
         title="Warehouse Settings"
         description="Configure regional stocking locations, assign branch codes, manager roles, and capacity targets."
         actions={
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 cursor-pointer font-semibold shadow-sm">
-                <Plus className="h-4 w-4" />
-                Register Warehouse
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2 cursor-pointer font-semibold shadow-sm" disabled={isCreateDisabled}>
+                        <Plus className="h-4 w-4" />
+                        Register Warehouse
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Register Warehouse Hub</DialogTitle>
                 <DialogDescription>
@@ -254,6 +271,19 @@ export default function WarehousesPage() {
               </form>
             </DialogContent>
           </Dialog>
+                </span>
+              </TooltipTrigger>
+              {isCreateDisabled && (
+                <TooltipContent>
+                  <p>
+                    {isReadOnly
+                      ? 'Business is currently in Read-Only Mode'
+                      : 'Warehouses quota limit reached'}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         }
       >
         {/* Capacity Cards & Low Warning */}

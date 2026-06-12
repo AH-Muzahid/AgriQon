@@ -121,30 +121,24 @@ export const organizationService = {
   },
 
   async getSubscriptionUsage(): Promise<SubscriptionUsageContract> {
-    const res = await apiClient.get<any>('/subscription/usage');
-    // If no subscription or fallback is needed, handle gracefully
-    const sub = res?.subscription || {};
-    const metrics = res?.metrics || [];
-
-    const getMetricValue = (key: string, field: 'used' | 'limit'): number => {
-      const metric = metrics.find((m: any) => m.key === key);
-      if (!metric) return 0;
-      return Number(metric[field] || 0);
-    };
+    const [sub, usage] = await Promise.all([
+      apiClient.get<any>('/subscription/current').catch(() => null),
+      apiClient.get<any>('/subscription/usage').catch(() => null),
+    ]);
 
     return {
-      planName: sub.planName || 'Starter',
-      usersLimit: getMetricValue('users', 'limit'),
-      usersUsed: getMetricValue('users', 'used'),
-      warehousesLimit: getMetricValue('warehouses', 'limit'),
-      warehousesUsed: getMetricValue('warehouses', 'used'),
-      productsLimit: getMetricValue('products', 'limit'),
-      productsUsed: getMetricValue('products', 'used'),
-      storageLimitGB: 25, // Fallbacks for metrics not tracked in database
+      planName: sub?.plan?.name || 'Trial',
+      usersLimit: usage?.users?.limit || 0,
+      usersUsed: usage?.users?.current || 0,
+      warehousesLimit: usage?.warehouses?.limit || 0,
+      warehousesUsed: usage?.warehouses?.current || 0,
+      productsLimit: usage?.products?.limit || 0,
+      productsUsed: usage?.products?.current || 0,
+      storageLimitGB: 25,
       storageUsedGB: 8.2,
       apiLimit: 50000,
       apiUsed: 14230,
-      renewalDate: sub.endDate ? new Date(sub.endDate).toLocaleDateString() : 'N/A',
+      renewalDate: sub?.expiresAt ? new Date(sub.expiresAt).toLocaleDateString() : 'N/A',
     };
   },
 };

@@ -18,10 +18,23 @@ import {
   useUpdateProduct,
   useDeleteProduct,
 } from '@/services/query/hooks';
+import { useSubscriptionStatus, useUsageLimits } from '@/hooks/use-subscription';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { ProductContract } from '@/types/contracts/product.contract';
 
 export default function ProductsPage() {
   const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { isReadOnly } = useSubscriptionStatus();
+  const { data: usage } = useUsageLimits();
+
+  const isLimitReached = !!(usage?.products && usage.products.limit > 0 && usage.products.current >= usage.products.limit);
+  const isCreateDisabled = isReadOnly || isLimitReached;
+
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
   const deleteProductMutation = useDeleteProduct();
@@ -221,6 +234,7 @@ export default function ProductsPage() {
               });
               setEditDialogOpen(true);
             }}
+            disabled={isReadOnly}
           >
             <Edit3 className="h-3.5 w-3.5" />
             Edit
@@ -230,6 +244,7 @@ export default function ProductsPage() {
             size="sm"
             className="h-8 gap-1 cursor-pointer text-xs text-destructive hover:text-destructive"
             onClick={() => handleDeleteProduct(row.sku)}
+            disabled={isReadOnly}
           >
             <Trash2 className="h-3.5 w-3.5" />
             Delete
@@ -246,14 +261,18 @@ export default function ProductsPage() {
         title="Products Catalog"
         description="Maintain unified SKU descriptions, pricing structures, and status flags across all warehouses."
         actions={
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 cursor-pointer font-semibold shadow-sm">
-                <Plus className="h-4 w-4" />
-                Register SKU
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2 cursor-pointer font-semibold shadow-sm" disabled={isCreateDisabled}>
+                        <Plus className="h-4 w-4" />
+                        Register SKU
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Register Master SKU</DialogTitle>
                 <DialogDescription>Define a new agricultural item in the central catalog repository.</DialogDescription>
@@ -347,6 +366,19 @@ export default function ProductsPage() {
               </form>
             </DialogContent>
           </Dialog>
+                </span>
+              </TooltipTrigger>
+              {isCreateDisabled && (
+                <TooltipContent>
+                  <p>
+                    {isReadOnly
+                      ? 'Business is currently in Read-Only Mode'
+                      : 'Catalog products quota limit reached'}
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         }
       >
         <DataTable

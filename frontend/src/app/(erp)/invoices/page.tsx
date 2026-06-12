@@ -22,9 +22,17 @@ import {
   useCreatePayment,
   useOrders,
 } from '@/services/query/hooks';
+import { useSubscriptionStatus } from '@/hooks/use-subscription';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { InvoiceContract } from '@/types/contracts/invoice.contract';
 
 export default function InvoicesPage() {
+  const { isReadOnly } = useSubscriptionStatus();
   const { data: invoices = [], isLoading: invoicesLoading } = useInvoices();
   const { data: orders = [], isLoading: ordersLoading } = useOrders();
 
@@ -186,14 +194,18 @@ export default function InvoicesPage() {
         title="Invoices & Finance"
         description="Manage billing invoices, clear receivables, and analyze cash collection cycles."
         actions={
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 cursor-pointer font-semibold shadow-sm">
-                <Plus className="h-4 w-4" />
-                Issue Invoice
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2 cursor-pointer font-semibold shadow-sm" disabled={isReadOnly}>
+                        <Plus className="h-4 w-4" />
+                        Issue Invoice
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Issue Tax Invoice</DialogTitle>
                 <DialogDescription>Generate a tax invoice from a confirmed sales order ledger.</DialogDescription>
@@ -249,6 +261,15 @@ export default function InvoicesPage() {
               </form>
             </DialogContent>
           </Dialog>
+                </span>
+              </TooltipTrigger>
+              {isReadOnly && (
+                <TooltipContent>
+                  <p>Business is currently in Read-Only Mode</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         }
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -471,9 +492,22 @@ export default function InvoicesPage() {
                       </Select>
                     </div>
 
-                    <Button type="submit" className="text-xs h-10 w-full mt-2">
-                      Record Clearance Receipt
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            <Button type="submit" className="text-xs h-10 w-full mt-2" disabled={isReadOnly}>
+                              Record Clearance Receipt
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        {isReadOnly && (
+                          <TooltipContent>
+                            <p>Business is currently in Read-Only Mode</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </form>
                 </CardContent>
               </Card>

@@ -165,4 +165,87 @@ export class SubscriptionService {
       metrics,
     };
   }
+
+  async getCurrentSubscription(businessId: string) {
+    const subscription = await this.ensureDefaultSubscription(businessId);
+    if (!subscription) {
+      throw new AppError('Subscription not found', httpStatus.NOT_FOUND);
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(subscription.expiresAt);
+    const diffTime = expiresAt.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    return {
+      plan: {
+        code: subscription.plan.code,
+        name: subscription.plan.name,
+      },
+      status: subscription.status,
+      startsAt: subscription.startsAt.toISOString(),
+      expiresAt: subscription.expiresAt.toISOString(),
+      graceEndsAt: subscription.graceEndsAt ? subscription.graceEndsAt.toISOString() : null,
+      daysRemaining,
+    };
+  }
+
+  async getSubscriptionUsageLimits(businessId: string) {
+    const subscription = await this.ensureDefaultSubscription(businessId);
+    if (!subscription) {
+      throw new AppError('Subscription not found', httpStatus.NOT_FOUND);
+    }
+    const actualUsage = await this.subscriptionRepository.getActualUsageCounts(businessId);
+
+    // Map limits from plan features or direct fields
+    const features = subscription.plan.features || [];
+    const getLimit = (key: string): number | null => {
+      const feature = features.find((f: any) => f.featureKey === key);
+      if (!feature) return null;
+      if (feature.value.toLowerCase() === 'unlimited') return null;
+      const num = parseInt(feature.value, 10);
+      return isNaN(num) ? null : num;
+    };
+
+    const userLimit = subscription.plan.maxUsers !== null ? subscription.plan.maxUsers : getLimit('max_users');
+    const warehouseLimit = subscription.plan.maxWarehouses !== null ? subscription.plan.maxWarehouses : getLimit('max_warehouses');
+    const productLimit = subscription.plan.maxProducts !== null ? subscription.plan.maxProducts : getLimit('max_products');
+
+    return {
+      users: {
+        current: actualUsage.users,
+        limit: userLimit ?? 0,
+      },
+      products: {
+        current: actualUsage.products,
+        limit: productLimit ?? 0,
+      },
+      warehouses: {
+        current: actualUsage.warehouses,
+        limit: warehouseLimit ?? 0,
+      },
+    };
+  }
+
+  async getSubscriptionFeatures(businessId: string) {
+    const subscription = await this.ensureDefaultSubscription(businessId);
+    
+    // Convert array of features to dictionary: { [featureKey]: value === 'true' }
+    const featuresDict: Record<string, boolean> = {};
+    
+    // Seed features list to ensure all expected feature codes are present
+    const allFeatureCodes = ['INVENTORY', 'POS', 'CRM', 'HRM', 'ACCOUNTING', 'AI_CHAT', 'AI_REPORTS', 'MULTI_BRANCH'];
+    for (const code of allFeatureCodes) {
+      featuresDict[code] = false;
+    }
+
+    if (subscription?.plan?.features) {
+      for (const feature of subscription.plan.features) {
+        featuresDict[feature.featureKey] = feature.value === 'true';
+      }
+    }
+
+    return featuresDict;
+  }
 }
+

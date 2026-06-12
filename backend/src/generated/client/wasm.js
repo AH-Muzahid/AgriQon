@@ -651,6 +651,56 @@ exports.Prisma.UserCustomRoleScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SubscriptionInvoiceScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  subscriptionId: 'subscriptionId',
+  invoiceNumber: 'invoiceNumber',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  dueDate: 'dueDate',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SubscriptionPaymentScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  invoiceId: 'invoiceId',
+  amount: 'amount',
+  method: 'method',
+  transactionReference: 'transactionReference',
+  status: 'status',
+  createdAt: 'createdAt',
+  gateway: 'gateway',
+  gatewayPaymentId: 'gatewayPaymentId',
+  gatewayTransactionId: 'gatewayTransactionId',
+  webhookReceivedAt: 'webhookReceivedAt',
+  verifiedAt: 'verifiedAt',
+  idempotencyKey: 'idempotencyKey'
+};
+
+exports.Prisma.PaymentWebhookEventScalarFieldEnum = {
+  id: 'id',
+  gateway: 'gateway',
+  externalEventId: 'externalEventId',
+  payload: 'payload',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SubscriptionChangeRequestScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  subscriptionId: 'subscriptionId',
+  type: 'type',
+  requestedPlanCode: 'requestedPlanCode',
+  status: 'status',
+  requestedAt: 'requestedAt',
+  processedAt: 'processedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1049,6 +1099,38 @@ exports.Prisma.UserCustomRoleOrderByRelevanceFieldEnum = {
   userId: 'userId',
   customRoleId: 'customRoleId'
 };
+
+exports.Prisma.SubscriptionInvoiceOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  subscriptionId: 'subscriptionId',
+  invoiceNumber: 'invoiceNumber',
+  currency: 'currency'
+};
+
+exports.Prisma.SubscriptionPaymentOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  invoiceId: 'invoiceId',
+  method: 'method',
+  transactionReference: 'transactionReference',
+  gatewayPaymentId: 'gatewayPaymentId',
+  gatewayTransactionId: 'gatewayTransactionId',
+  idempotencyKey: 'idempotencyKey'
+};
+
+exports.Prisma.PaymentWebhookEventOrderByRelevanceFieldEnum = {
+  id: 'id',
+  externalEventId: 'externalEventId',
+  status: 'status'
+};
+
+exports.Prisma.SubscriptionChangeRequestOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  subscriptionId: 'subscriptionId',
+  requestedPlanCode: 'requestedPlanCode'
+};
 exports.PlatformRole = exports.$Enums.PlatformRole = {
   USER: 'USER',
   SUPER_ADMIN: 'SUPER_ADMIN'
@@ -1122,6 +1204,37 @@ exports.SubscriptionStatus = exports.$Enums.SubscriptionStatus = {
   CANCELLED: 'CANCELLED'
 };
 
+exports.SubscriptionInvoiceStatus = exports.$Enums.SubscriptionInvoiceStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  VOID: 'VOID'
+};
+
+exports.SubscriptionPaymentStatus = exports.$Enums.SubscriptionPaymentStatus = {
+  PENDING: 'PENDING',
+  WEBHOOK_RECEIVED: 'WEBHOOK_RECEIVED',
+  VERIFIED: 'VERIFIED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.PaymentGateway = exports.$Enums.PaymentGateway = {
+  SSLCOMMERZ: 'SSLCOMMERZ',
+  BKASH: 'BKASH',
+  NAGAD: 'NAGAD'
+};
+
+exports.SubscriptionChangeRequestType = exports.$Enums.SubscriptionChangeRequestType = {
+  UPGRADE: 'UPGRADE',
+  RENEWAL: 'RENEWAL'
+};
+
+exports.SubscriptionChangeRequestStatus = exports.$Enums.SubscriptionChangeRequestStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
 exports.Prisma.ModelName = {
   Organization: 'Organization',
   Business: 'Business',
@@ -1170,7 +1283,11 @@ exports.Prisma.ModelName = {
   UsageMetric: 'UsageMetric',
   SubscriptionEvent: 'SubscriptionEvent',
   CustomRole: 'CustomRole',
-  UserCustomRole: 'UserCustomRole'
+  UserCustomRole: 'UserCustomRole',
+  SubscriptionInvoice: 'SubscriptionInvoice',
+  SubscriptionPayment: 'SubscriptionPayment',
+  PaymentWebhookEvent: 'PaymentWebhookEvent',
+  SubscriptionChangeRequest: 'SubscriptionChangeRequest'
 };
 
 /**

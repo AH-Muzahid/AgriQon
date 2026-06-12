@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { PageShell } from '@/components/page-shell';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboardSummary, useFinancialTrend } from '@/services/query/hooks';
+import { useSubscriptionStatus, useUsageLimits } from '@/hooks/use-subscription';
+import { Progress } from '@/components/ui/progress';
+import Link from 'next/link';
 import {
   TrendingUp,
   DollarSign,
@@ -14,6 +17,7 @@ import {
   ArrowUpRight,
   TrendingDown,
   RefreshCw,
+  Clock,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -31,6 +35,8 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { data: summary, isLoading: summaryLoading, refetch: refetchSummary } = useDashboardSummary();
   const { data: trend, isLoading: trendLoading, refetch: refetchTrend } = useFinancialTrend();
+  const { status, isTrial, daysRemaining, isReadOnly } = useSubscriptionStatus();
+  const { data: usage } = useUsageLimits();
 
   useEffect(() => {
     setMounted(true);
@@ -255,45 +261,107 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Low Stock Alerts */}
-          <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white/70 dark:bg-neutral-950/35 backdrop-blur-md flex flex-col">
-            <CardHeader className="border-b">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-bold">System Alerts</CardTitle>
-                {kpis.lowStockAlerts > 0 && (
-                  <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
-                    {kpis.lowStockAlerts} Warnings
-                  </Badge>
+          {/* Sidebar Area: System Alerts and Subscription */}
+          <div className="flex flex-col gap-6">
+            {/* Low Stock Alerts */}
+            <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white/70 dark:bg-neutral-950/35 backdrop-blur-md flex flex-col">
+              <CardHeader className="border-b pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-bold">System Alerts</CardTitle>
+                  {kpis.lowStockAlerts > 0 && (
+                    <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+                      {kpis.lowStockAlerts} Warnings
+                    </Badge>
+                  )}
+                </div>
+                <CardDescription className="text-xs">Safety threshold warnings in inventory items</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow py-4 flex flex-col justify-center">
+                {kpis.lowStockAlerts > 0 ? (
+                  <div className="flex items-start gap-3 p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 rounded-xl text-rose-900 dark:text-rose-200">
+                    <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                    <div className="grid gap-0.5">
+                      <h5 className="font-bold text-xs">Low Stock Threshold Breached</h5>
+                      <p className="text-[11px] font-medium leading-relaxed opacity-90">
+                        There are currently {kpis.lowStockAlerts} items running below safety stock level. Check the inventory management tab.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-center space-y-2 py-4">
+                    <div className="h-9 w-9 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                      <Package className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Inventory Levels Safe</h5>
+                      <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px]">
+                        No low stock alerts or safety breaches recorded.
+                      </p>
+                    </div>
+                  </div>
                 )}
-              </div>
-              <CardDescription className="text-xs">Safety threshold warnings in inventory items</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1 py-4 flex flex-col justify-center">
-              {kpis.lowStockAlerts > 0 ? (
-                <div className="flex items-start gap-3 p-3.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 rounded-xl text-rose-900 dark:text-rose-200">
-                  <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                  <div className="grid gap-0.5">
-                    <h5 className="font-bold text-xs">Low Stock Threshold Breached</h5>
-                    <p className="text-[11px] font-medium leading-relaxed opacity-90">
-                      There are currently {kpis.lowStockAlerts} items running below safety stock level. Check the inventory management tab to adjust warehouse levels.
-                    </p>
+              </CardContent>
+            </Card>
+
+            {/* Subscription Overview Card */}
+            <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white/70 dark:bg-neutral-950/35 backdrop-blur-md">
+              <CardHeader className="border-b pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-bold">Subscription</CardTitle>
+                  <Link href="/subscription" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                    Details <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+                <CardDescription className="text-xs">Your plan level and usage limits</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-4">
+                <div className="flex items-center justify-between text-xs border-b pb-2">
+                  <span className="text-muted-foreground font-medium">Plan Level</span>
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <span>{isTrial ? 'Free Trial' : 'Professional'}</span>
+                    {isReadOnly && <Badge variant="outline" className="text-[9px] px-1 py-0 border-amber-500/30 text-amber-500 bg-amber-500/5">Read-Only</Badge>}
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center space-y-2 py-6">
-                  <div className="h-9 w-9 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                    <Package className="h-4 w-4" />
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-muted-foreground font-medium">Users</span>
+                      <span className="font-semibold text-foreground">
+                        {usage?.users?.current ?? 0} / {usage?.users?.limit ?? '∞'}
+                      </span>
+                    </div>
+                    <Progress
+                      value={usage?.users?.limit ? Math.min(100, Math.round(((usage.users.current) / usage.users.limit) * 100)) : 0}
+                      className="h-1.5 bg-muted"
+                    />
                   </div>
-                  <div>
-                    <h5 className="text-xs font-bold text-neutral-800 dark:text-neutral-200">Inventory Levels Safe</h5>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px]">
-                      No low stock alerts or safety breaches recorded.
-                    </p>
+
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-muted-foreground font-medium">Catalog Products</span>
+                      <span className="font-semibold text-foreground">
+                        {usage?.products?.current ?? 0} / {usage?.products?.limit ?? '∞'}
+                      </span>
+                    </div>
+                    <Progress
+                      value={usage?.products?.limit ? Math.min(100, Math.round(((usage.products.current) / usage.products.limit) * 100)) : 0}
+                      className="h-1.5 bg-muted"
+                    />
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+
+                {isTrial && (
+                  <div className="bg-blue-500/5 border border-blue-500/10 rounded-lg p-2 flex items-center gap-2 text-[10px] text-blue-600 dark:text-blue-400">
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      <strong>{daysRemaining} days</strong> remaining in trial mode.
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </PageShell>

@@ -40,8 +40,16 @@ import {
   useCreatePayment,
 } from '@/services/query/hooks';
 import { OrderContract } from '@/types/contracts/order.contract';
+import { useSubscriptionStatus } from '@/hooks/use-subscription';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export default function OrdersPage() {
+  const { isReadOnly } = useSubscriptionStatus();
   const { data: orders = [], isLoading: ordersLoading } = useOrders();
   const { data: customers = [], isLoading: customersLoading } = useCustomers();
   const { data: products = [], isLoading: productsLoading } = useProducts();
@@ -264,9 +272,26 @@ export default function OrdersPage() {
             <TabsTrigger value="ledger" className="text-xs cursor-pointer">
               Sales Ledger
             </TabsTrigger>
-            <TabsTrigger value="wizard" className="text-xs cursor-pointer flex items-center gap-1.5">
-              <ShoppingCart className="h-3 w-3" /> Guided Sales Workspace
-            </TabsTrigger>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <TabsTrigger
+                      value="wizard"
+                      className="text-xs cursor-pointer flex items-center gap-1.5"
+                      disabled={isReadOnly}
+                    >
+                      <ShoppingCart className="h-3 w-3" /> Guided Sales Workspace {isReadOnly && '🔒'}
+                    </TabsTrigger>
+                  </span>
+                </TooltipTrigger>
+                {isReadOnly && (
+                  <TooltipContent>
+                    <p>Business is currently in Read-Only Mode</p>
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </TabsList>
 
           <TabsContent value="ledger" className="space-y-6">

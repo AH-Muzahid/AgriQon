@@ -68,6 +68,9 @@ model Business {
   userBusinessRoles UserBusinessRole[]
   subscription      Subscription?
   customRoles       CustomRole[]
+  subscriptionInvoices      SubscriptionInvoice[]
+  subscriptionPayments      SubscriptionPayment[]
+  subscriptionChangeRequests SubscriptionChangeRequest[]
 
   @@index([organizationId])
 }
@@ -872,6 +875,8 @@ model Subscription {
   business    Business           @relation(fields: [businessId], references: [id])
   plan        SubscriptionPlan   @relation(fields: [planId], references: [id])
   events      SubscriptionEvent[]
+  invoices       SubscriptionInvoice[]
+  changeRequests SubscriptionChangeRequest[]
 }
 
 model UsageMetric {
@@ -918,4 +923,105 @@ model UserCustomRole {
   customRole   CustomRole @relation(fields: [customRoleId], references: [id])
 
   @@unique([userId, customRoleId])
+}
+
+enum SubscriptionInvoiceStatus {
+  PENDING
+  PAID
+  VOID
+}
+
+model SubscriptionInvoice {
+  id             String                    @id @default(uuid())
+  businessId     String
+  subscriptionId String
+  invoiceNumber  String                    @unique
+  amount         Decimal                   @db.Decimal(15, 2)
+  currency       String                    @default("BDT")
+  status         SubscriptionInvoiceStatus @default(PENDING)
+  dueDate        DateTime
+  paidAt         DateTime?
+  createdAt      DateTime                  @default(now())
+
+  business     Business              @relation(fields: [businessId], references: [id])
+  subscription Subscription          @relation(fields: [subscriptionId], references: [id])
+  payments     SubscriptionPayment[]
+
+  @@index([businessId])
+  @@index([subscriptionId])
+}
+
+enum PaymentGateway {
+  SSLCOMMERZ
+  BKASH
+  NAGAD
+}
+
+enum SubscriptionPaymentStatus {
+  PENDING
+  WEBHOOK_RECEIVED
+  VERIFIED
+  FAILED
+  CANCELLED
+}
+
+model SubscriptionPayment {
+  id                   String                    @id @default(uuid())
+  businessId           String
+  invoiceId            String
+  amount               Decimal                   @db.Decimal(15, 2)
+  method               String
+  transactionReference String?
+  status               SubscriptionPaymentStatus @default(PENDING)
+  createdAt            DateTime                  @default(now())
+  
+  gateway              PaymentGateway
+  gatewayPaymentId     String?                   @unique
+  gatewayTransactionId String?                   @unique
+  webhookReceivedAt    DateTime?
+  verifiedAt           DateTime?
+  idempotencyKey       String?                   @unique
+
+  business Business            @relation(fields: [businessId], references: [id])
+  invoice  SubscriptionInvoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([businessId])
+  @@index([invoiceId])
+}
+
+model PaymentWebhookEvent {
+  id              String         @id @default(uuid())
+  gateway         PaymentGateway
+  externalEventId String?        @unique
+  payload         Json
+  status          String
+  createdAt       DateTime       @default(now())
+}
+
+enum SubscriptionChangeRequestType {
+  UPGRADE
+  RENEWAL
+}
+
+enum SubscriptionChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model SubscriptionChangeRequest {
+  id                String                          @id @default(uuid())
+  businessId        String
+  subscriptionId    String
+  type              SubscriptionChangeRequestType
+  requestedPlanCode String
+  status            SubscriptionChangeRequestStatus @default(PENDING)
+  requestedAt       DateTime                        @default(now())
+  processedAt       DateTime?
+
+  business     Business     @relation(fields: [businessId], references: [id])
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([businessId])
+  @@index([subscriptionId])
 }

@@ -35,11 +35,27 @@ import { useOrganizationStore } from '@/store/organization-store';
 import { LucideIcon } from './lucide-icon';
 import { LogOut, ChevronsUpDown, Building, User, Settings, Plus, ChevronRight } from 'lucide-react';
 import { Permission } from '@/types/permission';
+import { useFeatures } from '@/hooks/use-subscription';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function ErpSidebar() {
   const pathname = usePathname();
   const { user, hasPermission, logout } = useAuthStore();
   const { currentBusiness } = useOrganizationStore();
+  const { data: features } = useFeatures();
+
+  const isRouteLocked = React.useCallback((href: string) => {
+    if (!features) return false;
+    if (href === '/ai' && !features.AI_CHAT) return true;
+    if (href === '/expenses' && !features.ACCOUNTING) return true;
+    if (href === '/organization/warehouses' && !features.MULTI_BRANCH) return true;
+    return false;
+  }, [features]);
 
   // Filter navigation items based on permissions
   const filteredNavigation = React.useMemo(() => {
@@ -85,8 +101,12 @@ export function ErpSidebar() {
     };
 
     scan(navigationRegistry);
-    return actions.filter((act) => !act.permission || hasPermission(act.permission));
-  }, [hasPermission]);
+    return actions.filter((act) => {
+      if (act.permission && !hasPermission(act.permission)) return false;
+      if (isRouteLocked(act.href)) return false;
+      return true;
+    });
+  }, [hasPermission, isRouteLocked]);
 
   const getInitials = (name: string) => {
     return name
@@ -180,18 +200,49 @@ export function ErpSidebar() {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
               if (!hasSubItems) {
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      className={isActive ? 'bg-accent text-accent-foreground font-medium' : ''}
-                    >
+                const locked = isRouteLocked(item.href);
+                const buttonContent = (
+                  <SidebarMenuButton
+                    asChild={!locked}
+                    tooltip={item.title}
+                    className={`${isActive ? 'bg-accent text-accent-foreground font-medium' : ''} ${locked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    disabled={locked}
+                  >
+                    {locked ? (
+                      <div className="flex items-center gap-3 w-full text-muted-foreground select-none">
+                        {item.icon && <LucideIcon name={item.icon} className="h-4 w-4" />}
+                        <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                        <span className="ml-auto text-xs group-data-[collapsible=icon]:hidden">🔒</span>
+                      </div>
+                    ) : (
                       <Link href={item.href} className="flex items-center gap-3">
                         {item.icon && <LucideIcon name={item.icon} className="h-4 w-4" />}
                         <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                       </Link>
-                    </SidebarMenuButton>
+                    )}
+                  </SidebarMenuButton>
+                );
+
+                if (locked) {
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {buttonContent}
+                          </TooltipTrigger>
+                          <TooltipContent side="right">
+                            <p>Upgrade to Professional Plan to unlock {item.title}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </SidebarMenuItem>
+                  );
+                }
+
+                return (
+                  <SidebarMenuItem key={item.href}>
+                    {buttonContent}
                   </SidebarMenuItem>
                 );
               }
@@ -218,18 +269,48 @@ export function ErpSidebar() {
                       <SidebarMenuSub>
                         {item.items?.map((sub) => {
                           const isSubActive = pathname === sub.href;
+                          const subLocked = isRouteLocked(sub.href);
+                          
+                          const subButton = (
+                            <SidebarMenuSubButton
+                              asChild={!subLocked}
+                              className={`${
+                                isSubActive
+                                  ? 'bg-accent/80 text-accent-foreground font-semibold border-l-2 border-primary pl-2'
+                                  : 'pl-3'
+                              } ${subLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+                            >
+                              {subLocked ? (
+                                <div className="flex items-center justify-between w-full text-muted-foreground select-none">
+                                  <span>{sub.title}</span>
+                                  <span className="text-[10px]">🔒</span>
+                                </div>
+                              ) : (
+                                <Link href={sub.href}>{sub.title}</Link>
+                              )}
+                            </SidebarMenuSubButton>
+                          );
+
+                          if (subLocked) {
+                            return (
+                              <SidebarMenuSubItem key={sub.href}>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      {subButton}
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right">
+                                      <p>Upgrade to Professional Plan to unlock {sub.title}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </SidebarMenuSubItem>
+                            );
+                          }
+
                           return (
                             <SidebarMenuSubItem key={sub.href}>
-                              <SidebarMenuSubButton
-                                asChild
-                                className={
-                                  isSubActive
-                                    ? 'bg-accent/80 text-accent-foreground font-semibold border-l-2 border-primary pl-2'
-                                    : 'pl-3'
-                                }
-                              >
-                                <Link href={sub.href}>{sub.title}</Link>
-                              </SidebarMenuSubButton>
+                              {subButton}
                             </SidebarMenuSubItem>
                           );
                         })}

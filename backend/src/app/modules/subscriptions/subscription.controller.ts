@@ -5,8 +5,12 @@ import { sendResponse } from '../../shared/utils/sendResponse';
 import { SubscriptionService } from './subscription.service';
 import httpStatus from 'http-status';
 import { AppError } from '../../errors/AppError';
+import { BillingService } from './billing.service';
+import { PaymentWebhookService } from './payment-webhook.service';
 
 const subscriptionService = new SubscriptionService();
+const billingService = new BillingService();
+const webhookService = new PaymentWebhookService();
 
 const getSubscription = catchAsync(async (req: AuthRequest, res: Response) => {
   const businessId = req.businessId || req.user?.businessId;
@@ -38,7 +42,7 @@ const getSubscriptionUsage = catchAsync(async (req: AuthRequest, res: Response) 
     throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
   }
 
-  const result = await subscriptionService.getSubscriptionUsage(businessId);
+  const result = await subscriptionService.getSubscriptionUsageLimits(businessId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -48,7 +52,239 @@ const getSubscriptionUsage = catchAsync(async (req: AuthRequest, res: Response) 
   });
 });
 
+const getCurrentSubscription = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await subscriptionService.getCurrentSubscription(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Current subscription details retrieved successfully',
+    data: result,
+  });
+});
+
+const getSubscriptionFeatures = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await subscriptionService.getSubscriptionFeatures(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Subscription features retrieved successfully',
+    data: result,
+  });
+});
+
+
+
+const getBillingOverview = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await billingService.getBillingHistory(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Billing overview retrieved successfully',
+    data: result,
+  });
+});
+
+const getInvoices = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const { invoices } = await billingService.getBillingHistory(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Invoices retrieved successfully',
+    data: invoices,
+  });
+});
+
+const getPayments = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const { payments } = await billingService.getBillingHistory(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Payments retrieved successfully',
+    data: payments,
+  });
+});
+
+const getHistory = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await billingService.getBillingHistory(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Billing history retrieved successfully',
+    data: result,
+  });
+});
+
+const postUpgradeRequest = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const { requestedPlanCode } = req.body;
+  if (!requestedPlanCode) {
+    throw new AppError('requestedPlanCode is required', httpStatus.BAD_REQUEST);
+  }
+
+  const subscription = await subscriptionService.getSubscription(businessId);
+  if (!subscription) {
+    throw new AppError('Active subscription not found', httpStatus.NOT_FOUND);
+  }
+
+  const result = await billingService.createUpgradeRequest({
+    businessId,
+    subscriptionId: subscription.id,
+    requestedPlanCode,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Upgrade request submitted successfully',
+    data: result,
+  });
+});
+
+const postRenewalRequest = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const { requestedPlanCode } = req.body;
+  if (!requestedPlanCode) {
+    throw new AppError('requestedPlanCode is required', httpStatus.BAD_REQUEST);
+  }
+
+  const subscription = await subscriptionService.getSubscription(businessId);
+  if (!subscription) {
+    throw new AppError('Active subscription not found', httpStatus.NOT_FOUND);
+  }
+
+  const result = await billingService.createRenewalRequest({
+    businessId,
+    subscriptionId: subscription.id,
+    requestedPlanCode,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Renewal request submitted successfully',
+    data: result,
+  });
+});
+
+const postPaymentSession = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const { invoiceId, gateway } = req.body;
+  if (!invoiceId || !gateway) {
+    throw new AppError('invoiceId and gateway are required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await billingService.createPaymentSession({
+    businessId,
+    invoiceId,
+    gateway,
+  });
+
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Payment session created successfully',
+    data: result,
+  });
+});
+
+const postWebhook = catchAsync(async (req: Response | any, res: Response) => {
+  const { gateway } = req.params;
+  const result = await webhookService.handleWebhook({
+    gateway,
+    payload: req.body,
+    headers: req.headers,
+  });
+
+  sendResponse(res, {
+    statusCode: result.success ? httpStatus.OK : httpStatus.BAD_REQUEST,
+    success: result.success,
+    message: result.success ? 'Webhook processed successfully' : result.reason || 'Webhook processing failed',
+    data: result.payment || null,
+  });
+});
+
+const getPaymentStatus = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const { id } = req.params;
+  if (!id) {
+    throw new AppError('Payment ID parameter is required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await billingService.getPaymentStatus(id, businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Payment status retrieved successfully',
+    data: result,
+  });
+});
+
 export const SubscriptionController = {
   getSubscription,
   getSubscriptionUsage,
+  getCurrentSubscription,
+  getSubscriptionFeatures,
+  getBillingOverview,
+  getInvoices,
+  getPayments,
+  getHistory,
+  postUpgradeRequest,
+  postRenewalRequest,
+  postPaymentSession,
+  postWebhook,
+  getPaymentStatus,
 };
+
