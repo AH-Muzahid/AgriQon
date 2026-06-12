@@ -1,4 +1,5 @@
 export interface ProductContract {
+  id?: string;
   sku: string;
   name: string;
   category: string;

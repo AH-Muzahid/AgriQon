@@ -27,4 +27,13 @@ router.get(
   AnalyticsController.getFinancialTrend
 );
 
+router.get(
+  '/sales-dashboard',
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(REPORT_VIEW),
+  AnalyticsController.getSalesDashboard
+);
+
 export const AnalyticsRoutes = router;

@@ -6,6 +6,8 @@ import { ordersService } from '../api/orders.service';
 import { invoicesService } from '../api/invoices.service';
 import { paymentsService } from '../api/payments.service';
 import { organizationService } from '../api/organization.service';
+import { suppliersService } from '../api/suppliers.service';
+import { purchasesService } from '../api/purchases.service';
 import { apiClient } from '../api/client';
 
 import {
@@ -16,6 +18,8 @@ import {
   invoiceKeys,
   paymentKeys,
   organizationKeys,
+  supplierKeys,
+  purchaseKeys,
 } from './query-keys';
 
 import { CreateProductInput, UpdateProductInput } from '@/types/contracts/product.contract';
@@ -24,6 +28,9 @@ import { CreateOrderInput } from '@/types/contracts/order.contract';
 import { CreateInvoiceInput } from '@/types/contracts/invoice.contract';
 import { CreatePaymentInput } from '@/types/contracts/payment.contract';
 import { UpdateOrganizationInput } from '@/types/contracts/organization.contract';
+import { CreateSupplierInput, UpdateSupplierInput } from '@/types/contracts/supplier.contract';
+import { CreatePurchaseInput } from '@/types/contracts/purchase.contract';
+
 
 // --- PRODUCT HOOKS ---
 export function useProducts() {
@@ -181,6 +188,16 @@ export function useUpdateOrder(id: string) {
   });
 }
 
+export function useCancelOrder() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => ordersService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+    },
+  });
+}
+
 // --- INVOICE HOOKS ---
 export function useInvoices() {
   return useQuery({
@@ -330,3 +347,140 @@ export function useDashboardSummary() {
     },
   });
 }
+
+// --- SUPPLIER HOOKS ---
+export function useSuppliers() {
+  return useQuery({
+    queryKey: supplierKeys.lists(),
+    queryFn: () => suppliersService.list(),
+  });
+}
+
+export function useSupplier(id: string) {
+  return useQuery({
+    queryKey: supplierKeys.detail(id),
+    queryFn: () => suppliersService.getById(id),
+    enabled: !!id,
+  });
+}
+
+export function useCreateSupplier() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateSupplierInput) => suppliersService.create(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: supplierKeys.all });
+    },
+  });
+}
+
+export function useUpdateSupplier() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateSupplierInput }) =>
+      suppliersService.update(id, input),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: supplierKeys.all });
+      queryClient.invalidateQueries({ queryKey: supplierKeys.detail(id) });
+    },
+  });
+}
+
+export function useDeleteSupplier() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => suppliersService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: supplierKeys.all });
+    },
+  });
+}
+
+// --- PURCHASE HOOKS ---
+export function usePurchases() {
+  return useQuery({
+    queryKey: purchaseKeys.lists(),
+    queryFn: () => purchasesService.list(),
+  });
+}
+
+export function usePurchase(id: string) {
+  return useQuery({
+    queryKey: purchaseKeys.detail(id),
+    queryFn: () => purchasesService.getById(id),
+    enabled: !!id,
+  });
+}
+
+export function useCreatePurchase() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreatePurchaseInput) => purchasesService.create(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
+      queryClient.invalidateQueries({ queryKey: supplierKeys.all }); // Supplier's purchase count changes
+    },
+  });
+}
+
+export function useReceivePurchase() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, warehouseId }: { id: string; warehouseId: string }) =>
+      purchasesService.receive(id, warehouseId),
+    onSuccess: (_, { id }) => {
+      // Optimistic cache invalidation for PO, inventory, and analytics
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
+    },
+  });
+}
+
+export function useCancelPurchase() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => purchasesService.cancel(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.detail(id) });
+    },
+  });
+}
+
+export function usePayPurchase() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => purchasesService.pay(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
+      queryClient.invalidateQueries({ queryKey: purchaseKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: ['analytics'] });
+    },
+  });
+}
+
+export function useCustomerLedger(id: string) {
+  return useQuery({
+    queryKey: [...customerKeys.details(), id, 'ledger'],
+    queryFn: async () => {
+      const res = await apiClient.client.get(`/customers/${id}/ledger`);
+      const body = res.data || {};
+      return body.data || body;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useSalesDashboardMetrics() {
+  return useQuery({
+    queryKey: ['analytics', 'sales-dashboard'],
+    queryFn: async () => {
+      const res = await apiClient.client.get('/analytics/sales-dashboard');
+      const body = res.data || {};
+      return body.data || body;
+    },
+  });
+}
+

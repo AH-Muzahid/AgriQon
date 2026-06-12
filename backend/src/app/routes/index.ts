@@ -27,6 +27,8 @@ import { OrganizationRoutes } from '../modules/organization/organization.routes'
 import { RoleRoutes } from '../modules/roles/role.routes';
 import { PermissionRoutes } from '../modules/permissions/permission.routes';
 import { SubscriptionRoutes } from '../modules/subscriptions/subscription.routes';
+import { PlatformRoutes } from '../modules/platform/platform.routes';
+import { SecurityRoutes } from '../modules/auth/security.routes';
 
 const router = Router();
 
@@ -60,6 +62,8 @@ const moduleRoutes = [
   { path: '/roles', route: RoleRoutes },
   { path: '/permissions', route: PermissionRoutes },
   { path: '/subscription', route: SubscriptionRoutes },
+  { path: '/platform', route: PlatformRoutes },
+  { path: '/security', route: SecurityRoutes },
 ];
 
 moduleRoutes.forEach((route) => router.use(route.path, route.route));

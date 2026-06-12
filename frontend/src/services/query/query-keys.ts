@@ -56,3 +56,20 @@ export const organizationKeys = {
   roles: () => [...organizationKeys.all, 'roles'] as const,
   auditLogs: () => [...organizationKeys.all, 'auditLogs'] as const,
 };
+
+export const supplierKeys = {
+  all: ['suppliers'] as const,
+  lists: () => [...supplierKeys.all, 'list'] as const,
+  list: (filters: any) => [...supplierKeys.lists(), filters] as const,
+  details: () => [...supplierKeys.all, 'detail'] as const,
+  detail: (id: string) => [...supplierKeys.details(), id] as const,
+};
+
+export const purchaseKeys = {
+  all: ['purchases'] as const,
+  lists: () => [...purchaseKeys.all, 'list'] as const,
+  list: (filters: any) => [...purchaseKeys.lists(), filters] as const,
+  details: () => [...purchaseKeys.all, 'detail'] as const,
+  detail: (id: string) => [...purchaseKeys.details(), id] as const,
+};
+

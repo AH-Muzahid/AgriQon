@@ -20,6 +20,13 @@ export interface OrderContract {
   status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'DELIVERED' | 'CANCELLED';
   items: OrderItemContract[];
   timeline: OrderTimelineEvent[];
+  invoice?: {
+    id: string;
+    invoiceNumber: string;
+    totalAmount: number;
+    paidAmount: number;
+    dueAmount: number;
+  };
 }
 
 export interface CreateOrderInput {

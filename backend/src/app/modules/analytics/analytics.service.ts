@@ -105,4 +105,44 @@ export class AnalyticsService {
       })),
     };
   }
+
+  async getSalesDashboard(businessId: string) {
+    const invoices = await prisma.invoice.findMany({
+      where: { businessId, deletedAt: null },
+      select: {
+        totalAmount: true,
+        paidAmount: true,
+        dueAmount: true,
+        dueDate: true,
+      },
+    });
+
+    const totalInvoiced = invoices.reduce((sum: number, inv: any) => sum + Number(inv.totalAmount), 0);
+    const outstandingReceivables = invoices.reduce((sum: number, inv: any) => sum + Number(inv.dueAmount), 0);
+
+    const now = new Date();
+    const overdueReceivables = invoices
+      .filter((inv: any) => inv.dueDate && new Date(inv.dueDate) < now)
+      .reduce((sum: number, inv: any) => sum + Number(inv.dueAmount), 0);
+
+    const completedPayments = await prisma.payment.aggregate({
+      where: { businessId, status: 'COMPLETED' },
+      _sum: {
+        amount: true,
+      },
+    });
+    const totalCollected = Number(completedPayments._sum.amount || 0);
+
+    const customerCount = await prisma.customer.count({
+      where: { businessId, deletedAt: null },
+    });
+
+    return {
+      totalInvoiced,
+      totalCollected,
+      outstandingReceivables,
+      overdueReceivables,
+      customerCount,
+    };
+  }
 }

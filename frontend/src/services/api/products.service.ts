@@ -8,6 +8,7 @@ export const productsService = {
     const items = body.data?.items || body.data || [];
 
     return items.map((item: any) => ({
+      id: item.id,
       sku: item.sku || item.id,
       name: item.title,
       category: item.category?.name || 'Uncategorized',
@@ -26,6 +27,7 @@ export const productsService = {
       const item = body.data || body;
       if (item) {
         return {
+          id: item.id,
           sku: item.sku || item.id,
           name: item.title,
           category: item.category?.name || 'Uncategorized',

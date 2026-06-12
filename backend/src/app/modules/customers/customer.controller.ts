@@ -80,10 +80,25 @@ const deleteCustomer = catchAsync(async (req: AuthRequest, res: Response) => {
   });
 });
 
+const getCustomerLedger = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.user!.businessId!;
+  const { id } = req.params;
+
+  const result = await customerService.getCustomerLedger(id, businessId);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Customer ledger fetched successfully',
+    data: result,
+  });
+});
+
 export const CustomerController = {
   getAllCustomers,
   getCustomerById,
   createCustomer,
   updateCustomer,
   deleteCustomer,
+  getCustomerLedger,
 };

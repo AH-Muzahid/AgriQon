@@ -21,6 +21,13 @@ export const ordersService = {
         price: Number(oi.unitPrice || 0),
       })),
       timeline: [],
+      invoice: o.invoice ? {
+        id: o.invoice.id,
+        invoiceNumber: o.invoice.invoiceNumber,
+        totalAmount: Number(o.invoice.totalAmount),
+        paidAmount: Number(o.invoice.paidAmount),
+        dueAmount: Number(o.invoice.dueAmount),
+      } : undefined,
     }));
   },
 
@@ -44,6 +51,13 @@ export const ordersService = {
             price: Number(oi.unitPrice || 0),
           })),
           timeline: [],
+          invoice: o.invoice ? {
+            id: o.invoice.id,
+            invoiceNumber: o.invoice.invoiceNumber,
+            totalAmount: Number(o.invoice.totalAmount),
+            paidAmount: Number(o.invoice.paidAmount),
+            dueAmount: Number(o.invoice.dueAmount),
+          } : undefined,
         };
       }
     } catch {

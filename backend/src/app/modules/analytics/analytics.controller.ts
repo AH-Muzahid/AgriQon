@@ -46,7 +46,24 @@ const getFinancialTrend = catchAsync(async (req: AuthRequest, res: Response) => 
   });
 });
 
+const getSalesDashboard = catchAsync(async (req: AuthRequest, res: Response) => {
+  const businessId = req.businessId || req.user?.businessId;
+  if (!businessId) {
+    throw new AppError('Business Context is required', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await analyticsService.getSalesDashboard(businessId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Sales dashboard retrieved successfully',
+    data: result,
+  });
+});
+
 export const AnalyticsController = {
   getDashboardSummary,
   getFinancialTrend,
+  getSalesDashboard,
 };

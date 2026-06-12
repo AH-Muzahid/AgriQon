@@ -65,4 +65,13 @@ router.delete(
   CustomerController.deleteCustomer
 );
 
+router.get(
+  '/:id/ledger',
+  extractAuth,
+  requireTenant,
+  attachBusinessRole,
+  authorizeAny(CUSTOMER_VIEW),
+  CustomerController.getCustomerLedger
+);
+
 export const CustomerRoutes = router;

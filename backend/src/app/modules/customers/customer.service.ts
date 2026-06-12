@@ -55,6 +55,46 @@ export class CustomerService {
     return await this.customerRepo.softDelete(id, businessId);
   }
 
+  async getCustomerLedger(customerId: string, businessId: string) {
+    await this.getCustomerById(customerId, businessId);
+
+    const invoices = await prisma.invoice.findMany({
+      where: { customerId, businessId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const payments = await prisma.payment.findMany({
+      where: {
+        businessId,
+        order: {
+          customerId,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const ledger = [
+      ...invoices.map((inv: any) => ({
+        id: inv.id,
+        type: 'INVOICE',
+        date: inv.createdAt,
+        reference: inv.invoiceNumber,
+        amount: Number(inv.totalAmount),
+        status: inv.dueAmount === 0 ? 'PAID' : Number(inv.paidAmount) > 0 ? 'PARTIAL' : 'UNPAID',
+      })),
+      ...payments.map((p: any) => ({
+        id: p.id,
+        type: 'PAYMENT',
+        date: p.createdAt,
+        reference: p.transactionId || `PAY-${p.id.substring(0, 8).toUpperCase()}`,
+        amount: -Number(p.amount), // Credit is negative
+        status: p.status,
+      })),
+    ].sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    return ledger;
+  }
+
   /**
    * Handle ORDER_CREATED event
    */
