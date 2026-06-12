@@ -8,5 +8,9 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables');
   }
 
-  return createBrowserClient(supabaseUrl, supabaseKey);
+  return createBrowserClient(supabaseUrl, supabaseKey, {
+    cookieOptions: {
+      secure: process.env.NODE_ENV === 'production',
+    },
+  });
 }

@@ -30,10 +30,16 @@ export async function GET(request: Request) {
             }
           },
         },
+        cookieOptions: {
+          secure: process.env.NODE_ENV === 'production',
+        },
       }
     );
 
     try {
+      const allCookies = cookieStore.getAll();
+      console.log('[AuthCallback Route] Request cookies:', allCookies.map(c => `${c.name}=${c.value.substring(0, 8)}...`));
+      
       console.log('[AuthCallback Route] Exchanging authorization code for session...');
       const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
       if (exchangeError) {
