@@ -4,6 +4,7 @@ import { GatewayFactory } from './gateways/gateway.factory';
 import { AppError } from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { PaymentGateway, SubscriptionPaymentStatus, Prisma } from '../../../generated/client';
+import { enqueueJob, QueueName } from '../../lib/bullmq';
 
 export class PaymentWebhookService {
   private auditService: AuditService;
@@ -82,7 +83,7 @@ export class PaymentWebhookService {
     const nextStatus: SubscriptionPaymentStatus = hookResult.status === 'SUCCESS' ? 'VERIFIED' : 'FAILED';
 
     // 3. Atomically update payment status & invoice status
-    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Update Payment
       const updatedPayment = await tx.subscriptionPayment.update({
         where: { id: payment.id },
@@ -140,5 +141,19 @@ export class PaymentWebhookService {
 
       return { success: true, payment: updatedPayment };
     });
+
+    if (result.success && result.payment && result.payment.status === 'VERIFIED') {
+      try {
+        await enqueueJob(QueueName.SUBSCRIPTION, 'subscription-payment-verified', {
+          paymentId: result.payment.id,
+          businessId: result.payment.businessId,
+          invoiceId: result.payment.invoiceId,
+        });
+      } catch (err) {
+        console.error('[PaymentWebhookService] Failed to enqueue subscription-payment-verified job:', err);
+      }
+    }
+
+    return result;
   }
 }

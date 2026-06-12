@@ -5,6 +5,7 @@ import httpStatus from 'http-status';
 import { Prisma, PaymentGateway } from '../../../generated/client';
 import { GatewayFactory } from './gateways/gateway.factory';
 
+
 export class BillingService {
   private auditService: AuditService;
 
@@ -21,6 +22,7 @@ export class BillingService {
     amount: number;
     currency?: string;
     dueDate: Date;
+    changeRequestId?: string;
   }, tx?: Prisma.TransactionClient) {
     const db = tx || prisma;
 
@@ -50,6 +52,7 @@ export class BillingService {
         currency: data.currency || 'BDT',
         status: 'PENDING',
         dueDate: data.dueDate,
+        changeRequestId: data.changeRequestId,
       },
     });
 
@@ -179,28 +182,52 @@ export class BillingService {
       throw new AppError(`Subscription plan ${data.requestedPlanCode} does not exist`, httpStatus.NOT_FOUND);
     }
 
-    // 3. Create change request record
-    const request = await db.subscriptionChangeRequest.create({
-      data: {
+    const price = Number(plan.price);
+
+    const execute = async (client: Prisma.TransactionClient) => {
+      // 3. Create change request record
+      const request = await client.subscriptionChangeRequest.create({
+        data: {
+          businessId: data.businessId,
+          subscriptionId: data.subscriptionId,
+          type: 'UPGRADE',
+          requestedPlanCode: data.requestedPlanCode,
+          status: 'PENDING',
+        },
+      });
+
+      // 4. Create linked invoice
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 7); // Invoice due in 7 days
+      
+      const invoice = await this.createInvoice({
         businessId: data.businessId,
         subscriptionId: data.subscriptionId,
-        type: 'UPGRADE',
-        requestedPlanCode: data.requestedPlanCode,
-        status: 'PENDING',
-      },
-    });
+        amount: price,
+        dueDate,
+        changeRequestId: request.id,
+      }, client);
 
-    // 4. Log audit event
-    await this.auditService.log({
-      businessId: data.businessId,
-      action: 'SUBSCRIPTION_UPGRADE_REQUESTED',
-      entityType: 'SubscriptionChangeRequest',
-      entityId: request.id,
-      newData: request,
-      tx,
-    });
+      // 5. Log audit event
+      await this.auditService.log({
+        businessId: data.businessId,
+        action: 'SUBSCRIPTION_UPGRADE_REQUESTED',
+        entityType: 'SubscriptionChangeRequest',
+        entityId: request.id,
+        newData: { request, invoiceId: invoice.id },
+        tx: client,
+      });
 
-    return request;
+      return { ...request, invoice };
+    };
+
+    if (tx) {
+      return await execute(tx);
+    } else {
+      return await prisma.$transaction(async (client: Prisma.TransactionClient) => {
+        return await execute(client);
+      });
+    }
   }
 
   /**
@@ -232,28 +259,52 @@ export class BillingService {
       throw new AppError(`Subscription plan ${data.requestedPlanCode} does not exist`, httpStatus.NOT_FOUND);
     }
 
-    // 3. Create change request record
-    const request = await db.subscriptionChangeRequest.create({
-      data: {
+    const price = Number(plan.price);
+
+    const execute = async (client: Prisma.TransactionClient) => {
+      // 3. Create change request record
+      const request = await client.subscriptionChangeRequest.create({
+        data: {
+          businessId: data.businessId,
+          subscriptionId: data.subscriptionId,
+          type: 'RENEWAL',
+          requestedPlanCode: data.requestedPlanCode,
+          status: 'PENDING',
+        },
+      });
+
+      // 4. Create linked invoice
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 7); // Invoice due in 7 days
+      
+      const invoice = await this.createInvoice({
         businessId: data.businessId,
         subscriptionId: data.subscriptionId,
-        type: 'RENEWAL',
-        requestedPlanCode: data.requestedPlanCode,
-        status: 'PENDING',
-      },
-    });
+        amount: price,
+        dueDate,
+        changeRequestId: request.id,
+      }, client);
 
-    // 4. Log audit event
-    await this.auditService.log({
-      businessId: data.businessId,
-      action: 'SUBSCRIPTION_RENEWAL_REQUESTED',
-      entityType: 'SubscriptionChangeRequest',
-      entityId: request.id,
-      newData: request,
-      tx,
-    });
+      // 5. Log audit event
+      await this.auditService.log({
+        businessId: data.businessId,
+        action: 'SUBSCRIPTION_RENEWAL_REQUESTED',
+        entityType: 'SubscriptionChangeRequest',
+        entityId: request.id,
+        newData: { request, invoiceId: invoice.id },
+        tx: client,
+      });
 
-    return request;
+      return { ...request, invoice };
+    };
+
+    if (tx) {
+      return await execute(tx);
+    } else {
+      return await prisma.$transaction(async (client: Prisma.TransactionClient) => {
+        return await execute(client);
+      });
+    }
   }
 
   /**

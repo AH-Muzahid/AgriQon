@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { SubscriptionController } from './subscription.controller';
-import { extractAuth, attachBusinessRole, authorizeAny } from '../../middleware/rbac.middleware';
+import { extractAuth, attachBusinessRole, authorizeAny, requireAuth, requirePlatformAdmin } from '../../middleware/rbac.middleware';
 import { requireTenant } from '../../middleware/tenant.middleware';
 import { BUSINESS_VIEW } from '../../constants/permissions';
 
@@ -112,6 +112,47 @@ router.get(
   attachBusinessRole,
   authorizeAny(BUSINESS_VIEW),
   SubscriptionController.getPaymentStatus
+);
+
+// ─── Platform Admin Routes ────────────────────────────────────────────
+router.get(
+  '/admin/analytics/summary',
+  extractAuth,
+  requireAuth,
+  requirePlatformAdmin,
+  SubscriptionController.getAdminAnalyticsSummary
+);
+
+router.get(
+  '/admin/tenants',
+  extractAuth,
+  requireAuth,
+  requirePlatformAdmin,
+  SubscriptionController.getAdminTenants
+);
+
+router.post(
+  '/admin/tenants/:businessId/override',
+  extractAuth,
+  requireAuth,
+  requirePlatformAdmin,
+  SubscriptionController.postAdminTenantOverride
+);
+
+router.get(
+  '/admin/tenants/override-history',
+  extractAuth,
+  requireAuth,
+  requirePlatformAdmin,
+  SubscriptionController.getAdminOverrideHistory
+);
+
+router.get(
+  '/admin/tenants/:businessId/override-history',
+  extractAuth,
+  requireAuth,
+  requirePlatformAdmin,
+  SubscriptionController.getAdminOverrideHistory
 );
 
 export const SubscriptionRoutes = router;

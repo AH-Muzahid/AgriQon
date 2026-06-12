@@ -71,6 +71,7 @@ model Business {
   subscriptionInvoices      SubscriptionInvoice[]
   subscriptionPayments      SubscriptionPayment[]
   subscriptionChangeRequests SubscriptionChangeRequest[]
+  ipRules            BusinessIpRule[]
 
   @@index([organizationId])
 }
@@ -95,6 +96,12 @@ model User {
   business      Business?      @relation(fields: [businessId], references: [id])
   businessRoles UserBusinessRole[]
   customRoles   UserCustomRole[]
+  mfaSecret           String?
+  mfaEnabled          Boolean            @default(false)
+  mfaBackupCodes      String[]           @default([])
+  failedLoginAttempts Int                @default(0)
+  lockedUntil         DateTime?
+  loginActivities     LoginActivity[]
 
   @@index([businessId])
 }
@@ -839,6 +846,8 @@ model SubscriptionPlan {
   id            String         @id @default(uuid())
   code          String         @unique
   name          String
+  price         Decimal        @default(0.00) @db.Decimal(15, 2)
+  currency      String         @default("BDT")
   isTrial       Boolean        @default(false)
   maxUsers      Int?
   maxProducts   Int?
@@ -932,20 +941,22 @@ enum SubscriptionInvoiceStatus {
 }
 
 model SubscriptionInvoice {
-  id             String                    @id @default(uuid())
-  businessId     String
-  subscriptionId String
-  invoiceNumber  String                    @unique
-  amount         Decimal                   @db.Decimal(15, 2)
-  currency       String                    @default("BDT")
-  status         SubscriptionInvoiceStatus @default(PENDING)
-  dueDate        DateTime
-  paidAt         DateTime?
-  createdAt      DateTime                  @default(now())
+  id              String                    @id @default(uuid())
+  businessId      String
+  subscriptionId  String
+  invoiceNumber   String                    @unique
+  amount          Decimal                   @db.Decimal(15, 2)
+  currency        String                    @default("BDT")
+  status          SubscriptionInvoiceStatus @default(PENDING)
+  dueDate         DateTime
+  paidAt          DateTime?
+  createdAt       DateTime                  @default(now())
+  changeRequestId String?                   @unique
 
-  business     Business              @relation(fields: [businessId], references: [id])
-  subscription Subscription          @relation(fields: [subscriptionId], references: [id])
-  payments     SubscriptionPayment[]
+  business      Business                   @relation(fields: [businessId], references: [id])
+  subscription  Subscription               @relation(fields: [subscriptionId], references: [id])
+  changeRequest SubscriptionChangeRequest? @relation(fields: [changeRequestId], references: [id])
+  payments      SubscriptionPayment[]
 
   @@index([businessId])
   @@index([subscriptionId])
@@ -1005,6 +1016,9 @@ enum SubscriptionChangeRequestType {
 
 enum SubscriptionChangeRequestStatus {
   PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
   APPROVED
   REJECTED
 }
@@ -1019,9 +1033,49 @@ model SubscriptionChangeRequest {
   requestedAt       DateTime                        @default(now())
   processedAt       DateTime?
 
-  business     Business     @relation(fields: [businessId], references: [id])
-  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  business     Business             @relation(fields: [businessId], references: [id])
+  subscription Subscription         @relation(fields: [subscriptionId], references: [id])
+  invoice      SubscriptionInvoice?
 
   @@index([businessId])
   @@index([subscriptionId])
+}
+
+enum IpRuleType {
+  ALLOW
+  DENY
+}
+
+model BusinessIpRule {
+  id          String     @id @default(cuid())
+  businessId  String
+  ipRange     String     // e.g. 192.168.1.0/24 or 203.0.113.5
+  type        IpRuleType
+  description String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  business    Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+}
+
+enum LoginStatus {
+  SUCCESS
+  FAILED_PASSWORD
+  FAILED_MFA
+  LOCKED
+}
+
+model LoginActivity {
+  id        String      @id @default(cuid())
+  userId    String?
+  email     String      // Email attempted
+  status    LoginStatus
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime    @default(now())
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
 }

@@ -2,15 +2,20 @@ import { Queue } from 'bullmq';
 import { QueueName } from '../app/lib/bullmq';
 import { createWorker } from './base.worker';
 import { SubscriptionLifecycleService } from '../app/modules/subscriptions/subscription-lifecycle.service';
+import { SubscriptionAutomationService } from '../app/modules/subscriptions/subscription-automation.service';
 import { logger } from '../app/lib/logger';
 
 const lifecycleService = new SubscriptionLifecycleService();
+const automationService = new SubscriptionAutomationService();
 
 export const subscriptionLifecycleWorker = createWorker(QueueName.SUBSCRIPTION, async (job) => {
   logger.info(`[SubscriptionLifecycleWorker] Processing job ${job.id} (${job.name})`);
 
   if (job.name === 'daily-subscription-lifecycle') {
     await lifecycleService.processExpiredSubscriptions();
+  } else if (job.name === 'subscription-payment-verified') {
+    const { paymentId } = job.data;
+    await automationService.handlePaymentVerified(paymentId);
   } else {
     logger.warn(`[SubscriptionLifecycleWorker] Unknown job name: ${job.name}`);
   }

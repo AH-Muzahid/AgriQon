@@ -7,10 +7,14 @@ import httpStatus from 'http-status';
 import { AppError } from '../../errors/AppError';
 import { BillingService } from './billing.service';
 import { PaymentWebhookService } from './payment-webhook.service';
+import { SaaSAnalyticsService } from './saas-analytics.service';
+import { SaaSAdminService } from './saas-admin.service';
 
 const subscriptionService = new SubscriptionService();
 const billingService = new BillingService();
 const webhookService = new PaymentWebhookService();
+const saasAnalyticsService = new SaaSAnalyticsService();
+const saasAdminService = new SaaSAdminService();
 
 const getSubscription = catchAsync(async (req: AuthRequest, res: Response) => {
   const businessId = req.businessId || req.user?.businessId;
@@ -272,6 +276,73 @@ const getPaymentStatus = catchAsync(async (req: AuthRequest, res: Response) => {
   });
 });
 
+const getAdminAnalyticsSummary = catchAsync(async (req: AuthRequest, res: Response) => {
+  const result = await saasAnalyticsService.getSaaSSummary();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'SaaS admin analytics summary retrieved successfully',
+    data: result,
+  });
+});
+
+const getAdminTenants = catchAsync(async (req: AuthRequest, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const planCode = req.query.planCode as string;
+  const status = req.query.status as any;
+  const search = req.query.search as string;
+  const sortBy = req.query.sortBy as any;
+  const sortOrder = req.query.sortOrder as any;
+
+  const result = await saasAdminService.listTenants({
+    page,
+    limit,
+    planCode,
+    status,
+    search,
+    sortBy,
+    sortOrder,
+  });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Tenants list retrieved successfully',
+    data: result,
+  });
+});
+
+const postAdminTenantOverride = catchAsync(async (req: AuthRequest, res: Response) => {
+  const { businessId } = req.params;
+  const { planCode, expiresAt, status, reason } = req.body;
+  if (!businessId) {
+    throw new AppError('Business ID is required', httpStatus.BAD_REQUEST);
+  }
+  const result = await saasAdminService.overrideTenantSubscription(businessId, {
+    planCode,
+    expiresAt,
+    status,
+    reason,
+  });
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Tenant subscription overridden successfully',
+    data: result,
+  });
+});
+
+const getAdminOverrideHistory = catchAsync(async (req: AuthRequest, res: Response) => {
+  const { businessId } = req.params;
+  const result = await saasAdminService.getOverrideHistory(businessId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Manual override history retrieved successfully',
+    data: result,
+  });
+});
+
 export const SubscriptionController = {
   getSubscription,
   getSubscriptionUsage,
@@ -286,5 +357,9 @@ export const SubscriptionController = {
   postPaymentSession,
   postWebhook,
   getPaymentStatus,
+  getAdminAnalyticsSummary,
+  getAdminTenants,
+  postAdminTenantOverride,
+  getAdminOverrideHistory,
 };
 

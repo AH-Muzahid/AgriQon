@@ -149,7 +149,12 @@ exports.Prisma.UserScalarFieldEnum = {
   businessId: 'businessId',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  mfaSecret: 'mfaSecret',
+  mfaEnabled: 'mfaEnabled',
+  mfaBackupCodes: 'mfaBackupCodes',
+  failedLoginAttempts: 'failedLoginAttempts',
+  lockedUntil: 'lockedUntil'
 };
 
 exports.Prisma.RefreshTokenScalarFieldEnum = {
@@ -586,6 +591,8 @@ exports.Prisma.SubscriptionPlanScalarFieldEnum = {
   id: 'id',
   code: 'code',
   name: 'name',
+  price: 'price',
+  currency: 'currency',
   isTrial: 'isTrial',
   maxUsers: 'maxUsers',
   maxProducts: 'maxProducts',
@@ -661,7 +668,8 @@ exports.Prisma.SubscriptionInvoiceScalarFieldEnum = {
   status: 'status',
   dueDate: 'dueDate',
   paidAt: 'paidAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  changeRequestId: 'changeRequestId'
 };
 
 exports.Prisma.SubscriptionPaymentScalarFieldEnum = {
@@ -699,6 +707,27 @@ exports.Prisma.SubscriptionChangeRequestScalarFieldEnum = {
   status: 'status',
   requestedAt: 'requestedAt',
   processedAt: 'processedAt'
+};
+
+exports.Prisma.BusinessIpRuleScalarFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  ipRange: 'ipRange',
+  type: 'type',
+  description: 'description',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LoginActivityScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  email: 'email',
+  status: 'status',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -748,7 +777,9 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   name: 'name',
   email: 'email',
   password: 'password',
-  businessId: 'businessId'
+  businessId: 'businessId',
+  mfaSecret: 'mfaSecret',
+  mfaBackupCodes: 'mfaBackupCodes'
 };
 
 exports.Prisma.RefreshTokenOrderByRelevanceFieldEnum = {
@@ -1058,7 +1089,8 @@ exports.Prisma.ReportCacheOrderByRelevanceFieldEnum = {
 exports.Prisma.SubscriptionPlanOrderByRelevanceFieldEnum = {
   id: 'id',
   code: 'code',
-  name: 'name'
+  name: 'name',
+  currency: 'currency'
 };
 
 exports.Prisma.PlanFeatureOrderByRelevanceFieldEnum = {
@@ -1105,7 +1137,8 @@ exports.Prisma.SubscriptionInvoiceOrderByRelevanceFieldEnum = {
   businessId: 'businessId',
   subscriptionId: 'subscriptionId',
   invoiceNumber: 'invoiceNumber',
-  currency: 'currency'
+  currency: 'currency',
+  changeRequestId: 'changeRequestId'
 };
 
 exports.Prisma.SubscriptionPaymentOrderByRelevanceFieldEnum = {
@@ -1130,6 +1163,21 @@ exports.Prisma.SubscriptionChangeRequestOrderByRelevanceFieldEnum = {
   businessId: 'businessId',
   subscriptionId: 'subscriptionId',
   requestedPlanCode: 'requestedPlanCode'
+};
+
+exports.Prisma.BusinessIpRuleOrderByRelevanceFieldEnum = {
+  id: 'id',
+  businessId: 'businessId',
+  ipRange: 'ipRange',
+  description: 'description'
+};
+
+exports.Prisma.LoginActivityOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  email: 'email',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent'
 };
 exports.PlatformRole = exports.$Enums.PlatformRole = {
   USER: 'USER',
@@ -1231,8 +1279,23 @@ exports.SubscriptionChangeRequestType = exports.$Enums.SubscriptionChangeRequest
 
 exports.SubscriptionChangeRequestStatus = exports.$Enums.SubscriptionChangeRequestStatus = {
   PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
+};
+
+exports.IpRuleType = exports.$Enums.IpRuleType = {
+  ALLOW: 'ALLOW',
+  DENY: 'DENY'
+};
+
+exports.LoginStatus = exports.$Enums.LoginStatus = {
+  SUCCESS: 'SUCCESS',
+  FAILED_PASSWORD: 'FAILED_PASSWORD',
+  FAILED_MFA: 'FAILED_MFA',
+  LOCKED: 'LOCKED'
 };
 
 exports.Prisma.ModelName = {
@@ -1287,7 +1350,9 @@ exports.Prisma.ModelName = {
   SubscriptionInvoice: 'SubscriptionInvoice',
   SubscriptionPayment: 'SubscriptionPayment',
   PaymentWebhookEvent: 'PaymentWebhookEvent',
-  SubscriptionChangeRequest: 'SubscriptionChangeRequest'
+  SubscriptionChangeRequest: 'SubscriptionChangeRequest',
+  BusinessIpRule: 'BusinessIpRule',
+  LoginActivity: 'LoginActivity'
 };
 
 /**

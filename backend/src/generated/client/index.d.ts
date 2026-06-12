@@ -273,6 +273,16 @@ export type PaymentWebhookEvent = $Result.DefaultSelection<Prisma.$PaymentWebhoo
  * 
  */
 export type SubscriptionChangeRequest = $Result.DefaultSelection<Prisma.$SubscriptionChangeRequestPayload>
+/**
+ * Model BusinessIpRule
+ * 
+ */
+export type BusinessIpRule = $Result.DefaultSelection<Prisma.$BusinessIpRulePayload>
+/**
+ * Model LoginActivity
+ * 
+ */
+export type LoginActivity = $Result.DefaultSelection<Prisma.$LoginActivityPayload>
 
 /**
  * Enums
@@ -432,11 +442,32 @@ export type SubscriptionChangeRequestType = (typeof SubscriptionChangeRequestTyp
 
 export const SubscriptionChangeRequestStatus: {
   PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
 };
 
 export type SubscriptionChangeRequestStatus = (typeof SubscriptionChangeRequestStatus)[keyof typeof SubscriptionChangeRequestStatus]
+
+
+export const IpRuleType: {
+  ALLOW: 'ALLOW',
+  DENY: 'DENY'
+};
+
+export type IpRuleType = (typeof IpRuleType)[keyof typeof IpRuleType]
+
+
+export const LoginStatus: {
+  SUCCESS: 'SUCCESS',
+  FAILED_PASSWORD: 'FAILED_PASSWORD',
+  FAILED_MFA: 'FAILED_MFA',
+  LOCKED: 'LOCKED'
+};
+
+export type LoginStatus = (typeof LoginStatus)[keyof typeof LoginStatus]
 
 }
 
@@ -503,6 +534,14 @@ export const SubscriptionChangeRequestType: typeof $Enums.SubscriptionChangeRequ
 export type SubscriptionChangeRequestStatus = $Enums.SubscriptionChangeRequestStatus
 
 export const SubscriptionChangeRequestStatus: typeof $Enums.SubscriptionChangeRequestStatus
+
+export type IpRuleType = $Enums.IpRuleType
+
+export const IpRuleType: typeof $Enums.IpRuleType
+
+export type LoginStatus = $Enums.LoginStatus
+
+export const LoginStatus: typeof $Enums.LoginStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -1146,6 +1185,26 @@ export class PrismaClient<
     * ```
     */
   get subscriptionChangeRequest(): Prisma.SubscriptionChangeRequestDelegate<ExtArgs>;
+
+  /**
+   * `prisma.businessIpRule`: Exposes CRUD operations for the **BusinessIpRule** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BusinessIpRules
+    * const businessIpRules = await prisma.businessIpRule.findMany()
+    * ```
+    */
+  get businessIpRule(): Prisma.BusinessIpRuleDelegate<ExtArgs>;
+
+  /**
+   * `prisma.loginActivity`: Exposes CRUD operations for the **LoginActivity** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more LoginActivities
+    * const loginActivities = await prisma.loginActivity.findMany()
+    * ```
+    */
+  get loginActivity(): Prisma.LoginActivityDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -1637,7 +1696,9 @@ export namespace Prisma {
     SubscriptionInvoice: 'SubscriptionInvoice',
     SubscriptionPayment: 'SubscriptionPayment',
     PaymentWebhookEvent: 'PaymentWebhookEvent',
-    SubscriptionChangeRequest: 'SubscriptionChangeRequest'
+    SubscriptionChangeRequest: 'SubscriptionChangeRequest',
+    BusinessIpRule: 'BusinessIpRule',
+    LoginActivity: 'LoginActivity'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1653,7 +1714,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "organization" | "business" | "user" | "refreshToken" | "category" | "brand" | "item" | "productBatch" | "warehouse" | "inventory" | "stockMovement" | "inventoryValuation" | "warehouseTransfer" | "warehouseTransferItem" | "stockReservation" | "customer" | "order" | "orderItem" | "supplier" | "purchaseOrder" | "purchaseItem" | "account" | "notification" | "invoice" | "payment" | "refund" | "auditLog" | "aiLog" | "outboxEvent" | "embedding" | "review" | "permission" | "rolePermission" | "userBusinessRole" | "loyaltyProgram" | "loyaltyPoint" | "webhookEvent" | "journalEntry" | "journalLine" | "reconciliationLog" | "reportCache" | "subscriptionPlan" | "planFeature" | "subscription" | "usageMetric" | "subscriptionEvent" | "customRole" | "userCustomRole" | "subscriptionInvoice" | "subscriptionPayment" | "paymentWebhookEvent" | "subscriptionChangeRequest"
+      modelProps: "organization" | "business" | "user" | "refreshToken" | "category" | "brand" | "item" | "productBatch" | "warehouse" | "inventory" | "stockMovement" | "inventoryValuation" | "warehouseTransfer" | "warehouseTransferItem" | "stockReservation" | "customer" | "order" | "orderItem" | "supplier" | "purchaseOrder" | "purchaseItem" | "account" | "notification" | "invoice" | "payment" | "refund" | "auditLog" | "aiLog" | "outboxEvent" | "embedding" | "review" | "permission" | "rolePermission" | "userBusinessRole" | "loyaltyProgram" | "loyaltyPoint" | "webhookEvent" | "journalEntry" | "journalLine" | "reconciliationLog" | "reportCache" | "subscriptionPlan" | "planFeature" | "subscription" | "usageMetric" | "subscriptionEvent" | "customRole" | "userCustomRole" | "subscriptionInvoice" | "subscriptionPayment" | "paymentWebhookEvent" | "subscriptionChangeRequest" | "businessIpRule" | "loginActivity"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -5297,6 +5358,146 @@ export namespace Prisma {
           }
         }
       }
+      BusinessIpRule: {
+        payload: Prisma.$BusinessIpRulePayload<ExtArgs>
+        fields: Prisma.BusinessIpRuleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BusinessIpRuleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BusinessIpRuleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>
+          }
+          findFirst: {
+            args: Prisma.BusinessIpRuleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BusinessIpRuleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>
+          }
+          findMany: {
+            args: Prisma.BusinessIpRuleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>[]
+          }
+          create: {
+            args: Prisma.BusinessIpRuleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>
+          }
+          createMany: {
+            args: Prisma.BusinessIpRuleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BusinessIpRuleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>[]
+          }
+          delete: {
+            args: Prisma.BusinessIpRuleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>
+          }
+          update: {
+            args: Prisma.BusinessIpRuleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>
+          }
+          deleteMany: {
+            args: Prisma.BusinessIpRuleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BusinessIpRuleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.BusinessIpRuleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BusinessIpRulePayload>
+          }
+          aggregate: {
+            args: Prisma.BusinessIpRuleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBusinessIpRule>
+          }
+          groupBy: {
+            args: Prisma.BusinessIpRuleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BusinessIpRuleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BusinessIpRuleCountArgs<ExtArgs>
+            result: $Utils.Optional<BusinessIpRuleCountAggregateOutputType> | number
+          }
+        }
+      }
+      LoginActivity: {
+        payload: Prisma.$LoginActivityPayload<ExtArgs>
+        fields: Prisma.LoginActivityFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LoginActivityFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LoginActivityFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>
+          }
+          findFirst: {
+            args: Prisma.LoginActivityFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LoginActivityFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>
+          }
+          findMany: {
+            args: Prisma.LoginActivityFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>[]
+          }
+          create: {
+            args: Prisma.LoginActivityCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>
+          }
+          createMany: {
+            args: Prisma.LoginActivityCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LoginActivityCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>[]
+          }
+          delete: {
+            args: Prisma.LoginActivityDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>
+          }
+          update: {
+            args: Prisma.LoginActivityUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>
+          }
+          deleteMany: {
+            args: Prisma.LoginActivityDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LoginActivityUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.LoginActivityUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LoginActivityPayload>
+          }
+          aggregate: {
+            args: Prisma.LoginActivityAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLoginActivity>
+          }
+          groupBy: {
+            args: Prisma.LoginActivityGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LoginActivityGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LoginActivityCountArgs<ExtArgs>
+            result: $Utils.Optional<LoginActivityCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5525,6 +5726,7 @@ export namespace Prisma {
     subscriptionInvoices: number
     subscriptionPayments: number
     subscriptionChangeRequests: number
+    ipRules: number
   }
 
   export type BusinessCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5564,6 +5766,7 @@ export namespace Prisma {
     subscriptionInvoices?: boolean | BusinessCountOutputTypeCountSubscriptionInvoicesArgs
     subscriptionPayments?: boolean | BusinessCountOutputTypeCountSubscriptionPaymentsArgs
     subscriptionChangeRequests?: boolean | BusinessCountOutputTypeCountSubscriptionChangeRequestsArgs
+    ipRules?: boolean | BusinessCountOutputTypeCountIpRulesArgs
   }
 
   // Custom InputTypes
@@ -5829,6 +6032,13 @@ export namespace Prisma {
     where?: SubscriptionChangeRequestWhereInput
   }
 
+  /**
+   * BusinessCountOutputType without action
+   */
+  export type BusinessCountOutputTypeCountIpRulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BusinessIpRuleWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -5844,6 +6054,7 @@ export namespace Prisma {
     postedJournalEntries: number
     businessRoles: number
     customRoles: number
+    loginActivities: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5856,6 +6067,7 @@ export namespace Prisma {
     postedJournalEntries?: boolean | UserCountOutputTypeCountPostedJournalEntriesArgs
     businessRoles?: boolean | UserCountOutputTypeCountBusinessRolesArgs
     customRoles?: boolean | UserCountOutputTypeCountCustomRolesArgs
+    loginActivities?: boolean | UserCountOutputTypeCountLoginActivitiesArgs
   }
 
   // Custom InputTypes
@@ -5930,6 +6142,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountCustomRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserCustomRoleWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountLoginActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LoginActivityWhereInput
   }
 
 
@@ -7891,6 +8110,7 @@ export namespace Prisma {
     subscriptionInvoices?: boolean | Business$subscriptionInvoicesArgs<ExtArgs>
     subscriptionPayments?: boolean | Business$subscriptionPaymentsArgs<ExtArgs>
     subscriptionChangeRequests?: boolean | Business$subscriptionChangeRequestsArgs<ExtArgs>
+    ipRules?: boolean | Business$ipRulesArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["business"]>
 
@@ -7967,6 +8187,7 @@ export namespace Prisma {
     subscriptionInvoices?: boolean | Business$subscriptionInvoicesArgs<ExtArgs>
     subscriptionPayments?: boolean | Business$subscriptionPaymentsArgs<ExtArgs>
     subscriptionChangeRequests?: boolean | Business$subscriptionChangeRequestsArgs<ExtArgs>
+    ipRules?: boolean | Business$ipRulesArgs<ExtArgs>
     _count?: boolean | BusinessCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type BusinessIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8015,6 +8236,7 @@ export namespace Prisma {
       subscriptionInvoices: Prisma.$SubscriptionInvoicePayload<ExtArgs>[]
       subscriptionPayments: Prisma.$SubscriptionPaymentPayload<ExtArgs>[]
       subscriptionChangeRequests: Prisma.$SubscriptionChangeRequestPayload<ExtArgs>[]
+      ipRules: Prisma.$BusinessIpRulePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8433,6 +8655,7 @@ export namespace Prisma {
     subscriptionInvoices<T extends Business$subscriptionInvoicesArgs<ExtArgs> = {}>(args?: Subset<T, Business$subscriptionInvoicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionInvoicePayload<ExtArgs>, T, "findMany"> | Null>
     subscriptionPayments<T extends Business$subscriptionPaymentsArgs<ExtArgs> = {}>(args?: Subset<T, Business$subscriptionPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionPaymentPayload<ExtArgs>, T, "findMany"> | Null>
     subscriptionChangeRequests<T extends Business$subscriptionChangeRequestsArgs<ExtArgs> = {}>(args?: Subset<T, Business$subscriptionChangeRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionChangeRequestPayload<ExtArgs>, T, "findMany"> | Null>
+    ipRules<T extends Business$ipRulesArgs<ExtArgs> = {}>(args?: Subset<T, Business$ipRulesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9543,6 +9766,26 @@ export namespace Prisma {
   }
 
   /**
+   * Business.ipRules
+   */
+  export type Business$ipRulesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    where?: BusinessIpRuleWhereInput
+    orderBy?: BusinessIpRuleOrderByWithRelationInput | BusinessIpRuleOrderByWithRelationInput[]
+    cursor?: BusinessIpRuleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BusinessIpRuleScalarFieldEnum | BusinessIpRuleScalarFieldEnum[]
+  }
+
+  /**
    * Business without action
    */
   export type BusinessDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9563,8 +9806,18 @@ export namespace Prisma {
 
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
+  }
+
+  export type UserAvgAggregateOutputType = {
+    failedLoginAttempts: number | null
+  }
+
+  export type UserSumAggregateOutputType = {
+    failedLoginAttempts: number | null
   }
 
   export type UserMinAggregateOutputType = {
@@ -9577,6 +9830,10 @@ export namespace Prisma {
     deletedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    mfaSecret: string | null
+    mfaEnabled: boolean | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -9589,6 +9846,10 @@ export namespace Prisma {
     deletedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
+    mfaSecret: string | null
+    mfaEnabled: boolean | null
+    failedLoginAttempts: number | null
+    lockedUntil: Date | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -9601,9 +9862,22 @@ export namespace Prisma {
     deletedAt: number
     createdAt: number
     updatedAt: number
+    mfaSecret: number
+    mfaEnabled: number
+    mfaBackupCodes: number
+    failedLoginAttempts: number
+    lockedUntil: number
     _all: number
   }
 
+
+  export type UserAvgAggregateInputType = {
+    failedLoginAttempts?: true
+  }
+
+  export type UserSumAggregateInputType = {
+    failedLoginAttempts?: true
+  }
 
   export type UserMinAggregateInputType = {
     id?: true
@@ -9615,6 +9889,10 @@ export namespace Prisma {
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
+    mfaSecret?: true
+    mfaEnabled?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -9627,6 +9905,10 @@ export namespace Prisma {
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
+    mfaSecret?: true
+    mfaEnabled?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -9639,6 +9921,11 @@ export namespace Prisma {
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
+    mfaSecret?: true
+    mfaEnabled?: true
+    mfaBackupCodes?: true
+    failedLoginAttempts?: true
+    lockedUntil?: true
     _all?: true
   }
 
@@ -9680,6 +9967,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: UserAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: UserSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: UserMinAggregateInputType
@@ -9710,6 +10009,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: UserCountAggregateInputType | true
+    _avg?: UserAvgAggregateInputType
+    _sum?: UserSumAggregateInputType
     _min?: UserMinAggregateInputType
     _max?: UserMaxAggregateInputType
   }
@@ -9724,7 +10025,14 @@ export namespace Prisma {
     deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
+    mfaSecret: string | null
+    mfaEnabled: boolean
+    mfaBackupCodes: string[]
+    failedLoginAttempts: number
+    lockedUntil: Date | null
     _count: UserCountAggregateOutputType | null
+    _avg: UserAvgAggregateOutputType | null
+    _sum: UserSumAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
   }
@@ -9753,6 +10061,11 @@ export namespace Prisma {
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    mfaSecret?: boolean
+    mfaEnabled?: boolean
+    mfaBackupCodes?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
     aiLogs?: boolean | User$aiLogsArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     orders?: boolean | User$ordersArgs<ExtArgs>
@@ -9763,6 +10076,7 @@ export namespace Prisma {
     business?: boolean | User$businessArgs<ExtArgs>
     businessRoles?: boolean | User$businessRolesArgs<ExtArgs>
     customRoles?: boolean | User$customRolesArgs<ExtArgs>
+    loginActivities?: boolean | User$loginActivitiesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -9776,6 +10090,11 @@ export namespace Prisma {
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    mfaSecret?: boolean
+    mfaEnabled?: boolean
+    mfaBackupCodes?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
     business?: boolean | User$businessArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -9789,6 +10108,11 @@ export namespace Prisma {
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    mfaSecret?: boolean
+    mfaEnabled?: boolean
+    mfaBackupCodes?: boolean
+    failedLoginAttempts?: boolean
+    lockedUntil?: boolean
   }
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9802,6 +10126,7 @@ export namespace Prisma {
     business?: boolean | User$businessArgs<ExtArgs>
     businessRoles?: boolean | User$businessRolesArgs<ExtArgs>
     customRoles?: boolean | User$customRolesArgs<ExtArgs>
+    loginActivities?: boolean | User$loginActivitiesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9821,6 +10146,7 @@ export namespace Prisma {
       business: Prisma.$BusinessPayload<ExtArgs> | null
       businessRoles: Prisma.$UserBusinessRolePayload<ExtArgs>[]
       customRoles: Prisma.$UserCustomRolePayload<ExtArgs>[]
+      loginActivities: Prisma.$LoginActivityPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9832,6 +10158,11 @@ export namespace Prisma {
       deletedAt: Date | null
       createdAt: Date
       updatedAt: Date
+      mfaSecret: string | null
+      mfaEnabled: boolean
+      mfaBackupCodes: string[]
+      failedLoginAttempts: number
+      lockedUntil: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -10206,6 +10537,7 @@ export namespace Prisma {
     business<T extends User$businessArgs<ExtArgs> = {}>(args?: Subset<T, User$businessArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     businessRoles<T extends User$businessRolesArgs<ExtArgs> = {}>(args?: Subset<T, User$businessRolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserBusinessRolePayload<ExtArgs>, T, "findMany"> | Null>
     customRoles<T extends User$customRolesArgs<ExtArgs> = {}>(args?: Subset<T, User$customRolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserCustomRolePayload<ExtArgs>, T, "findMany"> | Null>
+    loginActivities<T extends User$loginActivitiesArgs<ExtArgs> = {}>(args?: Subset<T, User$loginActivitiesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10244,6 +10576,11 @@ export namespace Prisma {
     readonly deletedAt: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
+    readonly mfaSecret: FieldRef<"User", 'String'>
+    readonly mfaEnabled: FieldRef<"User", 'Boolean'>
+    readonly mfaBackupCodes: FieldRef<"User", 'String[]'>
+    readonly failedLoginAttempts: FieldRef<"User", 'Int'>
+    readonly lockedUntil: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -10754,6 +11091,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: UserCustomRoleScalarFieldEnum | UserCustomRoleScalarFieldEnum[]
+  }
+
+  /**
+   * User.loginActivities
+   */
+  export type User$loginActivitiesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    where?: LoginActivityWhereInput
+    orderBy?: LoginActivityOrderByWithRelationInput | LoginActivityOrderByWithRelationInput[]
+    cursor?: LoginActivityWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: LoginActivityScalarFieldEnum | LoginActivityScalarFieldEnum[]
   }
 
   /**
@@ -49618,12 +49975,14 @@ export namespace Prisma {
   }
 
   export type SubscriptionPlanAvgAggregateOutputType = {
+    price: Decimal | null
     maxUsers: number | null
     maxProducts: number | null
     maxWarehouses: number | null
   }
 
   export type SubscriptionPlanSumAggregateOutputType = {
+    price: Decimal | null
     maxUsers: number | null
     maxProducts: number | null
     maxWarehouses: number | null
@@ -49633,6 +49992,8 @@ export namespace Prisma {
     id: string | null
     code: string | null
     name: string | null
+    price: Decimal | null
+    currency: string | null
     isTrial: boolean | null
     maxUsers: number | null
     maxProducts: number | null
@@ -49645,6 +50006,8 @@ export namespace Prisma {
     id: string | null
     code: string | null
     name: string | null
+    price: Decimal | null
+    currency: string | null
     isTrial: boolean | null
     maxUsers: number | null
     maxProducts: number | null
@@ -49657,6 +50020,8 @@ export namespace Prisma {
     id: number
     code: number
     name: number
+    price: number
+    currency: number
     isTrial: number
     maxUsers: number
     maxProducts: number
@@ -49668,12 +50033,14 @@ export namespace Prisma {
 
 
   export type SubscriptionPlanAvgAggregateInputType = {
+    price?: true
     maxUsers?: true
     maxProducts?: true
     maxWarehouses?: true
   }
 
   export type SubscriptionPlanSumAggregateInputType = {
+    price?: true
     maxUsers?: true
     maxProducts?: true
     maxWarehouses?: true
@@ -49683,6 +50050,8 @@ export namespace Prisma {
     id?: true
     code?: true
     name?: true
+    price?: true
+    currency?: true
     isTrial?: true
     maxUsers?: true
     maxProducts?: true
@@ -49695,6 +50064,8 @@ export namespace Prisma {
     id?: true
     code?: true
     name?: true
+    price?: true
+    currency?: true
     isTrial?: true
     maxUsers?: true
     maxProducts?: true
@@ -49707,6 +50078,8 @@ export namespace Prisma {
     id?: true
     code?: true
     name?: true
+    price?: true
+    currency?: true
     isTrial?: true
     maxUsers?: true
     maxProducts?: true
@@ -49806,6 +50179,8 @@ export namespace Prisma {
     id: string
     code: string
     name: string
+    price: Decimal
+    currency: string
     isTrial: boolean
     maxUsers: number | null
     maxProducts: number | null
@@ -49837,6 +50212,8 @@ export namespace Prisma {
     id?: boolean
     code?: boolean
     name?: boolean
+    price?: boolean
+    currency?: boolean
     isTrial?: boolean
     maxUsers?: boolean
     maxProducts?: boolean
@@ -49852,6 +50229,8 @@ export namespace Prisma {
     id?: boolean
     code?: boolean
     name?: boolean
+    price?: boolean
+    currency?: boolean
     isTrial?: boolean
     maxUsers?: boolean
     maxProducts?: boolean
@@ -49864,6 +50243,8 @@ export namespace Prisma {
     id?: boolean
     code?: boolean
     name?: boolean
+    price?: boolean
+    currency?: boolean
     isTrial?: boolean
     maxUsers?: boolean
     maxProducts?: boolean
@@ -49889,6 +50270,8 @@ export namespace Prisma {
       id: string
       code: string
       name: string
+      price: Prisma.Decimal
+      currency: string
       isTrial: boolean
       maxUsers: number | null
       maxProducts: number | null
@@ -50293,6 +50676,8 @@ export namespace Prisma {
     readonly id: FieldRef<"SubscriptionPlan", 'String'>
     readonly code: FieldRef<"SubscriptionPlan", 'String'>
     readonly name: FieldRef<"SubscriptionPlan", 'String'>
+    readonly price: FieldRef<"SubscriptionPlan", 'Decimal'>
+    readonly currency: FieldRef<"SubscriptionPlan", 'String'>
     readonly isTrial: FieldRef<"SubscriptionPlan", 'Boolean'>
     readonly maxUsers: FieldRef<"SubscriptionPlan", 'Int'>
     readonly maxProducts: FieldRef<"SubscriptionPlan", 'Int'>
@@ -56491,6 +56876,7 @@ export namespace Prisma {
     dueDate: Date | null
     paidAt: Date | null
     createdAt: Date | null
+    changeRequestId: string | null
   }
 
   export type SubscriptionInvoiceMaxAggregateOutputType = {
@@ -56504,6 +56890,7 @@ export namespace Prisma {
     dueDate: Date | null
     paidAt: Date | null
     createdAt: Date | null
+    changeRequestId: string | null
   }
 
   export type SubscriptionInvoiceCountAggregateOutputType = {
@@ -56517,6 +56904,7 @@ export namespace Prisma {
     dueDate: number
     paidAt: number
     createdAt: number
+    changeRequestId: number
     _all: number
   }
 
@@ -56540,6 +56928,7 @@ export namespace Prisma {
     dueDate?: true
     paidAt?: true
     createdAt?: true
+    changeRequestId?: true
   }
 
   export type SubscriptionInvoiceMaxAggregateInputType = {
@@ -56553,6 +56942,7 @@ export namespace Prisma {
     dueDate?: true
     paidAt?: true
     createdAt?: true
+    changeRequestId?: true
   }
 
   export type SubscriptionInvoiceCountAggregateInputType = {
@@ -56566,6 +56956,7 @@ export namespace Prisma {
     dueDate?: true
     paidAt?: true
     createdAt?: true
+    changeRequestId?: true
     _all?: true
   }
 
@@ -56666,6 +57057,7 @@ export namespace Prisma {
     dueDate: Date
     paidAt: Date | null
     createdAt: Date
+    changeRequestId: string | null
     _count: SubscriptionInvoiceCountAggregateOutputType | null
     _avg: SubscriptionInvoiceAvgAggregateOutputType | null
     _sum: SubscriptionInvoiceSumAggregateOutputType | null
@@ -56698,8 +57090,10 @@ export namespace Prisma {
     dueDate?: boolean
     paidAt?: boolean
     createdAt?: boolean
+    changeRequestId?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
+    changeRequest?: boolean | SubscriptionInvoice$changeRequestArgs<ExtArgs>
     payments?: boolean | SubscriptionInvoice$paymentsArgs<ExtArgs>
     _count?: boolean | SubscriptionInvoiceCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["subscriptionInvoice"]>
@@ -56715,8 +57109,10 @@ export namespace Prisma {
     dueDate?: boolean
     paidAt?: boolean
     createdAt?: boolean
+    changeRequestId?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
+    changeRequest?: boolean | SubscriptionInvoice$changeRequestArgs<ExtArgs>
   }, ExtArgs["result"]["subscriptionInvoice"]>
 
   export type SubscriptionInvoiceSelectScalar = {
@@ -56730,17 +57126,20 @@ export namespace Prisma {
     dueDate?: boolean
     paidAt?: boolean
     createdAt?: boolean
+    changeRequestId?: boolean
   }
 
   export type SubscriptionInvoiceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
+    changeRequest?: boolean | SubscriptionInvoice$changeRequestArgs<ExtArgs>
     payments?: boolean | SubscriptionInvoice$paymentsArgs<ExtArgs>
     _count?: boolean | SubscriptionInvoiceCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SubscriptionInvoiceIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
+    changeRequest?: boolean | SubscriptionInvoice$changeRequestArgs<ExtArgs>
   }
 
   export type $SubscriptionInvoicePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -56748,6 +57147,7 @@ export namespace Prisma {
     objects: {
       business: Prisma.$BusinessPayload<ExtArgs>
       subscription: Prisma.$SubscriptionPayload<ExtArgs>
+      changeRequest: Prisma.$SubscriptionChangeRequestPayload<ExtArgs> | null
       payments: Prisma.$SubscriptionPaymentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -56761,6 +57161,7 @@ export namespace Prisma {
       dueDate: Date
       paidAt: Date | null
       createdAt: Date
+      changeRequestId: string | null
     }, ExtArgs["result"]["subscriptionInvoice"]>
     composites: {}
   }
@@ -57127,6 +57528,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     subscription<T extends SubscriptionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SubscriptionDefaultArgs<ExtArgs>>): Prisma__SubscriptionClient<$Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    changeRequest<T extends SubscriptionInvoice$changeRequestArgs<ExtArgs> = {}>(args?: Subset<T, SubscriptionInvoice$changeRequestArgs<ExtArgs>>): Prisma__SubscriptionChangeRequestClient<$Result.GetResult<Prisma.$SubscriptionChangeRequestPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     payments<T extends SubscriptionInvoice$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, SubscriptionInvoice$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SubscriptionPaymentPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -57167,6 +57569,7 @@ export namespace Prisma {
     readonly dueDate: FieldRef<"SubscriptionInvoice", 'DateTime'>
     readonly paidAt: FieldRef<"SubscriptionInvoice", 'DateTime'>
     readonly createdAt: FieldRef<"SubscriptionInvoice", 'DateTime'>
+    readonly changeRequestId: FieldRef<"SubscriptionInvoice", 'String'>
   }
     
 
@@ -57482,6 +57885,21 @@ export namespace Prisma {
      * Filter which SubscriptionInvoices to delete
      */
     where?: SubscriptionInvoiceWhereInput
+  }
+
+  /**
+   * SubscriptionInvoice.changeRequest
+   */
+  export type SubscriptionInvoice$changeRequestArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SubscriptionChangeRequest
+     */
+    select?: SubscriptionChangeRequestSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SubscriptionChangeRequestInclude<ExtArgs> | null
+    where?: SubscriptionChangeRequestWhereInput
   }
 
   /**
@@ -59676,6 +60094,7 @@ export namespace Prisma {
     processedAt?: boolean
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
+    invoice?: boolean | SubscriptionChangeRequest$invoiceArgs<ExtArgs>
   }, ExtArgs["result"]["subscriptionChangeRequest"]>
 
   export type SubscriptionChangeRequestSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -59705,6 +60124,7 @@ export namespace Prisma {
   export type SubscriptionChangeRequestInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
     subscription?: boolean | SubscriptionDefaultArgs<ExtArgs>
+    invoice?: boolean | SubscriptionChangeRequest$invoiceArgs<ExtArgs>
   }
   export type SubscriptionChangeRequestIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     business?: boolean | BusinessDefaultArgs<ExtArgs>
@@ -59716,6 +60136,7 @@ export namespace Prisma {
     objects: {
       business: Prisma.$BusinessPayload<ExtArgs>
       subscription: Prisma.$SubscriptionPayload<ExtArgs>
+      invoice: Prisma.$SubscriptionInvoicePayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -60092,6 +60513,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     subscription<T extends SubscriptionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SubscriptionDefaultArgs<ExtArgs>>): Prisma__SubscriptionClient<$Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    invoice<T extends SubscriptionChangeRequest$invoiceArgs<ExtArgs> = {}>(args?: Subset<T, SubscriptionChangeRequest$invoiceArgs<ExtArgs>>): Prisma__SubscriptionInvoiceClient<$Result.GetResult<Prisma.$SubscriptionInvoicePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -60447,6 +60869,21 @@ export namespace Prisma {
   }
 
   /**
+   * SubscriptionChangeRequest.invoice
+   */
+  export type SubscriptionChangeRequest$invoiceArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SubscriptionInvoice
+     */
+    select?: SubscriptionInvoiceSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SubscriptionInvoiceInclude<ExtArgs> | null
+    where?: SubscriptionInvoiceWhereInput
+  }
+
+  /**
    * SubscriptionChangeRequest without action
    */
   export type SubscriptionChangeRequestDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -60458,6 +60895,1947 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SubscriptionChangeRequestInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BusinessIpRule
+   */
+
+  export type AggregateBusinessIpRule = {
+    _count: BusinessIpRuleCountAggregateOutputType | null
+    _min: BusinessIpRuleMinAggregateOutputType | null
+    _max: BusinessIpRuleMaxAggregateOutputType | null
+  }
+
+  export type BusinessIpRuleMinAggregateOutputType = {
+    id: string | null
+    businessId: string | null
+    ipRange: string | null
+    type: $Enums.IpRuleType | null
+    description: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BusinessIpRuleMaxAggregateOutputType = {
+    id: string | null
+    businessId: string | null
+    ipRange: string | null
+    type: $Enums.IpRuleType | null
+    description: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type BusinessIpRuleCountAggregateOutputType = {
+    id: number
+    businessId: number
+    ipRange: number
+    type: number
+    description: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type BusinessIpRuleMinAggregateInputType = {
+    id?: true
+    businessId?: true
+    ipRange?: true
+    type?: true
+    description?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BusinessIpRuleMaxAggregateInputType = {
+    id?: true
+    businessId?: true
+    ipRange?: true
+    type?: true
+    description?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type BusinessIpRuleCountAggregateInputType = {
+    id?: true
+    businessId?: true
+    ipRange?: true
+    type?: true
+    description?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type BusinessIpRuleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BusinessIpRule to aggregate.
+     */
+    where?: BusinessIpRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BusinessIpRules to fetch.
+     */
+    orderBy?: BusinessIpRuleOrderByWithRelationInput | BusinessIpRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BusinessIpRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BusinessIpRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BusinessIpRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BusinessIpRules
+    **/
+    _count?: true | BusinessIpRuleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BusinessIpRuleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BusinessIpRuleMaxAggregateInputType
+  }
+
+  export type GetBusinessIpRuleAggregateType<T extends BusinessIpRuleAggregateArgs> = {
+        [P in keyof T & keyof AggregateBusinessIpRule]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBusinessIpRule[P]>
+      : GetScalarType<T[P], AggregateBusinessIpRule[P]>
+  }
+
+
+
+
+  export type BusinessIpRuleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BusinessIpRuleWhereInput
+    orderBy?: BusinessIpRuleOrderByWithAggregationInput | BusinessIpRuleOrderByWithAggregationInput[]
+    by: BusinessIpRuleScalarFieldEnum[] | BusinessIpRuleScalarFieldEnum
+    having?: BusinessIpRuleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BusinessIpRuleCountAggregateInputType | true
+    _min?: BusinessIpRuleMinAggregateInputType
+    _max?: BusinessIpRuleMaxAggregateInputType
+  }
+
+  export type BusinessIpRuleGroupByOutputType = {
+    id: string
+    businessId: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description: string | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: BusinessIpRuleCountAggregateOutputType | null
+    _min: BusinessIpRuleMinAggregateOutputType | null
+    _max: BusinessIpRuleMaxAggregateOutputType | null
+  }
+
+  type GetBusinessIpRuleGroupByPayload<T extends BusinessIpRuleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BusinessIpRuleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BusinessIpRuleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BusinessIpRuleGroupByOutputType[P]>
+            : GetScalarType<T[P], BusinessIpRuleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BusinessIpRuleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    ipRange?: boolean
+    type?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["businessIpRule"]>
+
+  export type BusinessIpRuleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    businessId?: boolean
+    ipRange?: boolean
+    type?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["businessIpRule"]>
+
+  export type BusinessIpRuleSelectScalar = {
+    id?: boolean
+    businessId?: boolean
+    ipRange?: boolean
+    type?: boolean
+    description?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type BusinessIpRuleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }
+  export type BusinessIpRuleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    business?: boolean | BusinessDefaultArgs<ExtArgs>
+  }
+
+  export type $BusinessIpRulePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BusinessIpRule"
+    objects: {
+      business: Prisma.$BusinessPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      businessId: string
+      ipRange: string
+      type: $Enums.IpRuleType
+      description: string | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["businessIpRule"]>
+    composites: {}
+  }
+
+  type BusinessIpRuleGetPayload<S extends boolean | null | undefined | BusinessIpRuleDefaultArgs> = $Result.GetResult<Prisma.$BusinessIpRulePayload, S>
+
+  type BusinessIpRuleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<BusinessIpRuleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: BusinessIpRuleCountAggregateInputType | true
+    }
+
+  export interface BusinessIpRuleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BusinessIpRule'], meta: { name: 'BusinessIpRule' } }
+    /**
+     * Find zero or one BusinessIpRule that matches the filter.
+     * @param {BusinessIpRuleFindUniqueArgs} args - Arguments to find a BusinessIpRule
+     * @example
+     * // Get one BusinessIpRule
+     * const businessIpRule = await prisma.businessIpRule.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BusinessIpRuleFindUniqueArgs>(args: SelectSubset<T, BusinessIpRuleFindUniqueArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one BusinessIpRule that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {BusinessIpRuleFindUniqueOrThrowArgs} args - Arguments to find a BusinessIpRule
+     * @example
+     * // Get one BusinessIpRule
+     * const businessIpRule = await prisma.businessIpRule.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BusinessIpRuleFindUniqueOrThrowArgs>(args: SelectSubset<T, BusinessIpRuleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first BusinessIpRule that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleFindFirstArgs} args - Arguments to find a BusinessIpRule
+     * @example
+     * // Get one BusinessIpRule
+     * const businessIpRule = await prisma.businessIpRule.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BusinessIpRuleFindFirstArgs>(args?: SelectSubset<T, BusinessIpRuleFindFirstArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first BusinessIpRule that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleFindFirstOrThrowArgs} args - Arguments to find a BusinessIpRule
+     * @example
+     * // Get one BusinessIpRule
+     * const businessIpRule = await prisma.businessIpRule.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BusinessIpRuleFindFirstOrThrowArgs>(args?: SelectSubset<T, BusinessIpRuleFindFirstOrThrowArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more BusinessIpRules that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BusinessIpRules
+     * const businessIpRules = await prisma.businessIpRule.findMany()
+     * 
+     * // Get first 10 BusinessIpRules
+     * const businessIpRules = await prisma.businessIpRule.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const businessIpRuleWithIdOnly = await prisma.businessIpRule.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BusinessIpRuleFindManyArgs>(args?: SelectSubset<T, BusinessIpRuleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a BusinessIpRule.
+     * @param {BusinessIpRuleCreateArgs} args - Arguments to create a BusinessIpRule.
+     * @example
+     * // Create one BusinessIpRule
+     * const BusinessIpRule = await prisma.businessIpRule.create({
+     *   data: {
+     *     // ... data to create a BusinessIpRule
+     *   }
+     * })
+     * 
+     */
+    create<T extends BusinessIpRuleCreateArgs>(args: SelectSubset<T, BusinessIpRuleCreateArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many BusinessIpRules.
+     * @param {BusinessIpRuleCreateManyArgs} args - Arguments to create many BusinessIpRules.
+     * @example
+     * // Create many BusinessIpRules
+     * const businessIpRule = await prisma.businessIpRule.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BusinessIpRuleCreateManyArgs>(args?: SelectSubset<T, BusinessIpRuleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BusinessIpRules and returns the data saved in the database.
+     * @param {BusinessIpRuleCreateManyAndReturnArgs} args - Arguments to create many BusinessIpRules.
+     * @example
+     * // Create many BusinessIpRules
+     * const businessIpRule = await prisma.businessIpRule.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BusinessIpRules and only return the `id`
+     * const businessIpRuleWithIdOnly = await prisma.businessIpRule.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BusinessIpRuleCreateManyAndReturnArgs>(args?: SelectSubset<T, BusinessIpRuleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a BusinessIpRule.
+     * @param {BusinessIpRuleDeleteArgs} args - Arguments to delete one BusinessIpRule.
+     * @example
+     * // Delete one BusinessIpRule
+     * const BusinessIpRule = await prisma.businessIpRule.delete({
+     *   where: {
+     *     // ... filter to delete one BusinessIpRule
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BusinessIpRuleDeleteArgs>(args: SelectSubset<T, BusinessIpRuleDeleteArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one BusinessIpRule.
+     * @param {BusinessIpRuleUpdateArgs} args - Arguments to update one BusinessIpRule.
+     * @example
+     * // Update one BusinessIpRule
+     * const businessIpRule = await prisma.businessIpRule.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BusinessIpRuleUpdateArgs>(args: SelectSubset<T, BusinessIpRuleUpdateArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more BusinessIpRules.
+     * @param {BusinessIpRuleDeleteManyArgs} args - Arguments to filter BusinessIpRules to delete.
+     * @example
+     * // Delete a few BusinessIpRules
+     * const { count } = await prisma.businessIpRule.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BusinessIpRuleDeleteManyArgs>(args?: SelectSubset<T, BusinessIpRuleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BusinessIpRules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BusinessIpRules
+     * const businessIpRule = await prisma.businessIpRule.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BusinessIpRuleUpdateManyArgs>(args: SelectSubset<T, BusinessIpRuleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one BusinessIpRule.
+     * @param {BusinessIpRuleUpsertArgs} args - Arguments to update or create a BusinessIpRule.
+     * @example
+     * // Update or create a BusinessIpRule
+     * const businessIpRule = await prisma.businessIpRule.upsert({
+     *   create: {
+     *     // ... data to create a BusinessIpRule
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BusinessIpRule we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BusinessIpRuleUpsertArgs>(args: SelectSubset<T, BusinessIpRuleUpsertArgs<ExtArgs>>): Prisma__BusinessIpRuleClient<$Result.GetResult<Prisma.$BusinessIpRulePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of BusinessIpRules.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleCountArgs} args - Arguments to filter BusinessIpRules to count.
+     * @example
+     * // Count the number of BusinessIpRules
+     * const count = await prisma.businessIpRule.count({
+     *   where: {
+     *     // ... the filter for the BusinessIpRules we want to count
+     *   }
+     * })
+    **/
+    count<T extends BusinessIpRuleCountArgs>(
+      args?: Subset<T, BusinessIpRuleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BusinessIpRuleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BusinessIpRule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BusinessIpRuleAggregateArgs>(args: Subset<T, BusinessIpRuleAggregateArgs>): Prisma.PrismaPromise<GetBusinessIpRuleAggregateType<T>>
+
+    /**
+     * Group by BusinessIpRule.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BusinessIpRuleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BusinessIpRuleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BusinessIpRuleGroupByArgs['orderBy'] }
+        : { orderBy?: BusinessIpRuleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BusinessIpRuleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBusinessIpRuleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BusinessIpRule model
+   */
+  readonly fields: BusinessIpRuleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BusinessIpRule.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BusinessIpRuleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    business<T extends BusinessDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BusinessDefaultArgs<ExtArgs>>): Prisma__BusinessClient<$Result.GetResult<Prisma.$BusinessPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BusinessIpRule model
+   */ 
+  interface BusinessIpRuleFieldRefs {
+    readonly id: FieldRef<"BusinessIpRule", 'String'>
+    readonly businessId: FieldRef<"BusinessIpRule", 'String'>
+    readonly ipRange: FieldRef<"BusinessIpRule", 'String'>
+    readonly type: FieldRef<"BusinessIpRule", 'IpRuleType'>
+    readonly description: FieldRef<"BusinessIpRule", 'String'>
+    readonly isActive: FieldRef<"BusinessIpRule", 'Boolean'>
+    readonly createdAt: FieldRef<"BusinessIpRule", 'DateTime'>
+    readonly updatedAt: FieldRef<"BusinessIpRule", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BusinessIpRule findUnique
+   */
+  export type BusinessIpRuleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BusinessIpRule to fetch.
+     */
+    where: BusinessIpRuleWhereUniqueInput
+  }
+
+  /**
+   * BusinessIpRule findUniqueOrThrow
+   */
+  export type BusinessIpRuleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BusinessIpRule to fetch.
+     */
+    where: BusinessIpRuleWhereUniqueInput
+  }
+
+  /**
+   * BusinessIpRule findFirst
+   */
+  export type BusinessIpRuleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BusinessIpRule to fetch.
+     */
+    where?: BusinessIpRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BusinessIpRules to fetch.
+     */
+    orderBy?: BusinessIpRuleOrderByWithRelationInput | BusinessIpRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BusinessIpRules.
+     */
+    cursor?: BusinessIpRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BusinessIpRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BusinessIpRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BusinessIpRules.
+     */
+    distinct?: BusinessIpRuleScalarFieldEnum | BusinessIpRuleScalarFieldEnum[]
+  }
+
+  /**
+   * BusinessIpRule findFirstOrThrow
+   */
+  export type BusinessIpRuleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BusinessIpRule to fetch.
+     */
+    where?: BusinessIpRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BusinessIpRules to fetch.
+     */
+    orderBy?: BusinessIpRuleOrderByWithRelationInput | BusinessIpRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BusinessIpRules.
+     */
+    cursor?: BusinessIpRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BusinessIpRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BusinessIpRules.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BusinessIpRules.
+     */
+    distinct?: BusinessIpRuleScalarFieldEnum | BusinessIpRuleScalarFieldEnum[]
+  }
+
+  /**
+   * BusinessIpRule findMany
+   */
+  export type BusinessIpRuleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * Filter, which BusinessIpRules to fetch.
+     */
+    where?: BusinessIpRuleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BusinessIpRules to fetch.
+     */
+    orderBy?: BusinessIpRuleOrderByWithRelationInput | BusinessIpRuleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BusinessIpRules.
+     */
+    cursor?: BusinessIpRuleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BusinessIpRules from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BusinessIpRules.
+     */
+    skip?: number
+    distinct?: BusinessIpRuleScalarFieldEnum | BusinessIpRuleScalarFieldEnum[]
+  }
+
+  /**
+   * BusinessIpRule create
+   */
+  export type BusinessIpRuleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BusinessIpRule.
+     */
+    data: XOR<BusinessIpRuleCreateInput, BusinessIpRuleUncheckedCreateInput>
+  }
+
+  /**
+   * BusinessIpRule createMany
+   */
+  export type BusinessIpRuleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BusinessIpRules.
+     */
+    data: BusinessIpRuleCreateManyInput | BusinessIpRuleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BusinessIpRule createManyAndReturn
+   */
+  export type BusinessIpRuleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many BusinessIpRules.
+     */
+    data: BusinessIpRuleCreateManyInput | BusinessIpRuleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BusinessIpRule update
+   */
+  export type BusinessIpRuleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BusinessIpRule.
+     */
+    data: XOR<BusinessIpRuleUpdateInput, BusinessIpRuleUncheckedUpdateInput>
+    /**
+     * Choose, which BusinessIpRule to update.
+     */
+    where: BusinessIpRuleWhereUniqueInput
+  }
+
+  /**
+   * BusinessIpRule updateMany
+   */
+  export type BusinessIpRuleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BusinessIpRules.
+     */
+    data: XOR<BusinessIpRuleUpdateManyMutationInput, BusinessIpRuleUncheckedUpdateManyInput>
+    /**
+     * Filter which BusinessIpRules to update
+     */
+    where?: BusinessIpRuleWhereInput
+  }
+
+  /**
+   * BusinessIpRule upsert
+   */
+  export type BusinessIpRuleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BusinessIpRule to update in case it exists.
+     */
+    where: BusinessIpRuleWhereUniqueInput
+    /**
+     * In case the BusinessIpRule found by the `where` argument doesn't exist, create a new BusinessIpRule with this data.
+     */
+    create: XOR<BusinessIpRuleCreateInput, BusinessIpRuleUncheckedCreateInput>
+    /**
+     * In case the BusinessIpRule was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BusinessIpRuleUpdateInput, BusinessIpRuleUncheckedUpdateInput>
+  }
+
+  /**
+   * BusinessIpRule delete
+   */
+  export type BusinessIpRuleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+    /**
+     * Filter which BusinessIpRule to delete.
+     */
+    where: BusinessIpRuleWhereUniqueInput
+  }
+
+  /**
+   * BusinessIpRule deleteMany
+   */
+  export type BusinessIpRuleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BusinessIpRules to delete
+     */
+    where?: BusinessIpRuleWhereInput
+  }
+
+  /**
+   * BusinessIpRule without action
+   */
+  export type BusinessIpRuleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BusinessIpRule
+     */
+    select?: BusinessIpRuleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BusinessIpRuleInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model LoginActivity
+   */
+
+  export type AggregateLoginActivity = {
+    _count: LoginActivityCountAggregateOutputType | null
+    _min: LoginActivityMinAggregateOutputType | null
+    _max: LoginActivityMaxAggregateOutputType | null
+  }
+
+  export type LoginActivityMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    email: string | null
+    status: $Enums.LoginStatus | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+  }
+
+  export type LoginActivityMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    email: string | null
+    status: $Enums.LoginStatus | null
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date | null
+  }
+
+  export type LoginActivityCountAggregateOutputType = {
+    id: number
+    userId: number
+    email: number
+    status: number
+    ipAddress: number
+    userAgent: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type LoginActivityMinAggregateInputType = {
+    id?: true
+    userId?: true
+    email?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+  }
+
+  export type LoginActivityMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    email?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+  }
+
+  export type LoginActivityCountAggregateInputType = {
+    id?: true
+    userId?: true
+    email?: true
+    status?: true
+    ipAddress?: true
+    userAgent?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type LoginActivityAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LoginActivity to aggregate.
+     */
+    where?: LoginActivityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LoginActivities to fetch.
+     */
+    orderBy?: LoginActivityOrderByWithRelationInput | LoginActivityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LoginActivityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LoginActivities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LoginActivities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned LoginActivities
+    **/
+    _count?: true | LoginActivityCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LoginActivityMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LoginActivityMaxAggregateInputType
+  }
+
+  export type GetLoginActivityAggregateType<T extends LoginActivityAggregateArgs> = {
+        [P in keyof T & keyof AggregateLoginActivity]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLoginActivity[P]>
+      : GetScalarType<T[P], AggregateLoginActivity[P]>
+  }
+
+
+
+
+  export type LoginActivityGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LoginActivityWhereInput
+    orderBy?: LoginActivityOrderByWithAggregationInput | LoginActivityOrderByWithAggregationInput[]
+    by: LoginActivityScalarFieldEnum[] | LoginActivityScalarFieldEnum
+    having?: LoginActivityScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LoginActivityCountAggregateInputType | true
+    _min?: LoginActivityMinAggregateInputType
+    _max?: LoginActivityMaxAggregateInputType
+  }
+
+  export type LoginActivityGroupByOutputType = {
+    id: string
+    userId: string | null
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress: string | null
+    userAgent: string | null
+    createdAt: Date
+    _count: LoginActivityCountAggregateOutputType | null
+    _min: LoginActivityMinAggregateOutputType | null
+    _max: LoginActivityMaxAggregateOutputType | null
+  }
+
+  type GetLoginActivityGroupByPayload<T extends LoginActivityGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LoginActivityGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LoginActivityGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LoginActivityGroupByOutputType[P]>
+            : GetScalarType<T[P], LoginActivityGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LoginActivitySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    user?: boolean | LoginActivity$userArgs<ExtArgs>
+  }, ExtArgs["result"]["loginActivity"]>
+
+  export type LoginActivitySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+    user?: boolean | LoginActivity$userArgs<ExtArgs>
+  }, ExtArgs["result"]["loginActivity"]>
+
+  export type LoginActivitySelectScalar = {
+    id?: boolean
+    userId?: boolean
+    email?: boolean
+    status?: boolean
+    ipAddress?: boolean
+    userAgent?: boolean
+    createdAt?: boolean
+  }
+
+  export type LoginActivityInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | LoginActivity$userArgs<ExtArgs>
+  }
+  export type LoginActivityIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | LoginActivity$userArgs<ExtArgs>
+  }
+
+  export type $LoginActivityPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "LoginActivity"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string | null
+      email: string
+      status: $Enums.LoginStatus
+      ipAddress: string | null
+      userAgent: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["loginActivity"]>
+    composites: {}
+  }
+
+  type LoginActivityGetPayload<S extends boolean | null | undefined | LoginActivityDefaultArgs> = $Result.GetResult<Prisma.$LoginActivityPayload, S>
+
+  type LoginActivityCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<LoginActivityFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: LoginActivityCountAggregateInputType | true
+    }
+
+  export interface LoginActivityDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['LoginActivity'], meta: { name: 'LoginActivity' } }
+    /**
+     * Find zero or one LoginActivity that matches the filter.
+     * @param {LoginActivityFindUniqueArgs} args - Arguments to find a LoginActivity
+     * @example
+     * // Get one LoginActivity
+     * const loginActivity = await prisma.loginActivity.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LoginActivityFindUniqueArgs>(args: SelectSubset<T, LoginActivityFindUniqueArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one LoginActivity that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {LoginActivityFindUniqueOrThrowArgs} args - Arguments to find a LoginActivity
+     * @example
+     * // Get one LoginActivity
+     * const loginActivity = await prisma.loginActivity.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LoginActivityFindUniqueOrThrowArgs>(args: SelectSubset<T, LoginActivityFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first LoginActivity that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityFindFirstArgs} args - Arguments to find a LoginActivity
+     * @example
+     * // Get one LoginActivity
+     * const loginActivity = await prisma.loginActivity.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LoginActivityFindFirstArgs>(args?: SelectSubset<T, LoginActivityFindFirstArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first LoginActivity that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityFindFirstOrThrowArgs} args - Arguments to find a LoginActivity
+     * @example
+     * // Get one LoginActivity
+     * const loginActivity = await prisma.loginActivity.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LoginActivityFindFirstOrThrowArgs>(args?: SelectSubset<T, LoginActivityFindFirstOrThrowArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more LoginActivities that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all LoginActivities
+     * const loginActivities = await prisma.loginActivity.findMany()
+     * 
+     * // Get first 10 LoginActivities
+     * const loginActivities = await prisma.loginActivity.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const loginActivityWithIdOnly = await prisma.loginActivity.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends LoginActivityFindManyArgs>(args?: SelectSubset<T, LoginActivityFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a LoginActivity.
+     * @param {LoginActivityCreateArgs} args - Arguments to create a LoginActivity.
+     * @example
+     * // Create one LoginActivity
+     * const LoginActivity = await prisma.loginActivity.create({
+     *   data: {
+     *     // ... data to create a LoginActivity
+     *   }
+     * })
+     * 
+     */
+    create<T extends LoginActivityCreateArgs>(args: SelectSubset<T, LoginActivityCreateArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many LoginActivities.
+     * @param {LoginActivityCreateManyArgs} args - Arguments to create many LoginActivities.
+     * @example
+     * // Create many LoginActivities
+     * const loginActivity = await prisma.loginActivity.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LoginActivityCreateManyArgs>(args?: SelectSubset<T, LoginActivityCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many LoginActivities and returns the data saved in the database.
+     * @param {LoginActivityCreateManyAndReturnArgs} args - Arguments to create many LoginActivities.
+     * @example
+     * // Create many LoginActivities
+     * const loginActivity = await prisma.loginActivity.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many LoginActivities and only return the `id`
+     * const loginActivityWithIdOnly = await prisma.loginActivity.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LoginActivityCreateManyAndReturnArgs>(args?: SelectSubset<T, LoginActivityCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a LoginActivity.
+     * @param {LoginActivityDeleteArgs} args - Arguments to delete one LoginActivity.
+     * @example
+     * // Delete one LoginActivity
+     * const LoginActivity = await prisma.loginActivity.delete({
+     *   where: {
+     *     // ... filter to delete one LoginActivity
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LoginActivityDeleteArgs>(args: SelectSubset<T, LoginActivityDeleteArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one LoginActivity.
+     * @param {LoginActivityUpdateArgs} args - Arguments to update one LoginActivity.
+     * @example
+     * // Update one LoginActivity
+     * const loginActivity = await prisma.loginActivity.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LoginActivityUpdateArgs>(args: SelectSubset<T, LoginActivityUpdateArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more LoginActivities.
+     * @param {LoginActivityDeleteManyArgs} args - Arguments to filter LoginActivities to delete.
+     * @example
+     * // Delete a few LoginActivities
+     * const { count } = await prisma.loginActivity.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LoginActivityDeleteManyArgs>(args?: SelectSubset<T, LoginActivityDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more LoginActivities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many LoginActivities
+     * const loginActivity = await prisma.loginActivity.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LoginActivityUpdateManyArgs>(args: SelectSubset<T, LoginActivityUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one LoginActivity.
+     * @param {LoginActivityUpsertArgs} args - Arguments to update or create a LoginActivity.
+     * @example
+     * // Update or create a LoginActivity
+     * const loginActivity = await prisma.loginActivity.upsert({
+     *   create: {
+     *     // ... data to create a LoginActivity
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the LoginActivity we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LoginActivityUpsertArgs>(args: SelectSubset<T, LoginActivityUpsertArgs<ExtArgs>>): Prisma__LoginActivityClient<$Result.GetResult<Prisma.$LoginActivityPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of LoginActivities.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityCountArgs} args - Arguments to filter LoginActivities to count.
+     * @example
+     * // Count the number of LoginActivities
+     * const count = await prisma.loginActivity.count({
+     *   where: {
+     *     // ... the filter for the LoginActivities we want to count
+     *   }
+     * })
+    **/
+    count<T extends LoginActivityCountArgs>(
+      args?: Subset<T, LoginActivityCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LoginActivityCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a LoginActivity.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LoginActivityAggregateArgs>(args: Subset<T, LoginActivityAggregateArgs>): Prisma.PrismaPromise<GetLoginActivityAggregateType<T>>
+
+    /**
+     * Group by LoginActivity.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LoginActivityGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LoginActivityGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LoginActivityGroupByArgs['orderBy'] }
+        : { orderBy?: LoginActivityGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LoginActivityGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLoginActivityGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the LoginActivity model
+   */
+  readonly fields: LoginActivityFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for LoginActivity.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LoginActivityClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends LoginActivity$userArgs<ExtArgs> = {}>(args?: Subset<T, LoginActivity$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the LoginActivity model
+   */ 
+  interface LoginActivityFieldRefs {
+    readonly id: FieldRef<"LoginActivity", 'String'>
+    readonly userId: FieldRef<"LoginActivity", 'String'>
+    readonly email: FieldRef<"LoginActivity", 'String'>
+    readonly status: FieldRef<"LoginActivity", 'LoginStatus'>
+    readonly ipAddress: FieldRef<"LoginActivity", 'String'>
+    readonly userAgent: FieldRef<"LoginActivity", 'String'>
+    readonly createdAt: FieldRef<"LoginActivity", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * LoginActivity findUnique
+   */
+  export type LoginActivityFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * Filter, which LoginActivity to fetch.
+     */
+    where: LoginActivityWhereUniqueInput
+  }
+
+  /**
+   * LoginActivity findUniqueOrThrow
+   */
+  export type LoginActivityFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * Filter, which LoginActivity to fetch.
+     */
+    where: LoginActivityWhereUniqueInput
+  }
+
+  /**
+   * LoginActivity findFirst
+   */
+  export type LoginActivityFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * Filter, which LoginActivity to fetch.
+     */
+    where?: LoginActivityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LoginActivities to fetch.
+     */
+    orderBy?: LoginActivityOrderByWithRelationInput | LoginActivityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LoginActivities.
+     */
+    cursor?: LoginActivityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LoginActivities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LoginActivities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LoginActivities.
+     */
+    distinct?: LoginActivityScalarFieldEnum | LoginActivityScalarFieldEnum[]
+  }
+
+  /**
+   * LoginActivity findFirstOrThrow
+   */
+  export type LoginActivityFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * Filter, which LoginActivity to fetch.
+     */
+    where?: LoginActivityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LoginActivities to fetch.
+     */
+    orderBy?: LoginActivityOrderByWithRelationInput | LoginActivityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for LoginActivities.
+     */
+    cursor?: LoginActivityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LoginActivities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LoginActivities.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of LoginActivities.
+     */
+    distinct?: LoginActivityScalarFieldEnum | LoginActivityScalarFieldEnum[]
+  }
+
+  /**
+   * LoginActivity findMany
+   */
+  export type LoginActivityFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * Filter, which LoginActivities to fetch.
+     */
+    where?: LoginActivityWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of LoginActivities to fetch.
+     */
+    orderBy?: LoginActivityOrderByWithRelationInput | LoginActivityOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing LoginActivities.
+     */
+    cursor?: LoginActivityWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` LoginActivities from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` LoginActivities.
+     */
+    skip?: number
+    distinct?: LoginActivityScalarFieldEnum | LoginActivityScalarFieldEnum[]
+  }
+
+  /**
+   * LoginActivity create
+   */
+  export type LoginActivityCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * The data needed to create a LoginActivity.
+     */
+    data: XOR<LoginActivityCreateInput, LoginActivityUncheckedCreateInput>
+  }
+
+  /**
+   * LoginActivity createMany
+   */
+  export type LoginActivityCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many LoginActivities.
+     */
+    data: LoginActivityCreateManyInput | LoginActivityCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * LoginActivity createManyAndReturn
+   */
+  export type LoginActivityCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many LoginActivities.
+     */
+    data: LoginActivityCreateManyInput | LoginActivityCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * LoginActivity update
+   */
+  export type LoginActivityUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * The data needed to update a LoginActivity.
+     */
+    data: XOR<LoginActivityUpdateInput, LoginActivityUncheckedUpdateInput>
+    /**
+     * Choose, which LoginActivity to update.
+     */
+    where: LoginActivityWhereUniqueInput
+  }
+
+  /**
+   * LoginActivity updateMany
+   */
+  export type LoginActivityUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update LoginActivities.
+     */
+    data: XOR<LoginActivityUpdateManyMutationInput, LoginActivityUncheckedUpdateManyInput>
+    /**
+     * Filter which LoginActivities to update
+     */
+    where?: LoginActivityWhereInput
+  }
+
+  /**
+   * LoginActivity upsert
+   */
+  export type LoginActivityUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * The filter to search for the LoginActivity to update in case it exists.
+     */
+    where: LoginActivityWhereUniqueInput
+    /**
+     * In case the LoginActivity found by the `where` argument doesn't exist, create a new LoginActivity with this data.
+     */
+    create: XOR<LoginActivityCreateInput, LoginActivityUncheckedCreateInput>
+    /**
+     * In case the LoginActivity was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LoginActivityUpdateInput, LoginActivityUncheckedUpdateInput>
+  }
+
+  /**
+   * LoginActivity delete
+   */
+  export type LoginActivityDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
+    /**
+     * Filter which LoginActivity to delete.
+     */
+    where: LoginActivityWhereUniqueInput
+  }
+
+  /**
+   * LoginActivity deleteMany
+   */
+  export type LoginActivityDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which LoginActivities to delete
+     */
+    where?: LoginActivityWhereInput
+  }
+
+  /**
+   * LoginActivity.user
+   */
+  export type LoginActivity$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * LoginActivity without action
+   */
+  export type LoginActivityDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LoginActivity
+     */
+    select?: LoginActivitySelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LoginActivityInclude<ExtArgs> | null
   }
 
 
@@ -60513,7 +62891,12 @@ export namespace Prisma {
     businessId: 'businessId',
     deletedAt: 'deletedAt',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    mfaSecret: 'mfaSecret',
+    mfaEnabled: 'mfaEnabled',
+    mfaBackupCodes: 'mfaBackupCodes',
+    failedLoginAttempts: 'failedLoginAttempts',
+    lockedUntil: 'lockedUntil'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -61067,6 +63450,8 @@ export namespace Prisma {
     id: 'id',
     code: 'code',
     name: 'name',
+    price: 'price',
+    currency: 'currency',
     isTrial: 'isTrial',
     maxUsers: 'maxUsers',
     maxProducts: 'maxProducts',
@@ -61163,7 +63548,8 @@ export namespace Prisma {
     status: 'status',
     dueDate: 'dueDate',
     paidAt: 'paidAt',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    changeRequestId: 'changeRequestId'
   };
 
   export type SubscriptionInvoiceScalarFieldEnum = (typeof SubscriptionInvoiceScalarFieldEnum)[keyof typeof SubscriptionInvoiceScalarFieldEnum]
@@ -61213,6 +63599,33 @@ export namespace Prisma {
   };
 
   export type SubscriptionChangeRequestScalarFieldEnum = (typeof SubscriptionChangeRequestScalarFieldEnum)[keyof typeof SubscriptionChangeRequestScalarFieldEnum]
+
+
+  export const BusinessIpRuleScalarFieldEnum: {
+    id: 'id',
+    businessId: 'businessId',
+    ipRange: 'ipRange',
+    type: 'type',
+    description: 'description',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type BusinessIpRuleScalarFieldEnum = (typeof BusinessIpRuleScalarFieldEnum)[keyof typeof BusinessIpRuleScalarFieldEnum]
+
+
+  export const LoginActivityScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    email: 'email',
+    status: 'status',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent',
+    createdAt: 'createdAt'
+  };
+
+  export type LoginActivityScalarFieldEnum = (typeof LoginActivityScalarFieldEnum)[keyof typeof LoginActivityScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -61283,7 +63696,9 @@ export namespace Prisma {
     name: 'name',
     email: 'email',
     password: 'password',
-    businessId: 'businessId'
+    businessId: 'businessId',
+    mfaSecret: 'mfaSecret',
+    mfaBackupCodes: 'mfaBackupCodes'
   };
 
   export type UserOrderByRelevanceFieldEnum = (typeof UserOrderByRelevanceFieldEnum)[keyof typeof UserOrderByRelevanceFieldEnum]
@@ -61713,7 +64128,8 @@ export namespace Prisma {
   export const SubscriptionPlanOrderByRelevanceFieldEnum: {
     id: 'id',
     code: 'code',
-    name: 'name'
+    name: 'name',
+    currency: 'currency'
   };
 
   export type SubscriptionPlanOrderByRelevanceFieldEnum = (typeof SubscriptionPlanOrderByRelevanceFieldEnum)[keyof typeof SubscriptionPlanOrderByRelevanceFieldEnum]
@@ -61781,7 +64197,8 @@ export namespace Prisma {
     businessId: 'businessId',
     subscriptionId: 'subscriptionId',
     invoiceNumber: 'invoiceNumber',
-    currency: 'currency'
+    currency: 'currency',
+    changeRequestId: 'changeRequestId'
   };
 
   export type SubscriptionInvoiceOrderByRelevanceFieldEnum = (typeof SubscriptionInvoiceOrderByRelevanceFieldEnum)[keyof typeof SubscriptionInvoiceOrderByRelevanceFieldEnum]
@@ -61818,6 +64235,27 @@ export namespace Prisma {
   };
 
   export type SubscriptionChangeRequestOrderByRelevanceFieldEnum = (typeof SubscriptionChangeRequestOrderByRelevanceFieldEnum)[keyof typeof SubscriptionChangeRequestOrderByRelevanceFieldEnum]
+
+
+  export const BusinessIpRuleOrderByRelevanceFieldEnum: {
+    id: 'id',
+    businessId: 'businessId',
+    ipRange: 'ipRange',
+    description: 'description'
+  };
+
+  export type BusinessIpRuleOrderByRelevanceFieldEnum = (typeof BusinessIpRuleOrderByRelevanceFieldEnum)[keyof typeof BusinessIpRuleOrderByRelevanceFieldEnum]
+
+
+  export const LoginActivityOrderByRelevanceFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    email: 'email',
+    ipAddress: 'ipAddress',
+    userAgent: 'userAgent'
+  };
+
+  export type LoginActivityOrderByRelevanceFieldEnum = (typeof LoginActivityOrderByRelevanceFieldEnum)[keyof typeof LoginActivityOrderByRelevanceFieldEnum]
 
 
   /**
@@ -61868,20 +64306,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Decimal'
-   */
-  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
-    
-
-
-  /**
-   * Reference to a field of type 'Decimal[]'
-   */
-  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
-    
-
-
-  /**
    * Reference to a field of type 'Boolean'
    */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
@@ -61899,6 +64323,20 @@ export namespace Prisma {
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal'
+   */
+  export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+  /**
+   * Reference to a field of type 'Decimal[]'
+   */
+  export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
     
 
 
@@ -62117,6 +64555,34 @@ export namespace Prisma {
    */
   export type ListEnumSubscriptionChangeRequestStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionChangeRequestStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'IpRuleType'
+   */
+  export type EnumIpRuleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IpRuleType'>
+    
+
+
+  /**
+   * Reference to a field of type 'IpRuleType[]'
+   */
+  export type ListEnumIpRuleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IpRuleType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'LoginStatus'
+   */
+  export type EnumLoginStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LoginStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'LoginStatus[]'
+   */
+  export type ListEnumLoginStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LoginStatus[]'>
+    
   /**
    * Deep Input Types
    */
@@ -62229,6 +64695,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceListRelationFilter
     subscriptionPayments?: SubscriptionPaymentListRelationFilter
     subscriptionChangeRequests?: SubscriptionChangeRequestListRelationFilter
+    ipRules?: BusinessIpRuleListRelationFilter
   }
 
   export type BusinessOrderByWithRelationInput = {
@@ -62284,6 +64751,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceOrderByRelationAggregateInput
     subscriptionPayments?: SubscriptionPaymentOrderByRelationAggregateInput
     subscriptionChangeRequests?: SubscriptionChangeRequestOrderByRelationAggregateInput
+    ipRules?: BusinessIpRuleOrderByRelationAggregateInput
     _relevance?: BusinessOrderByRelevanceInput
   }
 
@@ -62343,6 +64811,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceListRelationFilter
     subscriptionPayments?: SubscriptionPaymentListRelationFilter
     subscriptionChangeRequests?: SubscriptionChangeRequestListRelationFilter
+    ipRules?: BusinessIpRuleListRelationFilter
   }, "id">
 
   export type BusinessOrderByWithAggregationInput = {
@@ -62396,6 +64865,11 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    mfaSecret?: StringNullableFilter<"User"> | string | null
+    mfaEnabled?: BoolFilter<"User"> | boolean
+    mfaBackupCodes?: StringNullableListFilter<"User">
+    failedLoginAttempts?: IntFilter<"User"> | number
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
     aiLogs?: AiLogListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     orders?: OrderListRelationFilter
@@ -62406,6 +64880,7 @@ export namespace Prisma {
     business?: XOR<BusinessNullableScalarRelationFilter, BusinessWhereInput> | null
     businessRoles?: UserBusinessRoleListRelationFilter
     customRoles?: UserCustomRoleListRelationFilter
+    loginActivities?: LoginActivityListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -62418,6 +64893,11 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    mfaSecret?: SortOrderInput | SortOrder
+    mfaEnabled?: SortOrder
+    mfaBackupCodes?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrderInput | SortOrder
     aiLogs?: AiLogOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
     orders?: OrderOrderByRelationAggregateInput
@@ -62428,6 +64908,7 @@ export namespace Prisma {
     business?: BusinessOrderByWithRelationInput
     businessRoles?: UserBusinessRoleOrderByRelationAggregateInput
     customRoles?: UserCustomRoleOrderByRelationAggregateInput
+    loginActivities?: LoginActivityOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
 
@@ -62444,6 +64925,11 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    mfaSecret?: StringNullableFilter<"User"> | string | null
+    mfaEnabled?: BoolFilter<"User"> | boolean
+    mfaBackupCodes?: StringNullableListFilter<"User">
+    failedLoginAttempts?: IntFilter<"User"> | number
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
     aiLogs?: AiLogListRelationFilter
     auditLogs?: AuditLogListRelationFilter
     orders?: OrderListRelationFilter
@@ -62454,6 +64940,7 @@ export namespace Prisma {
     business?: XOR<BusinessNullableScalarRelationFilter, BusinessWhereInput> | null
     businessRoles?: UserBusinessRoleListRelationFilter
     customRoles?: UserCustomRoleListRelationFilter
+    loginActivities?: LoginActivityListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -62466,9 +64953,16 @@ export namespace Prisma {
     deletedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    mfaSecret?: SortOrderInput | SortOrder
+    mfaEnabled?: SortOrder
+    mfaBackupCodes?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
+    _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
+    _sum?: UserSumOrderByAggregateInput
   }
 
   export type UserScalarWhereWithAggregatesInput = {
@@ -62484,6 +64978,11 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    mfaSecret?: StringNullableWithAggregatesFilter<"User"> | string | null
+    mfaEnabled?: BoolWithAggregatesFilter<"User"> | boolean
+    mfaBackupCodes?: StringNullableListFilter<"User">
+    failedLoginAttempts?: IntWithAggregatesFilter<"User"> | number
+    lockedUntil?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
   export type RefreshTokenWhereInput = {
@@ -65499,6 +67998,8 @@ export namespace Prisma {
     id?: StringFilter<"SubscriptionPlan"> | string
     code?: StringFilter<"SubscriptionPlan"> | string
     name?: StringFilter<"SubscriptionPlan"> | string
+    price?: DecimalFilter<"SubscriptionPlan"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"SubscriptionPlan"> | string
     isTrial?: BoolFilter<"SubscriptionPlan"> | boolean
     maxUsers?: IntNullableFilter<"SubscriptionPlan"> | number | null
     maxProducts?: IntNullableFilter<"SubscriptionPlan"> | number | null
@@ -65513,6 +68014,8 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    price?: SortOrder
+    currency?: SortOrder
     isTrial?: SortOrder
     maxUsers?: SortOrderInput | SortOrder
     maxProducts?: SortOrderInput | SortOrder
@@ -65531,6 +68034,8 @@ export namespace Prisma {
     OR?: SubscriptionPlanWhereInput[]
     NOT?: SubscriptionPlanWhereInput | SubscriptionPlanWhereInput[]
     name?: StringFilter<"SubscriptionPlan"> | string
+    price?: DecimalFilter<"SubscriptionPlan"> | Decimal | DecimalJsLike | number | string
+    currency?: StringFilter<"SubscriptionPlan"> | string
     isTrial?: BoolFilter<"SubscriptionPlan"> | boolean
     maxUsers?: IntNullableFilter<"SubscriptionPlan"> | number | null
     maxProducts?: IntNullableFilter<"SubscriptionPlan"> | number | null
@@ -65545,6 +68050,8 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    price?: SortOrder
+    currency?: SortOrder
     isTrial?: SortOrder
     maxUsers?: SortOrderInput | SortOrder
     maxProducts?: SortOrderInput | SortOrder
@@ -65565,6 +68072,8 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"SubscriptionPlan"> | string
     code?: StringWithAggregatesFilter<"SubscriptionPlan"> | string
     name?: StringWithAggregatesFilter<"SubscriptionPlan"> | string
+    price?: DecimalWithAggregatesFilter<"SubscriptionPlan"> | Decimal | DecimalJsLike | number | string
+    currency?: StringWithAggregatesFilter<"SubscriptionPlan"> | string
     isTrial?: BoolWithAggregatesFilter<"SubscriptionPlan"> | boolean
     maxUsers?: IntNullableWithAggregatesFilter<"SubscriptionPlan"> | number | null
     maxProducts?: IntNullableWithAggregatesFilter<"SubscriptionPlan"> | number | null
@@ -65989,8 +68498,10 @@ export namespace Prisma {
     dueDate?: DateTimeFilter<"SubscriptionInvoice"> | Date | string
     paidAt?: DateTimeNullableFilter<"SubscriptionInvoice"> | Date | string | null
     createdAt?: DateTimeFilter<"SubscriptionInvoice"> | Date | string
+    changeRequestId?: StringNullableFilter<"SubscriptionInvoice"> | string | null
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     subscription?: XOR<SubscriptionScalarRelationFilter, SubscriptionWhereInput>
+    changeRequest?: XOR<SubscriptionChangeRequestNullableScalarRelationFilter, SubscriptionChangeRequestWhereInput> | null
     payments?: SubscriptionPaymentListRelationFilter
   }
 
@@ -66005,8 +68516,10 @@ export namespace Prisma {
     dueDate?: SortOrder
     paidAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    changeRequestId?: SortOrderInput | SortOrder
     business?: BusinessOrderByWithRelationInput
     subscription?: SubscriptionOrderByWithRelationInput
+    changeRequest?: SubscriptionChangeRequestOrderByWithRelationInput
     payments?: SubscriptionPaymentOrderByRelationAggregateInput
     _relevance?: SubscriptionInvoiceOrderByRelevanceInput
   }
@@ -66014,6 +68527,7 @@ export namespace Prisma {
   export type SubscriptionInvoiceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     invoiceNumber?: string
+    changeRequestId?: string
     AND?: SubscriptionInvoiceWhereInput | SubscriptionInvoiceWhereInput[]
     OR?: SubscriptionInvoiceWhereInput[]
     NOT?: SubscriptionInvoiceWhereInput | SubscriptionInvoiceWhereInput[]
@@ -66027,8 +68541,9 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"SubscriptionInvoice"> | Date | string
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     subscription?: XOR<SubscriptionScalarRelationFilter, SubscriptionWhereInput>
+    changeRequest?: XOR<SubscriptionChangeRequestNullableScalarRelationFilter, SubscriptionChangeRequestWhereInput> | null
     payments?: SubscriptionPaymentListRelationFilter
-  }, "id" | "invoiceNumber">
+  }, "id" | "invoiceNumber" | "changeRequestId">
 
   export type SubscriptionInvoiceOrderByWithAggregationInput = {
     id?: SortOrder
@@ -66041,6 +68556,7 @@ export namespace Prisma {
     dueDate?: SortOrder
     paidAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    changeRequestId?: SortOrderInput | SortOrder
     _count?: SubscriptionInvoiceCountOrderByAggregateInput
     _avg?: SubscriptionInvoiceAvgOrderByAggregateInput
     _max?: SubscriptionInvoiceMaxOrderByAggregateInput
@@ -66062,6 +68578,7 @@ export namespace Prisma {
     dueDate?: DateTimeWithAggregatesFilter<"SubscriptionInvoice"> | Date | string
     paidAt?: DateTimeNullableWithAggregatesFilter<"SubscriptionInvoice"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"SubscriptionInvoice"> | Date | string
+    changeRequestId?: StringNullableWithAggregatesFilter<"SubscriptionInvoice"> | string | null
   }
 
   export type SubscriptionPaymentWhereInput = {
@@ -66242,6 +68759,7 @@ export namespace Prisma {
     processedAt?: DateTimeNullableFilter<"SubscriptionChangeRequest"> | Date | string | null
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     subscription?: XOR<SubscriptionScalarRelationFilter, SubscriptionWhereInput>
+    invoice?: XOR<SubscriptionInvoiceNullableScalarRelationFilter, SubscriptionInvoiceWhereInput> | null
   }
 
   export type SubscriptionChangeRequestOrderByWithRelationInput = {
@@ -66255,6 +68773,7 @@ export namespace Prisma {
     processedAt?: SortOrderInput | SortOrder
     business?: BusinessOrderByWithRelationInput
     subscription?: SubscriptionOrderByWithRelationInput
+    invoice?: SubscriptionInvoiceOrderByWithRelationInput
     _relevance?: SubscriptionChangeRequestOrderByRelevanceInput
   }
 
@@ -66272,6 +68791,7 @@ export namespace Prisma {
     processedAt?: DateTimeNullableFilter<"SubscriptionChangeRequest"> | Date | string | null
     business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
     subscription?: XOR<SubscriptionScalarRelationFilter, SubscriptionWhereInput>
+    invoice?: XOR<SubscriptionInvoiceNullableScalarRelationFilter, SubscriptionInvoiceWhereInput> | null
   }, "id">
 
   export type SubscriptionChangeRequestOrderByWithAggregationInput = {
@@ -66300,6 +68820,143 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusWithAggregatesFilter<"SubscriptionChangeRequest"> | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeWithAggregatesFilter<"SubscriptionChangeRequest"> | Date | string
     processedAt?: DateTimeNullableWithAggregatesFilter<"SubscriptionChangeRequest"> | Date | string | null
+  }
+
+  export type BusinessIpRuleWhereInput = {
+    AND?: BusinessIpRuleWhereInput | BusinessIpRuleWhereInput[]
+    OR?: BusinessIpRuleWhereInput[]
+    NOT?: BusinessIpRuleWhereInput | BusinessIpRuleWhereInput[]
+    id?: StringFilter<"BusinessIpRule"> | string
+    businessId?: StringFilter<"BusinessIpRule"> | string
+    ipRange?: StringFilter<"BusinessIpRule"> | string
+    type?: EnumIpRuleTypeFilter<"BusinessIpRule"> | $Enums.IpRuleType
+    description?: StringNullableFilter<"BusinessIpRule"> | string | null
+    isActive?: BoolFilter<"BusinessIpRule"> | boolean
+    createdAt?: DateTimeFilter<"BusinessIpRule"> | Date | string
+    updatedAt?: DateTimeFilter<"BusinessIpRule"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+  }
+
+  export type BusinessIpRuleOrderByWithRelationInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    ipRange?: SortOrder
+    type?: SortOrder
+    description?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    business?: BusinessOrderByWithRelationInput
+    _relevance?: BusinessIpRuleOrderByRelevanceInput
+  }
+
+  export type BusinessIpRuleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: BusinessIpRuleWhereInput | BusinessIpRuleWhereInput[]
+    OR?: BusinessIpRuleWhereInput[]
+    NOT?: BusinessIpRuleWhereInput | BusinessIpRuleWhereInput[]
+    businessId?: StringFilter<"BusinessIpRule"> | string
+    ipRange?: StringFilter<"BusinessIpRule"> | string
+    type?: EnumIpRuleTypeFilter<"BusinessIpRule"> | $Enums.IpRuleType
+    description?: StringNullableFilter<"BusinessIpRule"> | string | null
+    isActive?: BoolFilter<"BusinessIpRule"> | boolean
+    createdAt?: DateTimeFilter<"BusinessIpRule"> | Date | string
+    updatedAt?: DateTimeFilter<"BusinessIpRule"> | Date | string
+    business?: XOR<BusinessScalarRelationFilter, BusinessWhereInput>
+  }, "id">
+
+  export type BusinessIpRuleOrderByWithAggregationInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    ipRange?: SortOrder
+    type?: SortOrder
+    description?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: BusinessIpRuleCountOrderByAggregateInput
+    _max?: BusinessIpRuleMaxOrderByAggregateInput
+    _min?: BusinessIpRuleMinOrderByAggregateInput
+  }
+
+  export type BusinessIpRuleScalarWhereWithAggregatesInput = {
+    AND?: BusinessIpRuleScalarWhereWithAggregatesInput | BusinessIpRuleScalarWhereWithAggregatesInput[]
+    OR?: BusinessIpRuleScalarWhereWithAggregatesInput[]
+    NOT?: BusinessIpRuleScalarWhereWithAggregatesInput | BusinessIpRuleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BusinessIpRule"> | string
+    businessId?: StringWithAggregatesFilter<"BusinessIpRule"> | string
+    ipRange?: StringWithAggregatesFilter<"BusinessIpRule"> | string
+    type?: EnumIpRuleTypeWithAggregatesFilter<"BusinessIpRule"> | $Enums.IpRuleType
+    description?: StringNullableWithAggregatesFilter<"BusinessIpRule"> | string | null
+    isActive?: BoolWithAggregatesFilter<"BusinessIpRule"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"BusinessIpRule"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"BusinessIpRule"> | Date | string
+  }
+
+  export type LoginActivityWhereInput = {
+    AND?: LoginActivityWhereInput | LoginActivityWhereInput[]
+    OR?: LoginActivityWhereInput[]
+    NOT?: LoginActivityWhereInput | LoginActivityWhereInput[]
+    id?: StringFilter<"LoginActivity"> | string
+    userId?: StringNullableFilter<"LoginActivity"> | string | null
+    email?: StringFilter<"LoginActivity"> | string
+    status?: EnumLoginStatusFilter<"LoginActivity"> | $Enums.LoginStatus
+    ipAddress?: StringNullableFilter<"LoginActivity"> | string | null
+    userAgent?: StringNullableFilter<"LoginActivity"> | string | null
+    createdAt?: DateTimeFilter<"LoginActivity"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type LoginActivityOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    _relevance?: LoginActivityOrderByRelevanceInput
+  }
+
+  export type LoginActivityWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: LoginActivityWhereInput | LoginActivityWhereInput[]
+    OR?: LoginActivityWhereInput[]
+    NOT?: LoginActivityWhereInput | LoginActivityWhereInput[]
+    userId?: StringNullableFilter<"LoginActivity"> | string | null
+    email?: StringFilter<"LoginActivity"> | string
+    status?: EnumLoginStatusFilter<"LoginActivity"> | $Enums.LoginStatus
+    ipAddress?: StringNullableFilter<"LoginActivity"> | string | null
+    userAgent?: StringNullableFilter<"LoginActivity"> | string | null
+    createdAt?: DateTimeFilter<"LoginActivity"> | Date | string
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type LoginActivityOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrderInput | SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrderInput | SortOrder
+    userAgent?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: LoginActivityCountOrderByAggregateInput
+    _max?: LoginActivityMaxOrderByAggregateInput
+    _min?: LoginActivityMinOrderByAggregateInput
+  }
+
+  export type LoginActivityScalarWhereWithAggregatesInput = {
+    AND?: LoginActivityScalarWhereWithAggregatesInput | LoginActivityScalarWhereWithAggregatesInput[]
+    OR?: LoginActivityScalarWhereWithAggregatesInput[]
+    NOT?: LoginActivityScalarWhereWithAggregatesInput | LoginActivityScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"LoginActivity"> | string
+    userId?: StringNullableWithAggregatesFilter<"LoginActivity"> | string | null
+    email?: StringWithAggregatesFilter<"LoginActivity"> | string
+    status?: EnumLoginStatusWithAggregatesFilter<"LoginActivity"> | $Enums.LoginStatus
+    ipAddress?: StringNullableWithAggregatesFilter<"LoginActivity"> | string | null
+    userAgent?: StringNullableWithAggregatesFilter<"LoginActivity"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"LoginActivity"> | Date | string
   }
 
   export type OrganizationCreateInput = {
@@ -66407,6 +69064,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateInput = {
@@ -66461,6 +69119,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUpdateInput = {
@@ -66515,6 +69174,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateInput = {
@@ -66569,6 +69229,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateManyInput = {
@@ -66627,6 +69288,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -66637,6 +69303,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -66649,6 +69316,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -66658,6 +69330,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -66669,6 +69342,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -66679,6 +69357,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -66691,6 +69370,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -66700,6 +69384,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -66712,6 +69397,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -66723,6 +69413,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -66735,6 +69430,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type RefreshTokenCreateInput = {
@@ -69807,6 +72507,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -69821,6 +72523,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -69835,6 +72539,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -69849,6 +72555,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -69863,6 +72571,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -69875,6 +72585,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -69887,6 +72599,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -70314,6 +73028,7 @@ export namespace Prisma {
     createdAt?: Date | string
     business: BusinessCreateNestedOneWithoutSubscriptionInvoicesInput
     subscription: SubscriptionCreateNestedOneWithoutInvoicesInput
+    changeRequest?: SubscriptionChangeRequestCreateNestedOneWithoutInvoiceInput
     payments?: SubscriptionPaymentCreateNestedManyWithoutInvoiceInput
   }
 
@@ -70328,6 +73043,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
     payments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
@@ -70342,6 +73058,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSubscriptionInvoicesNestedInput
     subscription?: SubscriptionUpdateOneRequiredWithoutInvoicesNestedInput
+    changeRequest?: SubscriptionChangeRequestUpdateOneWithoutInvoiceNestedInput
     payments?: SubscriptionPaymentUpdateManyWithoutInvoiceNestedInput
   }
 
@@ -70356,6 +73073,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     payments?: SubscriptionPaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
@@ -70370,6 +73088,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
   }
 
   export type SubscriptionInvoiceUpdateManyMutationInput = {
@@ -70394,6 +73113,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SubscriptionPaymentCreateInput = {
@@ -70585,6 +73305,7 @@ export namespace Prisma {
     processedAt?: Date | string | null
     business: BusinessCreateNestedOneWithoutSubscriptionChangeRequestsInput
     subscription: SubscriptionCreateNestedOneWithoutChangeRequestsInput
+    invoice?: SubscriptionInvoiceCreateNestedOneWithoutChangeRequestInput
   }
 
   export type SubscriptionChangeRequestUncheckedCreateInput = {
@@ -70596,6 +73317,7 @@ export namespace Prisma {
     status?: $Enums.SubscriptionChangeRequestStatus
     requestedAt?: Date | string
     processedAt?: Date | string | null
+    invoice?: SubscriptionInvoiceUncheckedCreateNestedOneWithoutChangeRequestInput
   }
 
   export type SubscriptionChangeRequestUpdateInput = {
@@ -70607,6 +73329,7 @@ export namespace Prisma {
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     business?: BusinessUpdateOneRequiredWithoutSubscriptionChangeRequestsNestedInput
     subscription?: SubscriptionUpdateOneRequiredWithoutChangeRequestsNestedInput
+    invoice?: SubscriptionInvoiceUpdateOneWithoutChangeRequestNestedInput
   }
 
   export type SubscriptionChangeRequestUncheckedUpdateInput = {
@@ -70618,6 +73341,7 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invoice?: SubscriptionInvoiceUncheckedUpdateOneWithoutChangeRequestNestedInput
   }
 
   export type SubscriptionChangeRequestCreateManyInput = {
@@ -70649,6 +73373,151 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BusinessIpRuleCreateInput = {
+    id?: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    business: BusinessCreateNestedOneWithoutIpRulesInput
+  }
+
+  export type BusinessIpRuleUncheckedCreateInput = {
+    id?: string
+    businessId: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BusinessIpRuleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutIpRulesNestedInput
+  }
+
+  export type BusinessIpRuleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BusinessIpRuleCreateManyInput = {
+    id?: string
+    businessId: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BusinessIpRuleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BusinessIpRuleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LoginActivityCreateInput = {
+    id?: string
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+    user?: UserCreateNestedOneWithoutLoginActivitiesInput
+  }
+
+  export type LoginActivityUncheckedCreateInput = {
+    id?: string
+    userId?: string | null
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type LoginActivityUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneWithoutLoginActivitiesNestedInput
+  }
+
+  export type LoginActivityUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LoginActivityCreateManyInput = {
+    id?: string
+    userId?: string | null
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type LoginActivityUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LoginActivityUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -71006,6 +73875,12 @@ export namespace Prisma {
     none?: SubscriptionChangeRequestWhereInput
   }
 
+  export type BusinessIpRuleListRelationFilter = {
+    every?: BusinessIpRuleWhereInput
+    some?: BusinessIpRuleWhereInput
+    none?: BusinessIpRuleWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -71155,6 +74030,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type BusinessIpRuleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type BusinessOrderByRelevanceInput = {
     fields: BusinessOrderByRelevanceFieldEnum | BusinessOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -71249,6 +74128,30 @@ export namespace Prisma {
     not?: NestedEnumPlatformRoleFilter<$PrismaModel> | $Enums.PlatformRole
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
+
   export type RefreshTokenListRelationFilter = {
     every?: RefreshTokenWhereInput
     some?: RefreshTokenWhereInput
@@ -71266,11 +74169,21 @@ export namespace Prisma {
     none?: UserCustomRoleWhereInput
   }
 
+  export type LoginActivityListRelationFilter = {
+    every?: LoginActivityWhereInput
+    some?: LoginActivityWhereInput
+    none?: LoginActivityWhereInput
+  }
+
   export type RefreshTokenOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type UserCustomRoleOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LoginActivityOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -71290,6 +74203,15 @@ export namespace Prisma {
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    mfaSecret?: SortOrder
+    mfaEnabled?: SortOrder
+    mfaBackupCodes?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+  }
+
+  export type UserAvgOrderByAggregateInput = {
+    failedLoginAttempts?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -71302,6 +74224,10 @@ export namespace Prisma {
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    mfaSecret?: SortOrder
+    mfaEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -71314,6 +74240,14 @@ export namespace Prisma {
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    mfaSecret?: SortOrder
+    mfaEnabled?: SortOrder
+    failedLoginAttempts?: SortOrder
+    lockedUntil?: SortOrder
+  }
+
+  export type UserSumOrderByAggregateInput = {
+    failedLoginAttempts?: SortOrder
   }
 
   export type EnumPlatformRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -71324,6 +74258,30 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPlatformRoleFilter<$PrismaModel>
     _max?: NestedEnumPlatformRoleFilter<$PrismaModel>
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type UserScalarRelationFilter = {
@@ -71462,22 +74420,6 @@ export namespace Prisma {
     not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type IntFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
-  }
-
   export type EmbeddingNullableScalarRelationFilter = {
     is?: EmbeddingWhereInput | null
     isNot?: EmbeddingWhereInput | null
@@ -71611,30 +74553,6 @@ export namespace Prisma {
     _sum?: NestedDecimalNullableFilter<$PrismaModel>
     _min?: NestedDecimalNullableFilter<$PrismaModel>
     _max?: NestedDecimalNullableFilter<$PrismaModel>
-  }
-
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[] | ListIntFieldRefInput<$PrismaModel>
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type ItemScalarRelationFilter = {
@@ -73603,6 +76521,8 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    price?: SortOrder
+    currency?: SortOrder
     isTrial?: SortOrder
     maxUsers?: SortOrder
     maxProducts?: SortOrder
@@ -73612,6 +76532,7 @@ export namespace Prisma {
   }
 
   export type SubscriptionPlanAvgOrderByAggregateInput = {
+    price?: SortOrder
     maxUsers?: SortOrder
     maxProducts?: SortOrder
     maxWarehouses?: SortOrder
@@ -73621,6 +76542,8 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    price?: SortOrder
+    currency?: SortOrder
     isTrial?: SortOrder
     maxUsers?: SortOrder
     maxProducts?: SortOrder
@@ -73633,6 +76556,8 @@ export namespace Prisma {
     id?: SortOrder
     code?: SortOrder
     name?: SortOrder
+    price?: SortOrder
+    currency?: SortOrder
     isTrial?: SortOrder
     maxUsers?: SortOrder
     maxProducts?: SortOrder
@@ -73642,6 +76567,7 @@ export namespace Prisma {
   }
 
   export type SubscriptionPlanSumOrderByAggregateInput = {
+    price?: SortOrder
     maxUsers?: SortOrder
     maxProducts?: SortOrder
     maxWarehouses?: SortOrder
@@ -73862,14 +76788,6 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type StringNullableListFilter<$PrismaModel = never> = {
-    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    has?: string | StringFieldRefInput<$PrismaModel> | null
-    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
-    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
-  }
-
   export type CustomRoleOrderByRelevanceInput = {
     fields: CustomRoleOrderByRelevanceFieldEnum | CustomRoleOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -73953,6 +76871,11 @@ export namespace Prisma {
     not?: NestedEnumSubscriptionInvoiceStatusFilter<$PrismaModel> | $Enums.SubscriptionInvoiceStatus
   }
 
+  export type SubscriptionChangeRequestNullableScalarRelationFilter = {
+    is?: SubscriptionChangeRequestWhereInput | null
+    isNot?: SubscriptionChangeRequestWhereInput | null
+  }
+
   export type SubscriptionInvoiceOrderByRelevanceInput = {
     fields: SubscriptionInvoiceOrderByRelevanceFieldEnum | SubscriptionInvoiceOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -73970,6 +76893,7 @@ export namespace Prisma {
     dueDate?: SortOrder
     paidAt?: SortOrder
     createdAt?: SortOrder
+    changeRequestId?: SortOrder
   }
 
   export type SubscriptionInvoiceAvgOrderByAggregateInput = {
@@ -73987,6 +76911,7 @@ export namespace Prisma {
     dueDate?: SortOrder
     paidAt?: SortOrder
     createdAt?: SortOrder
+    changeRequestId?: SortOrder
   }
 
   export type SubscriptionInvoiceMinOrderByAggregateInput = {
@@ -74000,6 +76925,7 @@ export namespace Prisma {
     dueDate?: SortOrder
     paidAt?: SortOrder
     createdAt?: SortOrder
+    changeRequestId?: SortOrder
   }
 
   export type SubscriptionInvoiceSumOrderByAggregateInput = {
@@ -74165,6 +77091,11 @@ export namespace Prisma {
     not?: NestedEnumSubscriptionChangeRequestStatusFilter<$PrismaModel> | $Enums.SubscriptionChangeRequestStatus
   }
 
+  export type SubscriptionInvoiceNullableScalarRelationFilter = {
+    is?: SubscriptionInvoiceWhereInput | null
+    isNot?: SubscriptionInvoiceWhereInput | null
+  }
+
   export type SubscriptionChangeRequestOrderByRelevanceInput = {
     fields: SubscriptionChangeRequestOrderByRelevanceFieldEnum | SubscriptionChangeRequestOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -74222,6 +77153,115 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSubscriptionChangeRequestStatusFilter<$PrismaModel>
     _max?: NestedEnumSubscriptionChangeRequestStatusFilter<$PrismaModel>
+  }
+
+  export type EnumIpRuleTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.IpRuleType | EnumIpRuleTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumIpRuleTypeFilter<$PrismaModel> | $Enums.IpRuleType
+  }
+
+  export type BusinessIpRuleOrderByRelevanceInput = {
+    fields: BusinessIpRuleOrderByRelevanceFieldEnum | BusinessIpRuleOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type BusinessIpRuleCountOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    ipRange?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BusinessIpRuleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    ipRange?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type BusinessIpRuleMinOrderByAggregateInput = {
+    id?: SortOrder
+    businessId?: SortOrder
+    ipRange?: SortOrder
+    type?: SortOrder
+    description?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumIpRuleTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.IpRuleType | EnumIpRuleTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumIpRuleTypeWithAggregatesFilter<$PrismaModel> | $Enums.IpRuleType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumIpRuleTypeFilter<$PrismaModel>
+    _max?: NestedEnumIpRuleTypeFilter<$PrismaModel>
+  }
+
+  export type EnumLoginStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LoginStatus | EnumLoginStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLoginStatusFilter<$PrismaModel> | $Enums.LoginStatus
+  }
+
+  export type LoginActivityOrderByRelevanceInput = {
+    fields: LoginActivityOrderByRelevanceFieldEnum | LoginActivityOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type LoginActivityCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LoginActivityMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type LoginActivityMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    email?: SortOrder
+    status?: SortOrder
+    ipAddress?: SortOrder
+    userAgent?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EnumLoginStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LoginStatus | EnumLoginStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLoginStatusWithAggregatesFilter<$PrismaModel> | $Enums.LoginStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLoginStatusFilter<$PrismaModel>
+    _max?: NestedEnumLoginStatusFilter<$PrismaModel>
   }
 
   export type BusinessCreateNestedManyWithoutOrganizationInput = {
@@ -74544,6 +77584,13 @@ export namespace Prisma {
     connect?: SubscriptionChangeRequestWhereUniqueInput | SubscriptionChangeRequestWhereUniqueInput[]
   }
 
+  export type BusinessIpRuleCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<BusinessIpRuleCreateWithoutBusinessInput, BusinessIpRuleUncheckedCreateWithoutBusinessInput> | BusinessIpRuleCreateWithoutBusinessInput[] | BusinessIpRuleUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: BusinessIpRuleCreateOrConnectWithoutBusinessInput | BusinessIpRuleCreateOrConnectWithoutBusinessInput[]
+    createMany?: BusinessIpRuleCreateManyBusinessInputEnvelope
+    connect?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutBusinessInput = {
     create?: XOR<AccountCreateWithoutBusinessInput, AccountUncheckedCreateWithoutBusinessInput> | AccountCreateWithoutBusinessInput[] | AccountUncheckedCreateWithoutBusinessInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutBusinessInput | AccountCreateOrConnectWithoutBusinessInput[]
@@ -74806,6 +77853,13 @@ export namespace Prisma {
     connectOrCreate?: SubscriptionChangeRequestCreateOrConnectWithoutBusinessInput | SubscriptionChangeRequestCreateOrConnectWithoutBusinessInput[]
     createMany?: SubscriptionChangeRequestCreateManyBusinessInputEnvelope
     connect?: SubscriptionChangeRequestWhereUniqueInput | SubscriptionChangeRequestWhereUniqueInput[]
+  }
+
+  export type BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput = {
+    create?: XOR<BusinessIpRuleCreateWithoutBusinessInput, BusinessIpRuleUncheckedCreateWithoutBusinessInput> | BusinessIpRuleCreateWithoutBusinessInput[] | BusinessIpRuleUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: BusinessIpRuleCreateOrConnectWithoutBusinessInput | BusinessIpRuleCreateOrConnectWithoutBusinessInput[]
+    createMany?: BusinessIpRuleCreateManyBusinessInputEnvelope
+    connect?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
   }
 
   export type NullableStringFieldUpdateOperationsInput = {
@@ -75348,6 +78402,20 @@ export namespace Prisma {
     deleteMany?: SubscriptionChangeRequestScalarWhereInput | SubscriptionChangeRequestScalarWhereInput[]
   }
 
+  export type BusinessIpRuleUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<BusinessIpRuleCreateWithoutBusinessInput, BusinessIpRuleUncheckedCreateWithoutBusinessInput> | BusinessIpRuleCreateWithoutBusinessInput[] | BusinessIpRuleUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: BusinessIpRuleCreateOrConnectWithoutBusinessInput | BusinessIpRuleCreateOrConnectWithoutBusinessInput[]
+    upsert?: BusinessIpRuleUpsertWithWhereUniqueWithoutBusinessInput | BusinessIpRuleUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: BusinessIpRuleCreateManyBusinessInputEnvelope
+    set?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    disconnect?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    delete?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    connect?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    update?: BusinessIpRuleUpdateWithWhereUniqueWithoutBusinessInput | BusinessIpRuleUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: BusinessIpRuleUpdateManyWithWhereWithoutBusinessInput | BusinessIpRuleUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: BusinessIpRuleScalarWhereInput | BusinessIpRuleScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutBusinessNestedInput = {
     create?: XOR<AccountCreateWithoutBusinessInput, AccountUncheckedCreateWithoutBusinessInput> | AccountCreateWithoutBusinessInput[] | AccountUncheckedCreateWithoutBusinessInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutBusinessInput | AccountCreateOrConnectWithoutBusinessInput[]
@@ -75872,6 +78940,24 @@ export namespace Prisma {
     deleteMany?: SubscriptionChangeRequestScalarWhereInput | SubscriptionChangeRequestScalarWhereInput[]
   }
 
+  export type BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput = {
+    create?: XOR<BusinessIpRuleCreateWithoutBusinessInput, BusinessIpRuleUncheckedCreateWithoutBusinessInput> | BusinessIpRuleCreateWithoutBusinessInput[] | BusinessIpRuleUncheckedCreateWithoutBusinessInput[]
+    connectOrCreate?: BusinessIpRuleCreateOrConnectWithoutBusinessInput | BusinessIpRuleCreateOrConnectWithoutBusinessInput[]
+    upsert?: BusinessIpRuleUpsertWithWhereUniqueWithoutBusinessInput | BusinessIpRuleUpsertWithWhereUniqueWithoutBusinessInput[]
+    createMany?: BusinessIpRuleCreateManyBusinessInputEnvelope
+    set?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    disconnect?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    delete?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    connect?: BusinessIpRuleWhereUniqueInput | BusinessIpRuleWhereUniqueInput[]
+    update?: BusinessIpRuleUpdateWithWhereUniqueWithoutBusinessInput | BusinessIpRuleUpdateWithWhereUniqueWithoutBusinessInput[]
+    updateMany?: BusinessIpRuleUpdateManyWithWhereWithoutBusinessInput | BusinessIpRuleUpdateManyWithWhereWithoutBusinessInput[]
+    deleteMany?: BusinessIpRuleScalarWhereInput | BusinessIpRuleScalarWhereInput[]
+  }
+
+  export type UserCreatemfaBackupCodesInput = {
+    set: string[]
+  }
+
   export type AiLogCreateNestedManyWithoutUserInput = {
     create?: XOR<AiLogCreateWithoutUserInput, AiLogUncheckedCreateWithoutUserInput> | AiLogCreateWithoutUserInput[] | AiLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AiLogCreateOrConnectWithoutUserInput | AiLogCreateOrConnectWithoutUserInput[]
@@ -75941,6 +79027,13 @@ export namespace Prisma {
     connect?: UserCustomRoleWhereUniqueInput | UserCustomRoleWhereUniqueInput[]
   }
 
+  export type LoginActivityCreateNestedManyWithoutUserInput = {
+    create?: XOR<LoginActivityCreateWithoutUserInput, LoginActivityUncheckedCreateWithoutUserInput> | LoginActivityCreateWithoutUserInput[] | LoginActivityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LoginActivityCreateOrConnectWithoutUserInput | LoginActivityCreateOrConnectWithoutUserInput[]
+    createMany?: LoginActivityCreateManyUserInputEnvelope
+    connect?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+  }
+
   export type AiLogUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AiLogCreateWithoutUserInput, AiLogUncheckedCreateWithoutUserInput> | AiLogCreateWithoutUserInput[] | AiLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AiLogCreateOrConnectWithoutUserInput | AiLogCreateOrConnectWithoutUserInput[]
@@ -76004,8 +79097,32 @@ export namespace Prisma {
     connect?: UserCustomRoleWhereUniqueInput | UserCustomRoleWhereUniqueInput[]
   }
 
+  export type LoginActivityUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<LoginActivityCreateWithoutUserInput, LoginActivityUncheckedCreateWithoutUserInput> | LoginActivityCreateWithoutUserInput[] | LoginActivityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LoginActivityCreateOrConnectWithoutUserInput | LoginActivityCreateOrConnectWithoutUserInput[]
+    createMany?: LoginActivityCreateManyUserInputEnvelope
+    connect?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+  }
+
   export type EnumPlatformRoleFieldUpdateOperationsInput = {
     set?: $Enums.PlatformRole
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type UserUpdatemfaBackupCodesInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type AiLogUpdateManyWithoutUserNestedInput = {
@@ -76144,6 +79261,20 @@ export namespace Prisma {
     deleteMany?: UserCustomRoleScalarWhereInput | UserCustomRoleScalarWhereInput[]
   }
 
+  export type LoginActivityUpdateManyWithoutUserNestedInput = {
+    create?: XOR<LoginActivityCreateWithoutUserInput, LoginActivityUncheckedCreateWithoutUserInput> | LoginActivityCreateWithoutUserInput[] | LoginActivityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LoginActivityCreateOrConnectWithoutUserInput | LoginActivityCreateOrConnectWithoutUserInput[]
+    upsert?: LoginActivityUpsertWithWhereUniqueWithoutUserInput | LoginActivityUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: LoginActivityCreateManyUserInputEnvelope
+    set?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    disconnect?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    delete?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    connect?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    update?: LoginActivityUpdateWithWhereUniqueWithoutUserInput | LoginActivityUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: LoginActivityUpdateManyWithWhereWithoutUserInput | LoginActivityUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: LoginActivityScalarWhereInput | LoginActivityScalarWhereInput[]
+  }
+
   export type AiLogUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AiLogCreateWithoutUserInput, AiLogUncheckedCreateWithoutUserInput> | AiLogCreateWithoutUserInput[] | AiLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AiLogCreateOrConnectWithoutUserInput | AiLogCreateOrConnectWithoutUserInput[]
@@ -76268,6 +79399,20 @@ export namespace Prisma {
     update?: UserCustomRoleUpdateWithWhereUniqueWithoutUserInput | UserCustomRoleUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: UserCustomRoleUpdateManyWithWhereWithoutUserInput | UserCustomRoleUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: UserCustomRoleScalarWhereInput | UserCustomRoleScalarWhereInput[]
+  }
+
+  export type LoginActivityUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<LoginActivityCreateWithoutUserInput, LoginActivityUncheckedCreateWithoutUserInput> | LoginActivityCreateWithoutUserInput[] | LoginActivityUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: LoginActivityCreateOrConnectWithoutUserInput | LoginActivityCreateOrConnectWithoutUserInput[]
+    upsert?: LoginActivityUpsertWithWhereUniqueWithoutUserInput | LoginActivityUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: LoginActivityCreateManyUserInputEnvelope
+    set?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    disconnect?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    delete?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    connect?: LoginActivityWhereUniqueInput | LoginActivityWhereUniqueInput[]
+    update?: LoginActivityUpdateWithWhereUniqueWithoutUserInput | LoginActivityUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: LoginActivityUpdateManyWithWhereWithoutUserInput | LoginActivityUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: LoginActivityScalarWhereInput | LoginActivityScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutRefreshTokensInput = {
@@ -76610,18 +79755,6 @@ export namespace Prisma {
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
-  }
-
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type EmbeddingUpdateOneWithoutItemNestedInput = {
@@ -79077,6 +82210,12 @@ export namespace Prisma {
     connect?: SubscriptionWhereUniqueInput
   }
 
+  export type SubscriptionChangeRequestCreateNestedOneWithoutInvoiceInput = {
+    create?: XOR<SubscriptionChangeRequestCreateWithoutInvoiceInput, SubscriptionChangeRequestUncheckedCreateWithoutInvoiceInput>
+    connectOrCreate?: SubscriptionChangeRequestCreateOrConnectWithoutInvoiceInput
+    connect?: SubscriptionChangeRequestWhereUniqueInput
+  }
+
   export type SubscriptionPaymentCreateNestedManyWithoutInvoiceInput = {
     create?: XOR<SubscriptionPaymentCreateWithoutInvoiceInput, SubscriptionPaymentUncheckedCreateWithoutInvoiceInput> | SubscriptionPaymentCreateWithoutInvoiceInput[] | SubscriptionPaymentUncheckedCreateWithoutInvoiceInput[]
     connectOrCreate?: SubscriptionPaymentCreateOrConnectWithoutInvoiceInput | SubscriptionPaymentCreateOrConnectWithoutInvoiceInput[]
@@ -79109,6 +82248,16 @@ export namespace Prisma {
     upsert?: SubscriptionUpsertWithoutInvoicesInput
     connect?: SubscriptionWhereUniqueInput
     update?: XOR<XOR<SubscriptionUpdateToOneWithWhereWithoutInvoicesInput, SubscriptionUpdateWithoutInvoicesInput>, SubscriptionUncheckedUpdateWithoutInvoicesInput>
+  }
+
+  export type SubscriptionChangeRequestUpdateOneWithoutInvoiceNestedInput = {
+    create?: XOR<SubscriptionChangeRequestCreateWithoutInvoiceInput, SubscriptionChangeRequestUncheckedCreateWithoutInvoiceInput>
+    connectOrCreate?: SubscriptionChangeRequestCreateOrConnectWithoutInvoiceInput
+    upsert?: SubscriptionChangeRequestUpsertWithoutInvoiceInput
+    disconnect?: SubscriptionChangeRequestWhereInput | boolean
+    delete?: SubscriptionChangeRequestWhereInput | boolean
+    connect?: SubscriptionChangeRequestWhereUniqueInput
+    update?: XOR<XOR<SubscriptionChangeRequestUpdateToOneWithWhereWithoutInvoiceInput, SubscriptionChangeRequestUpdateWithoutInvoiceInput>, SubscriptionChangeRequestUncheckedUpdateWithoutInvoiceInput>
   }
 
   export type SubscriptionPaymentUpdateManyWithoutInvoiceNestedInput = {
@@ -79187,6 +82336,18 @@ export namespace Prisma {
     connect?: SubscriptionWhereUniqueInput
   }
 
+  export type SubscriptionInvoiceCreateNestedOneWithoutChangeRequestInput = {
+    create?: XOR<SubscriptionInvoiceCreateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput>
+    connectOrCreate?: SubscriptionInvoiceCreateOrConnectWithoutChangeRequestInput
+    connect?: SubscriptionInvoiceWhereUniqueInput
+  }
+
+  export type SubscriptionInvoiceUncheckedCreateNestedOneWithoutChangeRequestInput = {
+    create?: XOR<SubscriptionInvoiceCreateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput>
+    connectOrCreate?: SubscriptionInvoiceCreateOrConnectWithoutChangeRequestInput
+    connect?: SubscriptionInvoiceWhereUniqueInput
+  }
+
   export type EnumSubscriptionChangeRequestTypeFieldUpdateOperationsInput = {
     set?: $Enums.SubscriptionChangeRequestType
   }
@@ -79209,6 +82370,64 @@ export namespace Prisma {
     upsert?: SubscriptionUpsertWithoutChangeRequestsInput
     connect?: SubscriptionWhereUniqueInput
     update?: XOR<XOR<SubscriptionUpdateToOneWithWhereWithoutChangeRequestsInput, SubscriptionUpdateWithoutChangeRequestsInput>, SubscriptionUncheckedUpdateWithoutChangeRequestsInput>
+  }
+
+  export type SubscriptionInvoiceUpdateOneWithoutChangeRequestNestedInput = {
+    create?: XOR<SubscriptionInvoiceCreateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput>
+    connectOrCreate?: SubscriptionInvoiceCreateOrConnectWithoutChangeRequestInput
+    upsert?: SubscriptionInvoiceUpsertWithoutChangeRequestInput
+    disconnect?: SubscriptionInvoiceWhereInput | boolean
+    delete?: SubscriptionInvoiceWhereInput | boolean
+    connect?: SubscriptionInvoiceWhereUniqueInput
+    update?: XOR<XOR<SubscriptionInvoiceUpdateToOneWithWhereWithoutChangeRequestInput, SubscriptionInvoiceUpdateWithoutChangeRequestInput>, SubscriptionInvoiceUncheckedUpdateWithoutChangeRequestInput>
+  }
+
+  export type SubscriptionInvoiceUncheckedUpdateOneWithoutChangeRequestNestedInput = {
+    create?: XOR<SubscriptionInvoiceCreateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput>
+    connectOrCreate?: SubscriptionInvoiceCreateOrConnectWithoutChangeRequestInput
+    upsert?: SubscriptionInvoiceUpsertWithoutChangeRequestInput
+    disconnect?: SubscriptionInvoiceWhereInput | boolean
+    delete?: SubscriptionInvoiceWhereInput | boolean
+    connect?: SubscriptionInvoiceWhereUniqueInput
+    update?: XOR<XOR<SubscriptionInvoiceUpdateToOneWithWhereWithoutChangeRequestInput, SubscriptionInvoiceUpdateWithoutChangeRequestInput>, SubscriptionInvoiceUncheckedUpdateWithoutChangeRequestInput>
+  }
+
+  export type BusinessCreateNestedOneWithoutIpRulesInput = {
+    create?: XOR<BusinessCreateWithoutIpRulesInput, BusinessUncheckedCreateWithoutIpRulesInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutIpRulesInput
+    connect?: BusinessWhereUniqueInput
+  }
+
+  export type EnumIpRuleTypeFieldUpdateOperationsInput = {
+    set?: $Enums.IpRuleType
+  }
+
+  export type BusinessUpdateOneRequiredWithoutIpRulesNestedInput = {
+    create?: XOR<BusinessCreateWithoutIpRulesInput, BusinessUncheckedCreateWithoutIpRulesInput>
+    connectOrCreate?: BusinessCreateOrConnectWithoutIpRulesInput
+    upsert?: BusinessUpsertWithoutIpRulesInput
+    connect?: BusinessWhereUniqueInput
+    update?: XOR<XOR<BusinessUpdateToOneWithWhereWithoutIpRulesInput, BusinessUpdateWithoutIpRulesInput>, BusinessUncheckedUpdateWithoutIpRulesInput>
+  }
+
+  export type UserCreateNestedOneWithoutLoginActivitiesInput = {
+    create?: XOR<UserCreateWithoutLoginActivitiesInput, UserUncheckedCreateWithoutLoginActivitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutLoginActivitiesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumLoginStatusFieldUpdateOperationsInput = {
+    set?: $Enums.LoginStatus
+  }
+
+  export type UserUpdateOneWithoutLoginActivitiesNestedInput = {
+    create?: XOR<UserCreateWithoutLoginActivitiesInput, UserUncheckedCreateWithoutLoginActivitiesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutLoginActivitiesInput
+    upsert?: UserUpsertWithoutLoginActivitiesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutLoginActivitiesInput, UserUpdateWithoutLoginActivitiesInput>, UserUncheckedUpdateWithoutLoginActivitiesInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -79356,6 +82575,11 @@ export namespace Prisma {
     not?: NestedEnumPlatformRoleFilter<$PrismaModel> | $Enums.PlatformRole
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedEnumPlatformRoleWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.PlatformRole | EnumPlatformRoleFieldRefInput<$PrismaModel>
     in?: $Enums.PlatformRole[] | ListEnumPlatformRoleFieldRefInput<$PrismaModel>
@@ -79364,65 +82588,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPlatformRoleFilter<$PrismaModel>
     _max?: NestedEnumPlatformRoleFilter<$PrismaModel>
-  }
-
-  export type NestedDecimalFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-  }
-
-  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedDecimalFilter<$PrismaModel>
-    _sum?: NestedDecimalFilter<$PrismaModel>
-    _min?: NestedDecimalFilter<$PrismaModel>
-    _max?: NestedDecimalFilter<$PrismaModel>
-  }
-
-  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
-    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
-    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
-    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedDecimalNullableFilter<$PrismaModel>
-    _sum?: NestedDecimalNullableFilter<$PrismaModel>
-    _min?: NestedDecimalNullableFilter<$PrismaModel>
-    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
@@ -79458,6 +82623,60 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedDecimalFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+  }
+
+  export type NestedDecimalNullableFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+  }
+
+  export type NestedDecimalWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel>
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedDecimalFilter<$PrismaModel>
+    _sum?: NestedDecimalFilter<$PrismaModel>
+    _min?: NestedDecimalFilter<$PrismaModel>
+    _max?: NestedDecimalFilter<$PrismaModel>
+  }
+
+  export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel> | null
+    in?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    notIn?: Decimal[] | DecimalJsLike[] | number[] | string[] | ListDecimalFieldRefInput<$PrismaModel> | null
+    lt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    lte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
+    not?: NestedDecimalNullableWithAggregatesFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedDecimalNullableFilter<$PrismaModel>
+    _sum?: NestedDecimalNullableFilter<$PrismaModel>
+    _min?: NestedDecimalNullableFilter<$PrismaModel>
+    _max?: NestedDecimalNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumMovementTypeFilter<$PrismaModel = never> = {
@@ -79785,6 +83004,40 @@ export namespace Prisma {
     _max?: NestedEnumSubscriptionChangeRequestStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumIpRuleTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.IpRuleType | EnumIpRuleTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumIpRuleTypeFilter<$PrismaModel> | $Enums.IpRuleType
+  }
+
+  export type NestedEnumIpRuleTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.IpRuleType | EnumIpRuleTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.IpRuleType[] | ListEnumIpRuleTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumIpRuleTypeWithAggregatesFilter<$PrismaModel> | $Enums.IpRuleType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumIpRuleTypeFilter<$PrismaModel>
+    _max?: NestedEnumIpRuleTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumLoginStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.LoginStatus | EnumLoginStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLoginStatusFilter<$PrismaModel> | $Enums.LoginStatus
+  }
+
+  export type NestedEnumLoginStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.LoginStatus | EnumLoginStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.LoginStatus[] | ListEnumLoginStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumLoginStatusWithAggregatesFilter<$PrismaModel> | $Enums.LoginStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumLoginStatusFilter<$PrismaModel>
+    _max?: NestedEnumLoginStatusFilter<$PrismaModel>
+  }
+
   export type BusinessCreateWithoutOrganizationInput = {
     id?: string
     name: string
@@ -79836,6 +83089,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutOrganizationInput = {
@@ -79889,6 +83143,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutOrganizationInput = {
@@ -80686,6 +83941,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -80695,6 +83955,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBusinessInput = {
@@ -80706,6 +83967,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -80715,6 +83981,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBusinessInput = {
@@ -81145,6 +84412,7 @@ export namespace Prisma {
     paidAt?: Date | string | null
     createdAt?: Date | string
     subscription: SubscriptionCreateNestedOneWithoutInvoicesInput
+    changeRequest?: SubscriptionChangeRequestCreateNestedOneWithoutInvoiceInput
     payments?: SubscriptionPaymentCreateNestedManyWithoutInvoiceInput
   }
 
@@ -81158,6 +84426,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
     payments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
@@ -81221,6 +84490,7 @@ export namespace Prisma {
     requestedAt?: Date | string
     processedAt?: Date | string | null
     subscription: SubscriptionCreateNestedOneWithoutChangeRequestsInput
+    invoice?: SubscriptionInvoiceCreateNestedOneWithoutChangeRequestInput
   }
 
   export type SubscriptionChangeRequestUncheckedCreateWithoutBusinessInput = {
@@ -81231,6 +84501,7 @@ export namespace Prisma {
     status?: $Enums.SubscriptionChangeRequestStatus
     requestedAt?: Date | string
     processedAt?: Date | string | null
+    invoice?: SubscriptionInvoiceUncheckedCreateNestedOneWithoutChangeRequestInput
   }
 
   export type SubscriptionChangeRequestCreateOrConnectWithoutBusinessInput = {
@@ -81240,6 +84511,36 @@ export namespace Prisma {
 
   export type SubscriptionChangeRequestCreateManyBusinessInputEnvelope = {
     data: SubscriptionChangeRequestCreateManyBusinessInput | SubscriptionChangeRequestCreateManyBusinessInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type BusinessIpRuleCreateWithoutBusinessInput = {
+    id?: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BusinessIpRuleUncheckedCreateWithoutBusinessInput = {
+    id?: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type BusinessIpRuleCreateOrConnectWithoutBusinessInput = {
+    where: BusinessIpRuleWhereUniqueInput
+    create: XOR<BusinessIpRuleCreateWithoutBusinessInput, BusinessIpRuleUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type BusinessIpRuleCreateManyBusinessInputEnvelope = {
+    data: BusinessIpRuleCreateManyBusinessInput | BusinessIpRuleCreateManyBusinessInput[]
     skipDuplicates?: boolean
   }
 
@@ -81947,6 +85248,11 @@ export namespace Prisma {
     deletedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    mfaSecret?: StringNullableFilter<"User"> | string | null
+    mfaEnabled?: BoolFilter<"User"> | boolean
+    mfaBackupCodes?: StringNullableListFilter<"User">
+    failedLoginAttempts?: IntFilter<"User"> | number
+    lockedUntil?: DateTimeNullableFilter<"User"> | Date | string | null
   }
 
   export type WarehouseUpsertWithWhereUniqueWithoutBusinessInput = {
@@ -82383,6 +85689,7 @@ export namespace Prisma {
     dueDate?: DateTimeFilter<"SubscriptionInvoice"> | Date | string
     paidAt?: DateTimeNullableFilter<"SubscriptionInvoice"> | Date | string | null
     createdAt?: DateTimeFilter<"SubscriptionInvoice"> | Date | string
+    changeRequestId?: StringNullableFilter<"SubscriptionInvoice"> | string | null
   }
 
   export type SubscriptionPaymentUpsertWithWhereUniqueWithoutBusinessInput = {
@@ -82449,6 +85756,36 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusFilter<"SubscriptionChangeRequest"> | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeFilter<"SubscriptionChangeRequest"> | Date | string
     processedAt?: DateTimeNullableFilter<"SubscriptionChangeRequest"> | Date | string | null
+  }
+
+  export type BusinessIpRuleUpsertWithWhereUniqueWithoutBusinessInput = {
+    where: BusinessIpRuleWhereUniqueInput
+    update: XOR<BusinessIpRuleUpdateWithoutBusinessInput, BusinessIpRuleUncheckedUpdateWithoutBusinessInput>
+    create: XOR<BusinessIpRuleCreateWithoutBusinessInput, BusinessIpRuleUncheckedCreateWithoutBusinessInput>
+  }
+
+  export type BusinessIpRuleUpdateWithWhereUniqueWithoutBusinessInput = {
+    where: BusinessIpRuleWhereUniqueInput
+    data: XOR<BusinessIpRuleUpdateWithoutBusinessInput, BusinessIpRuleUncheckedUpdateWithoutBusinessInput>
+  }
+
+  export type BusinessIpRuleUpdateManyWithWhereWithoutBusinessInput = {
+    where: BusinessIpRuleScalarWhereInput
+    data: XOR<BusinessIpRuleUpdateManyMutationInput, BusinessIpRuleUncheckedUpdateManyWithoutBusinessInput>
+  }
+
+  export type BusinessIpRuleScalarWhereInput = {
+    AND?: BusinessIpRuleScalarWhereInput | BusinessIpRuleScalarWhereInput[]
+    OR?: BusinessIpRuleScalarWhereInput[]
+    NOT?: BusinessIpRuleScalarWhereInput | BusinessIpRuleScalarWhereInput[]
+    id?: StringFilter<"BusinessIpRule"> | string
+    businessId?: StringFilter<"BusinessIpRule"> | string
+    ipRange?: StringFilter<"BusinessIpRule"> | string
+    type?: EnumIpRuleTypeFilter<"BusinessIpRule"> | $Enums.IpRuleType
+    description?: StringNullableFilter<"BusinessIpRule"> | string | null
+    isActive?: BoolFilter<"BusinessIpRule"> | boolean
+    createdAt?: DateTimeFilter<"BusinessIpRule"> | Date | string
+    updatedAt?: DateTimeFilter<"BusinessIpRule"> | Date | string
   }
 
   export type AiLogCreateWithoutUserInput = {
@@ -82764,6 +86101,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutUsersInput = {
@@ -82817,6 +86155,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutUsersInput = {
@@ -82869,6 +86208,34 @@ export namespace Prisma {
 
   export type UserCustomRoleCreateManyUserInputEnvelope = {
     data: UserCustomRoleCreateManyUserInput | UserCustomRoleCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type LoginActivityCreateWithoutUserInput = {
+    id?: string
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type LoginActivityUncheckedCreateWithoutUserInput = {
+    id?: string
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress?: string | null
+    userAgent?: string | null
+    createdAt?: Date | string
+  }
+
+  export type LoginActivityCreateOrConnectWithoutUserInput = {
+    where: LoginActivityWhereUniqueInput
+    create: XOR<LoginActivityCreateWithoutUserInput, LoginActivityUncheckedCreateWithoutUserInput>
+  }
+
+  export type LoginActivityCreateManyUserInputEnvelope = {
+    data: LoginActivityCreateManyUserInput | LoginActivityCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -83063,6 +86430,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutUsersInput = {
@@ -83116,6 +86484,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserBusinessRoleUpsertWithWhereUniqueWithoutUserInput = {
@@ -83160,6 +86529,35 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"UserCustomRole"> | Date | string
   }
 
+  export type LoginActivityUpsertWithWhereUniqueWithoutUserInput = {
+    where: LoginActivityWhereUniqueInput
+    update: XOR<LoginActivityUpdateWithoutUserInput, LoginActivityUncheckedUpdateWithoutUserInput>
+    create: XOR<LoginActivityCreateWithoutUserInput, LoginActivityUncheckedCreateWithoutUserInput>
+  }
+
+  export type LoginActivityUpdateWithWhereUniqueWithoutUserInput = {
+    where: LoginActivityWhereUniqueInput
+    data: XOR<LoginActivityUpdateWithoutUserInput, LoginActivityUncheckedUpdateWithoutUserInput>
+  }
+
+  export type LoginActivityUpdateManyWithWhereWithoutUserInput = {
+    where: LoginActivityScalarWhereInput
+    data: XOR<LoginActivityUpdateManyMutationInput, LoginActivityUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type LoginActivityScalarWhereInput = {
+    AND?: LoginActivityScalarWhereInput | LoginActivityScalarWhereInput[]
+    OR?: LoginActivityScalarWhereInput[]
+    NOT?: LoginActivityScalarWhereInput | LoginActivityScalarWhereInput[]
+    id?: StringFilter<"LoginActivity"> | string
+    userId?: StringNullableFilter<"LoginActivity"> | string | null
+    email?: StringFilter<"LoginActivity"> | string
+    status?: EnumLoginStatusFilter<"LoginActivity"> | $Enums.LoginStatus
+    ipAddress?: StringNullableFilter<"LoginActivity"> | string | null
+    userAgent?: StringNullableFilter<"LoginActivity"> | string | null
+    createdAt?: DateTimeFilter<"LoginActivity"> | Date | string
+  }
+
   export type UserCreateWithoutRefreshTokensInput = {
     id?: string
     name: string
@@ -83169,6 +86567,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -83178,6 +86581,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRefreshTokensInput = {
@@ -83190,6 +86594,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -83198,6 +86607,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRefreshTokensInput = {
@@ -83225,6 +86635,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -83234,6 +86649,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRefreshTokensInput = {
@@ -83246,6 +86662,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -83254,6 +86675,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutCategoriesInput = {
@@ -83307,6 +86729,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutCategoriesInput = {
@@ -83360,6 +86783,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutCategoriesInput = {
@@ -83542,6 +86966,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutCategoriesInput = {
@@ -83595,6 +87020,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type CategoryUpsertWithoutChildrenInput = {
@@ -83707,6 +87133,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutBrandsInput = {
@@ -83760,6 +87187,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutBrandsInput = {
@@ -83895,6 +87323,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutBrandsInput = {
@@ -83948,6 +87377,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithWhereUniqueWithoutBrandInput = {
@@ -84093,6 +87523,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutProductsInput = {
@@ -84146,6 +87577,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutProductsInput = {
@@ -84504,6 +87936,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutProductsInput = {
@@ -84557,6 +87990,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type CategoryUpsertWithoutItemsInput = {
@@ -84798,6 +88232,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutProductBatchInput = {
@@ -84851,6 +88286,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutProductBatchInput = {
@@ -84997,6 +88433,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutProductBatchInput = {
@@ -85050,6 +88487,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithoutBatchesInput = {
@@ -85208,6 +88646,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutWarehousesInput = {
@@ -85261,6 +88700,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutWarehousesInput = {
@@ -85406,6 +88846,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutWarehousesInput = {
@@ -85459,6 +88900,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type WarehouseTransferUpsertWithWhereUniqueWithoutDestinationInput = {
@@ -85567,6 +89009,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInventoryInput = {
@@ -85620,6 +89063,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInventoryInput = {
@@ -85866,6 +89310,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInventoryInput = {
@@ -85919,6 +89364,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithoutInventoryInput = {
@@ -86102,6 +89548,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutStockMovementsInput = {
@@ -86155,6 +89602,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutStockMovementsInput = {
@@ -86318,6 +89766,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutStockMovementsInput = {
@@ -86371,6 +89820,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InventoryUpsertWithoutMovementsInput = {
@@ -86591,6 +90041,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInventoryValuationsInput = {
@@ -86644,6 +90095,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInventoryValuationsInput = {
@@ -86780,6 +90232,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInventoryValuationsInput = {
@@ -86833,6 +90286,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type WarehouseTransferItemCreateWithoutTransferInput = {
@@ -86910,6 +90364,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutWarehouseTransferInput = {
@@ -86963,6 +90418,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutWarehouseTransferInput = {
@@ -87098,6 +90554,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutWarehouseTransferInput = {
@@ -87151,6 +90608,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type WarehouseUpsertWithoutTransfersToInput = {
@@ -87450,6 +90908,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutStockReservationsInput = {
@@ -87503,6 +90962,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutStockReservationsInput = {
@@ -87652,6 +91112,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutStockReservationsInput = {
@@ -87705,6 +91166,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InventoryUpsertWithoutReservationsInput = {
@@ -87850,6 +91312,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutCustomersInput = {
@@ -87903,6 +91366,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutCustomersInput = {
@@ -88090,6 +91554,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutCustomersInput = {
@@ -88143,6 +91608,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type InvoiceUpsertWithWhereUniqueWithoutCustomerInput = {
@@ -88277,6 +91743,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutOrdersInput = {
@@ -88330,6 +91797,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutOrdersInput = {
@@ -88381,6 +91849,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
@@ -88390,6 +91863,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOrdersInput = {
@@ -88402,6 +91876,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -88410,6 +91889,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOrdersInput = {
@@ -88610,6 +92090,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutOrdersInput = {
@@ -88663,6 +92144,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type CustomerUpsertWithoutOrdersInput = {
@@ -88726,6 +92208,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
@@ -88735,6 +92222,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOrdersInput = {
@@ -88747,6 +92235,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -88755,6 +92248,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OrderItemUpsertWithWhereUniqueWithoutOrderInput = {
@@ -88856,6 +92350,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutOrderItemInput = {
@@ -88909,6 +92404,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutOrderItemInput = {
@@ -89086,6 +92582,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutOrderItemInput = {
@@ -89139,6 +92636,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithoutOrderItemsInput = {
@@ -89342,6 +92840,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSuppliersInput = {
@@ -89395,6 +92894,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSuppliersInput = {
@@ -89480,6 +92980,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSuppliersInput = {
@@ -89533,6 +93034,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type PurchaseItemCreateWithoutPurchaseOrderInput = {
@@ -89612,6 +93114,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutPurchasesInput = {
@@ -89665,6 +93168,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutPurchasesInput = {
@@ -89777,6 +93281,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutPurchasesInput = {
@@ -89830,6 +93335,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SupplierUpsertWithoutPurchasesInput = {
@@ -89916,6 +93422,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutPurchaseItemInput = {
@@ -89969,6 +93476,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutPurchaseItemInput = {
@@ -90124,6 +93632,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutPurchaseItemInput = {
@@ -90177,6 +93686,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithoutPurchaseItemsInput = {
@@ -90328,6 +93838,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAccountsInput = {
@@ -90381,6 +93892,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAccountsInput = {
@@ -90478,6 +93990,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAccountsInput = {
@@ -90531,6 +94044,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type JournalLineUpsertWithWhereUniqueWithoutAccountInput = {
@@ -90613,6 +94127,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutNotificationsInput = {
@@ -90666,6 +94181,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutNotificationsInput = {
@@ -90682,6 +94198,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -90691,6 +94212,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -90703,6 +94225,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -90711,6 +94238,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -90780,6 +94308,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutNotificationsInput = {
@@ -90833,6 +94362,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutNotificationsInput = {
@@ -90855,6 +94385,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -90864,6 +94399,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -90876,6 +94412,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -90884,6 +94425,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutInvoicesInput = {
@@ -90937,6 +94479,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutInvoicesInput = {
@@ -90990,6 +94533,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutInvoicesInput = {
@@ -91141,6 +94685,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutInvoicesInput = {
@@ -91194,6 +94739,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type CustomerUpsertWithoutInvoicesInput = {
@@ -91341,6 +94887,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutPaymentsInput = {
@@ -91394,6 +94941,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutPaymentsInput = {
@@ -91538,6 +95086,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutPaymentsInput = {
@@ -91591,6 +95140,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type OrderUpsertWithoutPaymentsInput = {
@@ -91742,6 +95292,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutRefundsInput = {
@@ -91795,6 +95346,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutRefundsInput = {
@@ -91899,6 +95451,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutRefundsInput = {
@@ -91952,6 +95505,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutAuditLogsInput = {
@@ -92005,6 +95559,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAuditLogsInput = {
@@ -92058,6 +95613,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAuditLogsInput = {
@@ -92074,6 +95630,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
@@ -92083,6 +95644,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -92095,6 +95657,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -92103,6 +95670,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -92172,6 +95740,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAuditLogsInput = {
@@ -92225,6 +95794,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAuditLogsInput = {
@@ -92247,6 +95817,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
@@ -92256,6 +95831,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -92268,6 +95844,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -92276,6 +95857,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutAiLogInput = {
@@ -92329,6 +95911,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutAiLogInput = {
@@ -92382,6 +95965,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutAiLogInput = {
@@ -92398,6 +95982,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
@@ -92407,6 +95996,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiLogsInput = {
@@ -92419,6 +96009,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
     refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
@@ -92427,6 +96022,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiLogsInput = {
@@ -92496,6 +96092,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutAiLogInput = {
@@ -92549,6 +96146,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutAiLogsInput = {
@@ -92571,6 +96169,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
@@ -92580,6 +96183,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiLogsInput = {
@@ -92592,6 +96196,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
     refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
@@ -92600,6 +96209,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateWithoutOutboxEventsInput = {
@@ -92653,6 +96263,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutOutboxEventsInput = {
@@ -92706,6 +96317,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutOutboxEventsInput = {
@@ -92775,6 +96387,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutOutboxEventsInput = {
@@ -92828,6 +96441,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutEmbeddingsInput = {
@@ -92881,6 +96495,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutEmbeddingsInput = {
@@ -92934,6 +96549,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutEmbeddingsInput = {
@@ -93064,6 +96680,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutEmbeddingsInput = {
@@ -93117,6 +96734,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithoutEmbeddingInput = {
@@ -93237,6 +96855,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutReviewInput = {
@@ -93290,6 +96909,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutReviewInput = {
@@ -93367,6 +96987,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -93376,6 +97001,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutReviewsInput = {
@@ -93388,6 +97014,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -93396,6 +97027,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutReviewsInput = {
@@ -93465,6 +97097,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutReviewInput = {
@@ -93518,6 +97151,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type ItemUpsertWithoutReviewsInput = {
@@ -93607,6 +97241,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -93616,6 +97255,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutReviewsInput = {
@@ -93628,6 +97268,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -93636,6 +97281,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type RolePermissionCreateWithoutPermissionInput = {
@@ -93732,6 +97378,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -93741,6 +97392,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryCreateNestedManyWithoutPostedByInput
     business?: BusinessCreateNestedOneWithoutUsersInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutBusinessRolesInput = {
@@ -93753,6 +97405,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -93761,6 +97418,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBusinessRolesInput = {
@@ -93819,6 +97477,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutUserBusinessRolesInput = {
@@ -93872,6 +97531,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutUserBusinessRolesInput = {
@@ -93899,6 +97559,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -93908,6 +97573,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUpdateManyWithoutPostedByNestedInput
     business?: BusinessUpdateOneWithoutUsersNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBusinessRolesInput = {
@@ -93920,6 +97586,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -93928,6 +97599,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessUpsertWithoutUserBusinessRolesInput = {
@@ -93992,6 +97664,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutUserBusinessRolesInput = {
@@ -94045,6 +97718,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutLoyaltyProgramInput = {
@@ -94098,6 +97772,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutLoyaltyProgramInput = {
@@ -94151,6 +97826,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutLoyaltyProgramInput = {
@@ -94220,6 +97896,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutLoyaltyProgramInput = {
@@ -94273,6 +97950,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutLoyaltyPointsInput = {
@@ -94326,6 +98004,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutLoyaltyPointsInput = {
@@ -94379,6 +98058,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutLoyaltyPointsInput = {
@@ -94483,6 +98163,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutLoyaltyPointsInput = {
@@ -94536,6 +98217,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type CustomerUpsertWithoutLoyaltyPointEntriesInput = {
@@ -94630,6 +98312,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutWebhookEventsInput = {
@@ -94683,6 +98366,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutWebhookEventsInput = {
@@ -94752,6 +98436,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutWebhookEventsInput = {
@@ -94805,6 +98490,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessCreateWithoutJournalEntriesInput = {
@@ -94858,6 +98544,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutJournalEntriesInput = {
@@ -94911,6 +98598,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutJournalEntriesInput = {
@@ -94927,6 +98615,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -94936,6 +98629,7 @@ export namespace Prisma {
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPostedJournalEntriesInput = {
@@ -94948,6 +98642,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -94956,6 +98655,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
     customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPostedJournalEntriesInput = {
@@ -95053,6 +98753,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutJournalEntriesInput = {
@@ -95106,6 +98807,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserUpsertWithoutPostedJournalEntriesInput = {
@@ -95128,6 +98830,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -95137,6 +98844,7 @@ export namespace Prisma {
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPostedJournalEntriesInput = {
@@ -95149,6 +98857,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -95157,6 +98870,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type JournalLineUpsertWithWhereUniqueWithoutJournalEntryInput = {
@@ -95366,6 +99080,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutReportCachesInput = {
@@ -95419,6 +99134,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutReportCachesInput = {
@@ -95488,6 +99204,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutReportCachesInput = {
@@ -95541,6 +99258,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type PlanFeatureCreateWithoutPlanInput = {
@@ -95673,6 +99391,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -95686,6 +99406,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -95715,6 +99437,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -95728,6 +99452,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -95788,6 +99514,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionInput = {
@@ -95841,6 +99568,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionInput = {
@@ -95852,6 +99580,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -95865,6 +99595,8 @@ export namespace Prisma {
     id?: string
     code: string
     name: string
+    price?: Decimal | DecimalJsLike | number | string
+    currency?: string
     isTrial?: boolean
     maxUsers?: number | null
     maxProducts?: number | null
@@ -95913,6 +99645,7 @@ export namespace Prisma {
     paidAt?: Date | string | null
     createdAt?: Date | string
     business: BusinessCreateNestedOneWithoutSubscriptionInvoicesInput
+    changeRequest?: SubscriptionChangeRequestCreateNestedOneWithoutInvoiceInput
     payments?: SubscriptionPaymentCreateNestedManyWithoutInvoiceInput
   }
 
@@ -95926,6 +99659,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
     payments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutInvoiceInput
   }
 
@@ -95947,6 +99681,7 @@ export namespace Prisma {
     requestedAt?: Date | string
     processedAt?: Date | string | null
     business: BusinessCreateNestedOneWithoutSubscriptionChangeRequestsInput
+    invoice?: SubscriptionInvoiceCreateNestedOneWithoutChangeRequestInput
   }
 
   export type SubscriptionChangeRequestUncheckedCreateWithoutSubscriptionInput = {
@@ -95957,6 +99692,7 @@ export namespace Prisma {
     status?: $Enums.SubscriptionChangeRequestStatus
     requestedAt?: Date | string
     processedAt?: Date | string | null
+    invoice?: SubscriptionInvoiceUncheckedCreateNestedOneWithoutChangeRequestInput
   }
 
   export type SubscriptionChangeRequestCreateOrConnectWithoutSubscriptionInput = {
@@ -96031,6 +99767,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionInput = {
@@ -96084,6 +99821,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SubscriptionPlanUpsertWithoutSubscriptionsInput = {
@@ -96101,6 +99839,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -96114,6 +99854,8 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     code?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    price?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
     isTrial?: BoolFieldUpdateOperationsInput | boolean
     maxUsers?: NullableIntFieldUpdateOperationsInput | number | null
     maxProducts?: NullableIntFieldUpdateOperationsInput | number | null
@@ -96309,6 +100051,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutCustomRolesInput = {
@@ -96362,6 +100105,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutCustomRolesInput = {
@@ -96453,6 +100197,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutCustomRolesInput = {
@@ -96506,6 +100251,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type UserCustomRoleUpsertWithWhereUniqueWithoutCustomRoleInput = {
@@ -96533,6 +100279,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     orders?: OrderCreateNestedManyWithoutUserInput
@@ -96542,6 +100293,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryCreateNestedManyWithoutPostedByInput
     business?: BusinessCreateNestedOneWithoutUsersInput
     businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCustomRolesInput = {
@@ -96554,6 +100306,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
     aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     orders?: OrderUncheckedCreateNestedManyWithoutUserInput
@@ -96562,6 +100319,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
     businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
+    loginActivities?: LoginActivityUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCustomRolesInput = {
@@ -96614,6 +100372,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -96623,6 +100386,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUpdateManyWithoutPostedByNestedInput
     business?: BusinessUpdateOneWithoutUsersNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCustomRolesInput = {
@@ -96635,6 +100399,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -96643,6 +100412,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type CustomRoleUpsertWithoutUserRolesInput = {
@@ -96727,6 +100497,7 @@ export namespace Prisma {
     customRoles?: CustomRoleCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionInvoicesInput = {
@@ -96780,6 +100551,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionInvoicesInput = {
@@ -96820,6 +100592,33 @@ export namespace Prisma {
   export type SubscriptionCreateOrConnectWithoutInvoicesInput = {
     where: SubscriptionWhereUniqueInput
     create: XOR<SubscriptionCreateWithoutInvoicesInput, SubscriptionUncheckedCreateWithoutInvoicesInput>
+  }
+
+  export type SubscriptionChangeRequestCreateWithoutInvoiceInput = {
+    id?: string
+    type: $Enums.SubscriptionChangeRequestType
+    requestedPlanCode: string
+    status?: $Enums.SubscriptionChangeRequestStatus
+    requestedAt?: Date | string
+    processedAt?: Date | string | null
+    business: BusinessCreateNestedOneWithoutSubscriptionChangeRequestsInput
+    subscription: SubscriptionCreateNestedOneWithoutChangeRequestsInput
+  }
+
+  export type SubscriptionChangeRequestUncheckedCreateWithoutInvoiceInput = {
+    id?: string
+    businessId: string
+    subscriptionId: string
+    type: $Enums.SubscriptionChangeRequestType
+    requestedPlanCode: string
+    status?: $Enums.SubscriptionChangeRequestStatus
+    requestedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type SubscriptionChangeRequestCreateOrConnectWithoutInvoiceInput = {
+    where: SubscriptionChangeRequestWhereUniqueInput
+    create: XOR<SubscriptionChangeRequestCreateWithoutInvoiceInput, SubscriptionChangeRequestUncheckedCreateWithoutInvoiceInput>
   }
 
   export type SubscriptionPaymentCreateWithoutInvoiceInput = {
@@ -96926,6 +100725,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionInvoicesInput = {
@@ -96979,6 +100779,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SubscriptionUpsertWithoutInvoicesInput = {
@@ -97020,6 +100821,39 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
     changeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutSubscriptionNestedInput
+  }
+
+  export type SubscriptionChangeRequestUpsertWithoutInvoiceInput = {
+    update: XOR<SubscriptionChangeRequestUpdateWithoutInvoiceInput, SubscriptionChangeRequestUncheckedUpdateWithoutInvoiceInput>
+    create: XOR<SubscriptionChangeRequestCreateWithoutInvoiceInput, SubscriptionChangeRequestUncheckedCreateWithoutInvoiceInput>
+    where?: SubscriptionChangeRequestWhereInput
+  }
+
+  export type SubscriptionChangeRequestUpdateToOneWithWhereWithoutInvoiceInput = {
+    where?: SubscriptionChangeRequestWhereInput
+    data: XOR<SubscriptionChangeRequestUpdateWithoutInvoiceInput, SubscriptionChangeRequestUncheckedUpdateWithoutInvoiceInput>
+  }
+
+  export type SubscriptionChangeRequestUpdateWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumSubscriptionChangeRequestTypeFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestType
+    requestedPlanCode?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    business?: BusinessUpdateOneRequiredWithoutSubscriptionChangeRequestsNestedInput
+    subscription?: SubscriptionUpdateOneRequiredWithoutChangeRequestsNestedInput
+  }
+
+  export type SubscriptionChangeRequestUncheckedUpdateWithoutInvoiceInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: StringFieldUpdateOperationsInput | string
+    type?: EnumSubscriptionChangeRequestTypeFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestType
+    requestedPlanCode?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type SubscriptionPaymentUpsertWithWhereUniqueWithoutInvoiceInput = {
@@ -97089,6 +100923,7 @@ export namespace Prisma {
     customRoles?: CustomRoleCreateNestedManyWithoutBusinessInput
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionPaymentsInput = {
@@ -97142,6 +100977,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionPaymentsInput = {
@@ -97160,6 +100996,7 @@ export namespace Prisma {
     createdAt?: Date | string
     business: BusinessCreateNestedOneWithoutSubscriptionInvoicesInput
     subscription: SubscriptionCreateNestedOneWithoutInvoicesInput
+    changeRequest?: SubscriptionChangeRequestCreateNestedOneWithoutInvoiceInput
   }
 
   export type SubscriptionInvoiceUncheckedCreateWithoutPaymentsInput = {
@@ -97173,6 +101010,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
   }
 
   export type SubscriptionInvoiceCreateOrConnectWithoutPaymentsInput = {
@@ -97242,6 +101080,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUpdateManyWithoutBusinessNestedInput
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionPaymentsInput = {
@@ -97295,6 +101134,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SubscriptionInvoiceUpsertWithoutPaymentsInput = {
@@ -97319,6 +101159,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSubscriptionInvoicesNestedInput
     subscription?: SubscriptionUpdateOneRequiredWithoutInvoicesNestedInput
+    changeRequest?: SubscriptionChangeRequestUpdateOneWithoutInvoiceNestedInput
   }
 
   export type SubscriptionInvoiceUncheckedUpdateWithoutPaymentsInput = {
@@ -97332,6 +101173,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type BusinessCreateWithoutSubscriptionChangeRequestsInput = {
@@ -97385,6 +101227,7 @@ export namespace Prisma {
     customRoles?: CustomRoleCreateNestedManyWithoutBusinessInput
     subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessUncheckedCreateWithoutSubscriptionChangeRequestsInput = {
@@ -97438,6 +101281,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
     subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
+    ipRules?: BusinessIpRuleUncheckedCreateNestedManyWithoutBusinessInput
   }
 
   export type BusinessCreateOrConnectWithoutSubscriptionChangeRequestsInput = {
@@ -97478,6 +101322,39 @@ export namespace Prisma {
   export type SubscriptionCreateOrConnectWithoutChangeRequestsInput = {
     where: SubscriptionWhereUniqueInput
     create: XOR<SubscriptionCreateWithoutChangeRequestsInput, SubscriptionUncheckedCreateWithoutChangeRequestsInput>
+  }
+
+  export type SubscriptionInvoiceCreateWithoutChangeRequestInput = {
+    id?: string
+    invoiceNumber: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency?: string
+    status?: $Enums.SubscriptionInvoiceStatus
+    dueDate: Date | string
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    business: BusinessCreateNestedOneWithoutSubscriptionInvoicesInput
+    subscription: SubscriptionCreateNestedOneWithoutInvoicesInput
+    payments?: SubscriptionPaymentCreateNestedManyWithoutInvoiceInput
+  }
+
+  export type SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput = {
+    id?: string
+    businessId: string
+    subscriptionId: string
+    invoiceNumber: string
+    amount: Decimal | DecimalJsLike | number | string
+    currency?: string
+    status?: $Enums.SubscriptionInvoiceStatus
+    dueDate: Date | string
+    paidAt?: Date | string | null
+    createdAt?: Date | string
+    payments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutInvoiceInput
+  }
+
+  export type SubscriptionInvoiceCreateOrConnectWithoutChangeRequestInput = {
+    where: SubscriptionInvoiceWhereUniqueInput
+    create: XOR<SubscriptionInvoiceCreateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput>
   }
 
   export type BusinessUpsertWithoutSubscriptionChangeRequestsInput = {
@@ -97542,6 +101419,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUpdateManyWithoutBusinessNestedInput
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutSubscriptionChangeRequestsInput = {
@@ -97595,6 +101473,7 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type SubscriptionUpsertWithoutChangeRequestsInput = {
@@ -97636,6 +101515,397 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     events?: SubscriptionEventUncheckedUpdateManyWithoutSubscriptionNestedInput
     invoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutSubscriptionNestedInput
+  }
+
+  export type SubscriptionInvoiceUpsertWithoutChangeRequestInput = {
+    update: XOR<SubscriptionInvoiceUpdateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedUpdateWithoutChangeRequestInput>
+    create: XOR<SubscriptionInvoiceCreateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedCreateWithoutChangeRequestInput>
+    where?: SubscriptionInvoiceWhereInput
+  }
+
+  export type SubscriptionInvoiceUpdateToOneWithWhereWithoutChangeRequestInput = {
+    where?: SubscriptionInvoiceWhereInput
+    data: XOR<SubscriptionInvoiceUpdateWithoutChangeRequestInput, SubscriptionInvoiceUncheckedUpdateWithoutChangeRequestInput>
+  }
+
+  export type SubscriptionInvoiceUpdateWithoutChangeRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    invoiceNumber?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionInvoiceStatusFieldUpdateOperationsInput | $Enums.SubscriptionInvoiceStatus
+    dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    business?: BusinessUpdateOneRequiredWithoutSubscriptionInvoicesNestedInput
+    subscription?: SubscriptionUpdateOneRequiredWithoutInvoicesNestedInput
+    payments?: SubscriptionPaymentUpdateManyWithoutInvoiceNestedInput
+  }
+
+  export type SubscriptionInvoiceUncheckedUpdateWithoutChangeRequestInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    businessId?: StringFieldUpdateOperationsInput | string
+    subscriptionId?: StringFieldUpdateOperationsInput | string
+    invoiceNumber?: StringFieldUpdateOperationsInput | string
+    amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumSubscriptionInvoiceStatusFieldUpdateOperationsInput | $Enums.SubscriptionInvoiceStatus
+    dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payments?: SubscriptionPaymentUncheckedUpdateManyWithoutInvoiceNestedInput
+  }
+
+  export type BusinessCreateWithoutIpRulesInput = {
+    id?: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    website?: string | null
+    logo?: string | null
+    taxNumber?: string | null
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    accounts?: AccountCreateNestedManyWithoutBusinessInput
+    AiLog?: AiLogCreateNestedManyWithoutBusinessInput
+    auditLogs?: AuditLogCreateNestedManyWithoutBusinessInput
+    brands?: BrandCreateNestedManyWithoutBusinessInput
+    organization: OrganizationCreateNestedOneWithoutBusinessesInput
+    categories?: CategoryCreateNestedManyWithoutBusinessInput
+    customers?: CustomerCreateNestedManyWithoutBusinessInput
+    embeddings?: EmbeddingCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceCreateNestedManyWithoutBusinessInput
+    products?: ItemCreateNestedManyWithoutBusinessInput
+    orders?: OrderCreateNestedManyWithoutBusinessInput
+    OrderItem?: OrderItemCreateNestedManyWithoutBusinessInput
+    outboxEvents?: OutboxEventCreateNestedManyWithoutBusinessInput
+    payments?: PaymentCreateNestedManyWithoutBusinessInput
+    ProductBatch?: ProductBatchCreateNestedManyWithoutBusinessInput
+    PurchaseItem?: PurchaseItemCreateNestedManyWithoutBusinessInput
+    purchases?: PurchaseOrderCreateNestedManyWithoutBusinessInput
+    Review?: ReviewCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementCreateNestedManyWithoutBusinessInput
+    stockReservations?: StockReservationCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierCreateNestedManyWithoutBusinessInput
+    users?: UserCreateNestedManyWithoutBusinessInput
+    warehouses?: WarehouseCreateNestedManyWithoutBusinessInput
+    WarehouseTransfer?: WarehouseTransferCreateNestedManyWithoutBusinessInput
+    webhookEvents?: WebhookEventCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryCreateNestedManyWithoutBusinessInput
+    loyaltyProgram?: LoyaltyProgramCreateNestedOneWithoutBusinessInput
+    loyaltyPoints?: LoyaltyPointCreateNestedManyWithoutBusinessInput
+    notifications?: NotificationCreateNestedManyWithoutBusinessInput
+    refunds?: RefundCreateNestedManyWithoutBusinessInput
+    inventoryValuations?: InventoryValuationCreateNestedManyWithoutBusinessInput
+    reportCaches?: ReportCacheCreateNestedManyWithoutBusinessInput
+    userBusinessRoles?: UserBusinessRoleCreateNestedManyWithoutBusinessInput
+    subscription?: SubscriptionCreateNestedOneWithoutBusinessInput
+    customRoles?: CustomRoleCreateNestedManyWithoutBusinessInput
+    subscriptionInvoices?: SubscriptionInvoiceCreateNestedManyWithoutBusinessInput
+    subscriptionPayments?: SubscriptionPaymentCreateNestedManyWithoutBusinessInput
+    subscriptionChangeRequests?: SubscriptionChangeRequestCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessUncheckedCreateWithoutIpRulesInput = {
+    id?: string
+    organizationId: string
+    name: string
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    website?: string | null
+    logo?: string | null
+    taxNumber?: string | null
+    currency?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutBusinessInput
+    AiLog?: AiLogUncheckedCreateNestedManyWithoutBusinessInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutBusinessInput
+    brands?: BrandUncheckedCreateNestedManyWithoutBusinessInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutBusinessInput
+    customers?: CustomerUncheckedCreateNestedManyWithoutBusinessInput
+    embeddings?: EmbeddingUncheckedCreateNestedManyWithoutBusinessInput
+    inventory?: InventoryUncheckedCreateNestedManyWithoutBusinessInput
+    invoices?: InvoiceUncheckedCreateNestedManyWithoutBusinessInput
+    products?: ItemUncheckedCreateNestedManyWithoutBusinessInput
+    orders?: OrderUncheckedCreateNestedManyWithoutBusinessInput
+    OrderItem?: OrderItemUncheckedCreateNestedManyWithoutBusinessInput
+    outboxEvents?: OutboxEventUncheckedCreateNestedManyWithoutBusinessInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutBusinessInput
+    ProductBatch?: ProductBatchUncheckedCreateNestedManyWithoutBusinessInput
+    PurchaseItem?: PurchaseItemUncheckedCreateNestedManyWithoutBusinessInput
+    purchases?: PurchaseOrderUncheckedCreateNestedManyWithoutBusinessInput
+    Review?: ReviewUncheckedCreateNestedManyWithoutBusinessInput
+    stockMovements?: StockMovementUncheckedCreateNestedManyWithoutBusinessInput
+    stockReservations?: StockReservationUncheckedCreateNestedManyWithoutBusinessInput
+    suppliers?: SupplierUncheckedCreateNestedManyWithoutBusinessInput
+    users?: UserUncheckedCreateNestedManyWithoutBusinessInput
+    warehouses?: WarehouseUncheckedCreateNestedManyWithoutBusinessInput
+    WarehouseTransfer?: WarehouseTransferUncheckedCreateNestedManyWithoutBusinessInput
+    webhookEvents?: WebhookEventUncheckedCreateNestedManyWithoutBusinessInput
+    journalEntries?: JournalEntryUncheckedCreateNestedManyWithoutBusinessInput
+    loyaltyProgram?: LoyaltyProgramUncheckedCreateNestedOneWithoutBusinessInput
+    loyaltyPoints?: LoyaltyPointUncheckedCreateNestedManyWithoutBusinessInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutBusinessInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutBusinessInput
+    inventoryValuations?: InventoryValuationUncheckedCreateNestedManyWithoutBusinessInput
+    reportCaches?: ReportCacheUncheckedCreateNestedManyWithoutBusinessInput
+    userBusinessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutBusinessInput
+    subscription?: SubscriptionUncheckedCreateNestedOneWithoutBusinessInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutBusinessInput
+    subscriptionInvoices?: SubscriptionInvoiceUncheckedCreateNestedManyWithoutBusinessInput
+    subscriptionPayments?: SubscriptionPaymentUncheckedCreateNestedManyWithoutBusinessInput
+    subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedCreateNestedManyWithoutBusinessInput
+  }
+
+  export type BusinessCreateOrConnectWithoutIpRulesInput = {
+    where: BusinessWhereUniqueInput
+    create: XOR<BusinessCreateWithoutIpRulesInput, BusinessUncheckedCreateWithoutIpRulesInput>
+  }
+
+  export type BusinessUpsertWithoutIpRulesInput = {
+    update: XOR<BusinessUpdateWithoutIpRulesInput, BusinessUncheckedUpdateWithoutIpRulesInput>
+    create: XOR<BusinessCreateWithoutIpRulesInput, BusinessUncheckedCreateWithoutIpRulesInput>
+    where?: BusinessWhereInput
+  }
+
+  export type BusinessUpdateToOneWithWhereWithoutIpRulesInput = {
+    where?: BusinessWhereInput
+    data: XOR<BusinessUpdateWithoutIpRulesInput, BusinessUncheckedUpdateWithoutIpRulesInput>
+  }
+
+  export type BusinessUpdateWithoutIpRulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    taxNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accounts?: AccountUpdateManyWithoutBusinessNestedInput
+    AiLog?: AiLogUpdateManyWithoutBusinessNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutBusinessNestedInput
+    brands?: BrandUpdateManyWithoutBusinessNestedInput
+    organization?: OrganizationUpdateOneRequiredWithoutBusinessesNestedInput
+    categories?: CategoryUpdateManyWithoutBusinessNestedInput
+    customers?: CustomerUpdateManyWithoutBusinessNestedInput
+    embeddings?: EmbeddingUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUpdateManyWithoutBusinessNestedInput
+    products?: ItemUpdateManyWithoutBusinessNestedInput
+    orders?: OrderUpdateManyWithoutBusinessNestedInput
+    OrderItem?: OrderItemUpdateManyWithoutBusinessNestedInput
+    outboxEvents?: OutboxEventUpdateManyWithoutBusinessNestedInput
+    payments?: PaymentUpdateManyWithoutBusinessNestedInput
+    ProductBatch?: ProductBatchUpdateManyWithoutBusinessNestedInput
+    PurchaseItem?: PurchaseItemUpdateManyWithoutBusinessNestedInput
+    purchases?: PurchaseOrderUpdateManyWithoutBusinessNestedInput
+    Review?: ReviewUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUpdateManyWithoutBusinessNestedInput
+    stockReservations?: StockReservationUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUpdateManyWithoutBusinessNestedInput
+    users?: UserUpdateManyWithoutBusinessNestedInput
+    warehouses?: WarehouseUpdateManyWithoutBusinessNestedInput
+    WarehouseTransfer?: WarehouseTransferUpdateManyWithoutBusinessNestedInput
+    webhookEvents?: WebhookEventUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUpdateManyWithoutBusinessNestedInput
+    loyaltyProgram?: LoyaltyProgramUpdateOneWithoutBusinessNestedInput
+    loyaltyPoints?: LoyaltyPointUpdateManyWithoutBusinessNestedInput
+    notifications?: NotificationUpdateManyWithoutBusinessNestedInput
+    refunds?: RefundUpdateManyWithoutBusinessNestedInput
+    inventoryValuations?: InventoryValuationUpdateManyWithoutBusinessNestedInput
+    reportCaches?: ReportCacheUpdateManyWithoutBusinessNestedInput
+    userBusinessRoles?: UserBusinessRoleUpdateManyWithoutBusinessNestedInput
+    subscription?: SubscriptionUpdateOneWithoutBusinessNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutBusinessNestedInput
+    subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
+    subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
+    subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type BusinessUncheckedUpdateWithoutIpRulesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    taxNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    currency?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutBusinessNestedInput
+    AiLog?: AiLogUncheckedUpdateManyWithoutBusinessNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutBusinessNestedInput
+    brands?: BrandUncheckedUpdateManyWithoutBusinessNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutBusinessNestedInput
+    customers?: CustomerUncheckedUpdateManyWithoutBusinessNestedInput
+    embeddings?: EmbeddingUncheckedUpdateManyWithoutBusinessNestedInput
+    inventory?: InventoryUncheckedUpdateManyWithoutBusinessNestedInput
+    invoices?: InvoiceUncheckedUpdateManyWithoutBusinessNestedInput
+    products?: ItemUncheckedUpdateManyWithoutBusinessNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutBusinessNestedInput
+    OrderItem?: OrderItemUncheckedUpdateManyWithoutBusinessNestedInput
+    outboxEvents?: OutboxEventUncheckedUpdateManyWithoutBusinessNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutBusinessNestedInput
+    ProductBatch?: ProductBatchUncheckedUpdateManyWithoutBusinessNestedInput
+    PurchaseItem?: PurchaseItemUncheckedUpdateManyWithoutBusinessNestedInput
+    purchases?: PurchaseOrderUncheckedUpdateManyWithoutBusinessNestedInput
+    Review?: ReviewUncheckedUpdateManyWithoutBusinessNestedInput
+    stockMovements?: StockMovementUncheckedUpdateManyWithoutBusinessNestedInput
+    stockReservations?: StockReservationUncheckedUpdateManyWithoutBusinessNestedInput
+    suppliers?: SupplierUncheckedUpdateManyWithoutBusinessNestedInput
+    users?: UserUncheckedUpdateManyWithoutBusinessNestedInput
+    warehouses?: WarehouseUncheckedUpdateManyWithoutBusinessNestedInput
+    WarehouseTransfer?: WarehouseTransferUncheckedUpdateManyWithoutBusinessNestedInput
+    webhookEvents?: WebhookEventUncheckedUpdateManyWithoutBusinessNestedInput
+    journalEntries?: JournalEntryUncheckedUpdateManyWithoutBusinessNestedInput
+    loyaltyProgram?: LoyaltyProgramUncheckedUpdateOneWithoutBusinessNestedInput
+    loyaltyPoints?: LoyaltyPointUncheckedUpdateManyWithoutBusinessNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutBusinessNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutBusinessNestedInput
+    inventoryValuations?: InventoryValuationUncheckedUpdateManyWithoutBusinessNestedInput
+    reportCaches?: ReportCacheUncheckedUpdateManyWithoutBusinessNestedInput
+    userBusinessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutBusinessNestedInput
+    subscription?: SubscriptionUncheckedUpdateOneWithoutBusinessNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutBusinessNestedInput
+    subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
+    subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
+    subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+  }
+
+  export type UserCreateWithoutLoginActivitiesInput = {
+    id?: string
+    name: string
+    email: string
+    password?: string | null
+    role?: $Enums.PlatformRole
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    aiLogs?: AiLogCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    orders?: OrderCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenCreateNestedManyWithoutUserInput
+    reviews?: ReviewCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    postedJournalEntries?: JournalEntryCreateNestedManyWithoutPostedByInput
+    business?: BusinessCreateNestedOneWithoutUsersInput
+    businessRoles?: UserBusinessRoleCreateNestedManyWithoutUserInput
+    customRoles?: UserCustomRoleCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutLoginActivitiesInput = {
+    id?: string
+    name: string
+    email: string
+    password?: string | null
+    role?: $Enums.PlatformRole
+    businessId?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
+    aiLogs?: AiLogUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    orders?: OrderUncheckedCreateNestedManyWithoutUserInput
+    refreshTokens?: RefreshTokenUncheckedCreateNestedManyWithoutUserInput
+    reviews?: ReviewUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    postedJournalEntries?: JournalEntryUncheckedCreateNestedManyWithoutPostedByInput
+    businessRoles?: UserBusinessRoleUncheckedCreateNestedManyWithoutUserInput
+    customRoles?: UserCustomRoleUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutLoginActivitiesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutLoginActivitiesInput, UserUncheckedCreateWithoutLoginActivitiesInput>
+  }
+
+  export type UserUpsertWithoutLoginActivitiesInput = {
+    update: XOR<UserUpdateWithoutLoginActivitiesInput, UserUncheckedUpdateWithoutLoginActivitiesInput>
+    create: XOR<UserCreateWithoutLoginActivitiesInput, UserUncheckedCreateWithoutLoginActivitiesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutLoginActivitiesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutLoginActivitiesInput, UserUncheckedUpdateWithoutLoginActivitiesInput>
+  }
+
+  export type UserUpdateWithoutLoginActivitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aiLogs?: AiLogUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    orders?: OrderUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUpdateManyWithoutUserNestedInput
+    reviews?: ReviewUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    postedJournalEntries?: JournalEntryUpdateManyWithoutPostedByNestedInput
+    business?: BusinessUpdateOneWithoutUsersNestedInput
+    businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
+    customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutLoginActivitiesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumPlatformRoleFieldUpdateOperationsInput | $Enums.PlatformRole
+    businessId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
+    refreshTokens?: RefreshTokenUncheckedUpdateManyWithoutUserNestedInput
+    reviews?: ReviewUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
+    businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
+    customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type BusinessCreateManyOrganizationInput = {
@@ -97704,6 +101974,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateWithoutOrganizationInput = {
@@ -97757,6 +102028,7 @@ export namespace Prisma {
     subscriptionInvoices?: SubscriptionInvoiceUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionPayments?: SubscriptionPaymentUncheckedUpdateManyWithoutBusinessNestedInput
     subscriptionChangeRequests?: SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessNestedInput
+    ipRules?: BusinessIpRuleUncheckedUpdateManyWithoutBusinessNestedInput
   }
 
   export type BusinessUncheckedUpdateManyWithoutOrganizationInput = {
@@ -98013,6 +102285,11 @@ export namespace Prisma {
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    mfaSecret?: string | null
+    mfaEnabled?: boolean
+    mfaBackupCodes?: UserCreatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: number
+    lockedUntil?: Date | string | null
   }
 
   export type WarehouseCreateManyBusinessInput = {
@@ -98139,6 +102416,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
   }
 
   export type SubscriptionPaymentCreateManyBusinessInput = {
@@ -98165,6 +102443,16 @@ export namespace Prisma {
     status?: $Enums.SubscriptionChangeRequestStatus
     requestedAt?: Date | string
     processedAt?: Date | string | null
+  }
+
+  export type BusinessIpRuleCreateManyBusinessInput = {
+    id?: string
+    ipRange: string
+    type: $Enums.IpRuleType
+    description?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type AccountUpdateWithoutBusinessInput = {
@@ -98918,6 +103206,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     orders?: OrderUpdateManyWithoutUserNestedInput
@@ -98927,6 +103220,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutBusinessInput = {
@@ -98938,6 +103232,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     aiLogs?: AiLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     orders?: OrderUncheckedUpdateManyWithoutUserNestedInput
@@ -98947,6 +103246,7 @@ export namespace Prisma {
     postedJournalEntries?: JournalEntryUncheckedUpdateManyWithoutPostedByNestedInput
     businessRoles?: UserBusinessRoleUncheckedUpdateManyWithoutUserNestedInput
     customRoles?: UserCustomRoleUncheckedUpdateManyWithoutUserNestedInput
+    loginActivities?: LoginActivityUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutBusinessInput = {
@@ -98958,6 +103258,11 @@ export namespace Prisma {
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    mfaSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    mfaEnabled?: BoolFieldUpdateOperationsInput | boolean
+    mfaBackupCodes?: UserUpdatemfaBackupCodesInput | string[]
+    failedLoginAttempts?: IntFieldUpdateOperationsInput | number
+    lockedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WarehouseUpdateWithoutBusinessInput = {
@@ -99324,6 +103629,7 @@ export namespace Prisma {
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     subscription?: SubscriptionUpdateOneRequiredWithoutInvoicesNestedInput
+    changeRequest?: SubscriptionChangeRequestUpdateOneWithoutInvoiceNestedInput
     payments?: SubscriptionPaymentUpdateManyWithoutInvoiceNestedInput
   }
 
@@ -99337,6 +103643,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     payments?: SubscriptionPaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
@@ -99350,6 +103657,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SubscriptionPaymentUpdateWithoutBusinessInput = {
@@ -99408,6 +103716,7 @@ export namespace Prisma {
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subscription?: SubscriptionUpdateOneRequiredWithoutChangeRequestsNestedInput
+    invoice?: SubscriptionInvoiceUpdateOneWithoutChangeRequestNestedInput
   }
 
   export type SubscriptionChangeRequestUncheckedUpdateWithoutBusinessInput = {
@@ -99418,6 +103727,7 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invoice?: SubscriptionInvoiceUncheckedUpdateOneWithoutChangeRequestNestedInput
   }
 
   export type SubscriptionChangeRequestUncheckedUpdateManyWithoutBusinessInput = {
@@ -99428,6 +103738,36 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BusinessIpRuleUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BusinessIpRuleUncheckedUpdateWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type BusinessIpRuleUncheckedUpdateManyWithoutBusinessInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    ipRange?: StringFieldUpdateOperationsInput | string
+    type?: EnumIpRuleTypeFieldUpdateOperationsInput | $Enums.IpRuleType
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AiLogCreateManyUserInput = {
@@ -99532,6 +103872,15 @@ export namespace Prisma {
   export type UserCustomRoleCreateManyUserInput = {
     id?: string
     customRoleId: string
+    createdAt?: Date | string
+  }
+
+  export type LoginActivityCreateManyUserInput = {
+    id?: string
+    email: string
+    status: $Enums.LoginStatus
+    ipAddress?: string | null
+    userAgent?: string | null
     createdAt?: Date | string
   }
 
@@ -99857,6 +104206,33 @@ export namespace Prisma {
   export type UserCustomRoleUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     customRoleId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LoginActivityUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LoginActivityUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LoginActivityUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    status?: EnumLoginStatusFieldUpdateOperationsInput | $Enums.LoginStatus
+    ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
+    userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -101273,6 +105649,7 @@ export namespace Prisma {
     dueDate: Date | string
     paidAt?: Date | string | null
     createdAt?: Date | string
+    changeRequestId?: string | null
   }
 
   export type SubscriptionChangeRequestCreateManySubscriptionInput = {
@@ -101316,6 +105693,7 @@ export namespace Prisma {
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     business?: BusinessUpdateOneRequiredWithoutSubscriptionInvoicesNestedInput
+    changeRequest?: SubscriptionChangeRequestUpdateOneWithoutInvoiceNestedInput
     payments?: SubscriptionPaymentUpdateManyWithoutInvoiceNestedInput
   }
 
@@ -101329,6 +105707,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
     payments?: SubscriptionPaymentUncheckedUpdateManyWithoutInvoiceNestedInput
   }
 
@@ -101342,6 +105721,7 @@ export namespace Prisma {
     dueDate?: DateTimeFieldUpdateOperationsInput | Date | string
     paidAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    changeRequestId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type SubscriptionChangeRequestUpdateWithoutSubscriptionInput = {
@@ -101352,6 +105732,7 @@ export namespace Prisma {
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     business?: BusinessUpdateOneRequiredWithoutSubscriptionChangeRequestsNestedInput
+    invoice?: SubscriptionInvoiceUpdateOneWithoutChangeRequestNestedInput
   }
 
   export type SubscriptionChangeRequestUncheckedUpdateWithoutSubscriptionInput = {
@@ -101362,6 +105743,7 @@ export namespace Prisma {
     status?: EnumSubscriptionChangeRequestStatusFieldUpdateOperationsInput | $Enums.SubscriptionChangeRequestStatus
     requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    invoice?: SubscriptionInvoiceUncheckedUpdateOneWithoutChangeRequestNestedInput
   }
 
   export type SubscriptionChangeRequestUncheckedUpdateManyWithoutSubscriptionInput = {
