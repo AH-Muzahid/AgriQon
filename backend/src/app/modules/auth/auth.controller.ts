@@ -79,7 +79,20 @@ const login = catchAsync(async (req: Request, res: Response) => {
     ua: req.headers['user-agent']
   };
   const result = await authService.login(req.body, sessionInfo);
-  const { user, accessToken, refreshToken } = result;
+  
+  if ('mfaRequired' in result && result.mfaRequired) {
+    return sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'MFA verification required',
+      data: {
+        mfaRequired: true,
+        mfaTempToken: result.mfaTempToken
+      }
+    });
+  }
+
+  const { user, accessToken, refreshToken } = result as any;
   const enrichedUser = await enrichUser(user);
 
   // Set cookies

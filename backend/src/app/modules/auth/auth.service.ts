@@ -6,6 +6,9 @@ import { env } from "../../../config/env";
 import { AppError } from "../../errors/AppError";
 import { UserRepository } from "./user.repository";
 import { CreateUserDTO, LoginDTO } from "./auth.validation";
+import { prisma } from "../../lib/prisma";
+import speakeasy from "speakeasy";
+import { decrypt } from "../../shared/utils/encryption";
 
 export class AuthService {
   constructor(private userRepo: UserRepository) {}
@@ -37,14 +40,104 @@ export class AuthService {
 
   async login(data: LoginDTO, sessionInfo?: { ip?: string; ua?: string }) {
     const user = await this.userRepo.findByEmail(data.email);
+    
+    // Check if account is locked
+    if (user && user.lockedUntil && user.lockedUntil > new Date()) {
+      await prisma.loginActivity.create({
+        data: {
+          userId: user.id,
+          email: data.email,
+          status: "LOCKED",
+          ipAddress: sessionInfo?.ip,
+          userAgent: sessionInfo?.ua,
+        },
+      });
+      throw new AppError("Account is temporarily locked. Please try again in 15 minutes.", 401);
+    }
+
     if (!user || !user.password) {
+      if (user) {
+        const failedAttempts = user.failedLoginAttempts + 1;
+        const dataUpdate: any = { failedLoginAttempts: failedAttempts };
+        if (failedAttempts >= 5) {
+          dataUpdate.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
+        }
+        await prisma.user.update({ where: { id: user.id }, data: dataUpdate });
+
+        await prisma.loginActivity.create({
+          data: {
+            userId: user.id,
+            email: data.email,
+            status: failedAttempts >= 5 ? "LOCKED" : "FAILED_PASSWORD",
+            ipAddress: sessionInfo?.ip,
+            userAgent: sessionInfo?.ua,
+          },
+        });
+      } else {
+        await prisma.loginActivity.create({
+          data: {
+            email: data.email,
+            status: "FAILED_PASSWORD",
+            ipAddress: sessionInfo?.ip,
+            userAgent: sessionInfo?.ua,
+          },
+        });
+      }
       throw new AppError("Invalid email or password", 401);
     }
 
     const isPasswordMatch = await bcrypt.compare(data.password, user.password);
     if (!isPasswordMatch) {
+      const failedAttempts = user.failedLoginAttempts + 1;
+      const dataUpdate: any = { failedLoginAttempts: failedAttempts };
+      if (failedAttempts >= 5) {
+        dataUpdate.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
+      }
+      await prisma.user.update({ where: { id: user.id }, data: dataUpdate });
+
+      await prisma.loginActivity.create({
+        data: {
+          userId: user.id,
+          email: data.email,
+          status: failedAttempts >= 5 ? "LOCKED" : "FAILED_PASSWORD",
+          ipAddress: sessionInfo?.ip,
+          userAgent: sessionInfo?.ua,
+        },
+      });
       throw new AppError("Invalid email or password", 401);
     }
+
+    // Password matches, check MFA status
+    if (user.mfaEnabled) {
+      if (!env.jwtSecret) {
+        throw new AppError("JWT secret not configured", 500);
+      }
+      const mfaTempToken = jwt.sign(
+        { userId: user.id, purpose: "mfa_temp" },
+        env.jwtSecret + "-mfa-temp",
+        { expiresIn: "5m" }
+      );
+      return { mfaRequired: true, mfaTempToken };
+    }
+
+    // No MFA: reset lockouts, log success, issue regular tokens
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    await prisma.loginActivity.create({
+      data: {
+        userId: user.id,
+        email: data.email,
+        status: "SUCCESS",
+        ipAddress: sessionInfo?.ip,
+        userAgent: sessionInfo?.ua,
+      },
+    });
 
     const accessToken = this.generateAccessToken(user);
     const { token, hashedToken } = this.generateSecureToken();
@@ -54,6 +147,201 @@ export class AuthService {
 
     return { user, accessToken, refreshToken: token };
   }
+
+  async verifyMFALogin(
+    data: { mfaTempToken: string; code: string },
+    sessionInfo?: { ip?: string; ua?: string }
+  ) {
+    let decoded: any;
+    try {
+      if (!env.jwtSecret) {
+        throw new AppError("JWT secret not configured", 500);
+      }
+      decoded = jwt.verify(data.mfaTempToken, env.jwtSecret + "-mfa-temp");
+    } catch (err) {
+      throw new AppError("Invalid or expired temporary MFA token", 401);
+    }
+
+    if (decoded.purpose !== 'mfa_temp') {
+      throw new AppError("Invalid or expired temporary MFA token", 401);
+    }
+
+    const userId = decoded.userId;
+    const user = await this.userRepo.findById(userId);
+    if (!user || !user.mfaSecret || !user.mfaEnabled) {
+      throw new AppError("MFA is not set up or enabled for this user", 401);
+    }
+
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      throw new AppError("Account is locked", 401);
+    }
+
+    const decryptedSecret = decrypt(user.mfaSecret);
+    const isTotpValid = speakeasy.totp.verify({
+      secret: decryptedSecret,
+      encoding: 'base32',
+      token: data.code,
+      window: 1,
+    });
+    let isBackupCodeValid = false;
+    let updatedBackupCodes = [...user.mfaBackupCodes];
+
+    if (!isTotpValid) {
+      for (let i = 0; i < user.mfaBackupCodes.length; i++) {
+        const match = await bcrypt.compare(data.code, user.mfaBackupCodes[i]);
+        if (match) {
+          isBackupCodeValid = true;
+          updatedBackupCodes.splice(i, 1);
+          break;
+        }
+      }
+    }
+
+    if (!isTotpValid && !isBackupCodeValid) {
+      await prisma.loginActivity.create({
+        data: {
+          userId: user.id,
+          email: user.email,
+          status: 'FAILED_MFA',
+          ipAddress: sessionInfo?.ip,
+          userAgent: sessionInfo?.ua,
+        },
+      });
+
+      const failedAttempts = user.failedLoginAttempts + 1;
+      const dataUpdate: any = { failedLoginAttempts: failedAttempts };
+      if (failedAttempts >= 5) {
+        dataUpdate.lockedUntil = new Date(Date.now() + 15 * 60 * 1000);
+        await prisma.user.update({ where: { id: user.id }, data: dataUpdate });
+        
+        await prisma.loginActivity.create({
+          data: {
+            userId: user.id,
+            email: user.email,
+            status: 'LOCKED',
+            ipAddress: sessionInfo?.ip,
+            userAgent: sessionInfo?.ua,
+          },
+        });
+
+        throw new AppError("Too many failed attempts. Account has been locked for 15 minutes.", 401);
+      }
+
+      await prisma.user.update({ where: { id: user.id }, data: dataUpdate });
+      throw new AppError("Invalid MFA code", 401);
+    }
+
+    // Success: reset attempts, log activity
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+        mfaBackupCodes: updatedBackupCodes,
+      },
+    });
+
+    await prisma.loginActivity.create({
+      data: {
+        userId: user.id,
+        email: user.email,
+        status: 'SUCCESS',
+        ipAddress: sessionInfo?.ip,
+        userAgent: sessionInfo?.ua,
+      },
+    });
+
+    const accessToken = this.generateAccessToken(user);
+    const { token, hashedToken } = this.generateSecureToken();
+    const familyId = crypto.randomBytes(20).toString("hex");
+
+    await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
+
+    return { user, accessToken, refreshToken: token };
+  }
+
+  async listSessions(userId: string) {
+    const activeTokens = await prisma.refreshToken.findMany({
+      where: {
+        userId,
+        revokedAt: null,
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { lastUsedAt: 'desc' }
+    });
+
+    return activeTokens.map((token: any) => {
+      const parsedUA = this.parseUserAgent(token.userAgent);
+      return {
+        id: token.id,
+        ipAddress: token.ipAddress,
+        userAgent: token.userAgent,
+        browser: parsedUA.browser,
+        os: parsedUA.os,
+        device: parsedUA.device,
+        lastUsedAt: token.lastUsedAt,
+        createdAt: token.createdAt,
+        expiresAt: token.expiresAt
+      };
+    });
+  }
+
+  async revokeSession(userId: string, sessionId: string) {
+    const session = await prisma.refreshToken.findFirst({
+      where: { id: sessionId, userId }
+    });
+    if (!session) {
+      throw new AppError("Session not found", 404);
+    }
+    await prisma.refreshToken.update({
+      where: { id: sessionId },
+      data: { revokedAt: new Date() }
+    });
+  }
+
+  async revokeAllOtherSessions(userId: string, currentSessionToken: string) {
+    const hashedToken = this.hashToken(currentSessionToken);
+    const currentSession = await prisma.refreshToken.findUnique({
+      where: { token: hashedToken }
+    });
+    
+    await prisma.refreshToken.updateMany({
+      where: {
+        userId,
+        id: currentSession ? { not: currentSession.id } : undefined,
+        revokedAt: null
+      },
+      data: { revokedAt: new Date() }
+    });
+  }
+
+  private parseUserAgent(uaString: string | null): { device: string; os: string; browser: string } {
+    if (!uaString) {
+      return { device: 'Unknown', os: 'Unknown', browser: 'Unknown' };
+    }
+    
+    let device = 'Desktop';
+    if (/mobile/i.test(uaString)) device = 'Mobile';
+    else if (/tablet/i.test(uaString)) device = 'Tablet';
+    else if (/ipad/i.test(uaString)) device = 'Tablet';
+
+    let os = 'Unknown';
+    if (/windows/i.test(uaString)) os = 'Windows';
+    else if (/macintosh|mac os x/i.test(uaString)) os = 'macOS';
+    else if (/android/i.test(uaString)) os = 'Android';
+    else if (/iphone|ipad|ipod/i.test(uaString)) os = 'iOS';
+    else if (/linux/i.test(uaString)) os = 'Linux';
+
+    let browser = 'Unknown';
+    if (/chrome|crios/i.test(uaString) && !/edge|opr\//i.test(uaString)) browser = 'Chrome';
+    else if (/firefox|fxios/i.test(uaString)) browser = 'Firefox';
+    else if (/safari/i.test(uaString) && !/chrome|crios|edge|opr\//i.test(uaString)) browser = 'Safari';
+    else if (/edge|edg/i.test(uaString)) browser = 'Edge';
+    else if (/opera|opr/i.test(uaString)) browser = 'Opera';
+
+    return { device, os, browser };
+  }
+
 
   async refreshToken(
     token: string,

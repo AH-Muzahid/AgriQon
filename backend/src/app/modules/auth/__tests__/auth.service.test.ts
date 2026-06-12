@@ -13,6 +13,17 @@ jest.mock("../../../../config/env", () => ({
   },
 }));
 
+jest.mock("../../../lib/prisma", () => ({
+  prisma: {
+    user: {
+      update: jest.fn().mockResolvedValue({}),
+    },
+    loginActivity: {
+      create: jest.fn().mockResolvedValue({}),
+    },
+  },
+}));
+
 describe("AuthService", () => {
   let authService: AuthService;
   let mockUserRepo: jest.Mocked<UserRepository>;
