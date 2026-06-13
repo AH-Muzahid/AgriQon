@@ -105,7 +105,7 @@ graph TD
 ## 9. Completed Modules
 Based on the repository code and database schema, the following modules are fully written, tested, and active on the backend:
 
-1.  **Auth Subsystem (90% Complete)**: Supports JWT tokens via Bearer headers and HttpOnly cookies, session tracking via refresh token family rotation, Speakeasy-powered MFA, and login attempts lockout policies.
+1.  **Auth Subsystem (100% Complete)**: Supports JWT tokens via Bearer headers and HttpOnly cookies, session tracking via refresh token family rotation, Speakeasy-powered MFA, login attempts lockout policies, automated Organization/Business tenant workspace provisioning upon registration (both standard and OAuth), and updated frontend auth context integration.
 2.  **Tenancy Isolation (95% Complete)**: Enforces business-scoping (`businessId`) at the data layer and routes level via `requireTenant` middleware.
 3.  **Roles & Permissions (85% Complete)**: The backend has 86 unique permission keys seeded. The frontend includes `PermissionGate` and Zustand state mapping, but route guards are pending.
 4.  **Inventory & Warehousing (95% Complete)**: Implements physical stock levels (available, reserved, total), batch tracking (expiry dates), warehouse transfers, reservations, and optimistic concurrency version controls.
@@ -113,20 +113,15 @@ Based on the repository code and database schema, the following modules are full
 6.  **Reconciliation Engine (95% Complete)**: Audits journal balances, inventory drift, AR/AP drift, outbox staleness, and duplicate events.
 7.  **SaaS Subscription & Billing (95% Complete)**: Trial and Pro plans, feature gating, resource limits, and payment gateway sandbox integrations (SSLCommerz, Nagad, bKash).
 8.  **AI Service (90% Complete)**: Embeddings synchronization, similarity searches, and enriched RAG context for chat responses.
+9.  **Point of Sale (POS) backend calculations and checkout (90% Complete)**: Server-side summary calculator (subtotal, 5% VAT, discount, grand total) and transaction checks. Fulfills orders using database-generated invoice IDs.
 
 ---
 
 ## 10. Partially Completed Modules
-1.  **Authentication Migration (Frontend Auth Context)**:
-    *   **Fact**: The `auth-context.tsx` and registration page still include legacy `Buyer`/`Seller` selections and types.
-    *   **Gaps**: Needs replacement with standard SaaS forms, removal of the role selection UI, and updates to the user role types (`OWNER`, `MANAGER`, `STAFF`).
-2.  **Backend Auth Registration Refactoring**:
-    *   **Fact**: Backend registration endpoints still accept legacy roles and lack auto-tenant provisioning on signup.
-    *   **Gaps**: Endpoints must be refactored to auto-create an Organization and Business tenant for the first user, and assign the `OWNER` role.
-3.  **UI Component Refactoring**:
+1.  **UI Component Refactoring**:
     *   **Fact**: UI components such as `product-card.tsx` still retain marketplace-era properties like `vendor` fields and shopping baskets.
     *   **Gaps**: Must be refactored to display SKU information, cost structures, and warehouse location fields.
-4.  **Navigation and Route Guards**:
+2.  **Navigation and Route Guards**:
     *   **Fact**: Next.js route protection and sidebar navigation are not yet fully integrated with the frontend permissions engine.
     *   **Gaps**: Next.js layout route guards and nav filtering must be connected to the Zustand auth store's `hasPermission` state.
 
@@ -317,7 +312,6 @@ The database, security middlewares, double-entry accounting, and subscription li
 1.  **Mock Payment Providers**: SSLCommerz, Nagad, and bKash providers generate mock redirect URLs (`http://localhost:3000/...`). Real payment gateways are not configured.
 2.  **Vector Dimension Constraints**: The database seeder writes a mock vector of 5 floating-point numbers to the `Embedding` table, whereas actual embeddings require 768 or 1536 dimensions depending on the provider.
 3.  **Unprotected Routes (Gaps)**:
-    *   `POST /api/v1/uploads/image` has no auth middleware.
     *   Webhooks are public (rely on signature checking).
 
 ---

@@ -6,12 +6,7 @@ This document tracks all verified functional issues, architectural violations, f
 
 # Critical Issues
 
-### Unprotected Public Image Upload Endpoint
-- **Priority**: Critical
-- **Area**: Security
-- **Location**: [uploads.routes.ts](file:///d:/Projects/AgroAI%20Market/agriqon/backend/src/app/modules/uploads/uploads.routes.ts#L25)
-- **Impact**: The image upload endpoint `POST /api/v1/uploads/image` lacks any authentication (`extractAuth`) or tenant context (`requireTenant`) middleware guards. This allows unauthenticated users to upload up to 5MB files directly to the server's local storage folder. Since the route lacks user context, the controller defaults the tenant `businessId` to `'global'`, meaning malicious users can write arbitrary files to server storage, posing a significant risk of Disk Exhaustion (Denial of Service) or malware hosting.
-- **Recommended Fix**: Apply `extractAuth` and `requireTenant` middleware guards on the uploads router before routing requests to `controller.uploadImage`.
+*No critical issues currently active.*
 
 ---
 
@@ -26,14 +21,7 @@ This document tracks all verified functional issues, architectural violations, f
 
 ---
 
-### Legacy Frontend Auth & Role Context Gaps
-- **Priority**: High
-- **Area**: Frontend
-- **Location**: [auth-context.tsx](file:///d:/Projects/AgroAI%20Market/agriqon/frontend/src/context/auth-context.tsx#L12) and [auth-store.ts](file:///d:/Projects/AgroAI%20Market/agriqon/frontend/src/store/auth-store.ts#L90)
-- **Impact**: The frontend authentication context and registration forms still expect legacy B2B2C marketplace roles (`Buyer` and `Seller` / `USER` and `SELLER`) and route new signups to legacy storefront paths. They do not match the backend's new multi-tenant ERP scoping roles (`OWNER`, `MANAGER`, `STAFF`).
-- **Recommended Fix**: Refactor registration forms and the auth store to submit sign-up requests without hardcoded role flags. Ensure they read verified user permissions directly from the backend's `/auth/me` endpoint.
 
----
 
 ### Oversized Page and Component Bloat
 - **Priority**: High
@@ -69,14 +57,6 @@ This document tracks all verified functional issues, architectural violations, f
 
 ---
 
-### Client-Side Calculations of Transaction Summaries
-- **Priority**: Medium
-- **Area**: Frontend
-- **Location**: [pos-view.tsx](file:///d:/Projects/AgroAI%20Market/agriqon/frontend/src/components/dashboard/pos-view.tsx#L101-L107)
-- **Impact**: The POS cashier checkout page performs calculations (such as taxable totals, a hardcoded 5% VAT rate, and grand totals) and generates random invoice numbers on the client side. This exposes checkout values to tampering if not re-verified on the backend.
-- **Recommended Fix**: Calculate VAT, discounts, and invoice totals on the backend API, rendering only server-validated values in the checkout summary.
-
----
 
 ### Generic Rate-Limiting on Authentication Routines
 - **Priority**: Medium
@@ -144,8 +124,6 @@ This document tracks all verified functional issues, architectural violations, f
 
 # Recommended Next Sprint
 
-1. **Secure File Uploads**: Mount the `extractAuth` and `requireTenant` middleware checks on the `POST /api/v1/uploads/image` endpoint route.
-2. **Auth Context Alignment**: Refactor the frontend `auth-context.tsx` and Zustand stores to remove legacy `Buyer`/`Seller` roles, aligning with the backend `OWNER`, `MANAGER`, and `STAFF` roles.
-3. **Purge Marketplace Code**: Delete the `reviews` module, unmount its routes, and delete `cart-context.tsx`, `wishlist-context.tsx`, and associated storefront files.
-4. **Decompose UI Files**: Extract dialog forms, table headers, and local states from oversized pages (like `security/page.tsx` and `pos-view.tsx`) into separate sub-components.
-5. **Payment Signature Verification**: Replace the payment sandbox stubs with actual gateway verification checking signed webhook payloads.
+1. **Purge Marketplace Code**: Delete the `reviews` module, unmount its routes, and delete `cart-context.tsx`, `wishlist-context.tsx`, and associated storefront files.
+2. **Decompose UI Files**: Extract dialog forms, table headers, and local states from oversized pages (like `security/page.tsx` and `pos-view.tsx`) into separate sub-components.
+3. **Payment Signature Verification**: Replace the payment sandbox stubs with actual gateway verification checking signed webhook payloads.
