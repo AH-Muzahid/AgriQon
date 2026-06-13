@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { AuthRequest } from '../../middleware/rbac.middleware';
 import { UploadsService } from './uploads.service';
 import { AppError } from '../../errors/AppError';
 
@@ -9,14 +10,14 @@ export class UploadsController {
     this.uploadsService = new UploadsService();
   }
 
-  uploadImage = async (req: Request, res: Response, next: NextFunction) => {
+  uploadImage = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.file) {
         throw new AppError('No file uploaded', 400);
       }
 
       // Get businessId from auth (multi-tenant isolation)
-      const businessId = (req as any).user?.businessId || 'global';
+      const businessId = req.businessId || (req as any).user?.businessId || 'global';
       
       const url = await this.uploadsService.processAndSaveImage(req.file, businessId);
 

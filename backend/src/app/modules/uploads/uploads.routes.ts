@@ -2,6 +2,8 @@ import { Router } from 'express';
 import multer from 'multer';
 import { UploadsController } from './uploads.controller';
 import { AppError } from '../../errors/AppError';
+import { extractAuth, requireAuth } from '../../middleware/rbac.middleware';
+import { requireTenant } from '../../middleware/tenant.middleware';
 
 const router = Router();
 const controller = new UploadsController();
@@ -22,6 +24,6 @@ const upload = multer({
   },
 });
 
-router.post('/image', upload.single('image'), controller.uploadImage);
+router.post('/image', extractAuth, requireAuth, requireTenant, upload.single('image'), controller.uploadImage);
 
 export const UploadsRoutes = router;
