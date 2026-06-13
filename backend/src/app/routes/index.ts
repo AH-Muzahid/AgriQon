@@ -29,11 +29,13 @@ import { PermissionRoutes } from '../modules/permissions/permission.routes';
 import { SubscriptionRoutes } from '../modules/subscriptions/subscription.routes';
 import { PlatformRoutes } from '../modules/platform/platform.routes';
 import { SecurityRoutes } from '../modules/auth/security.routes';
+import { PosRoutes } from '../modules/pos/pos.routes';
 
 const router = Router();
 
 const moduleRoutes = [
   { path: '/auth', route: AuthRoutes },
+  { path: '/pos', route: PosRoutes },
   { path: '/payments', route: PaymentRoutes },
   { path: '/business', route: BusinessRoutes },
   { path: '/products', route: ProductRoutes },

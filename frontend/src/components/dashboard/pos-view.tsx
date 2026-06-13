@@ -20,6 +20,7 @@ import {
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Customer } from './crm-view';
+import { apiClient } from '@/lib/api-client';
 
 interface Product {
   id: string;
@@ -97,18 +98,51 @@ export default function POSView({
     return matchesCategory && matchesSearch;
   });
 
-  // Calculate Cart Metrics
-  const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  // Calculate Cart Metrics on backend
+  const [summary, setSummary] = useState({
+    subtotal: 0,
+    discount: 0,
+    vat: 0,
+    total: 0
+  });
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const discountAmount = parseFloat(discountInput) || 0;
-  
-  // VAT is 5% of (Subtotal - Discount)
-  const taxableAmount = Math.max(0, subtotal - discountAmount);
-  const vatAmount = Math.round(taxableAmount * 0.05);
-  const grandTotal = Math.max(0, taxableAmount + vatAmount);
+
+  // Synchronize cart changes with backend calculations
+  React.useEffect(() => {
+    const fetchSummary = async () => {
+      if (cart.length === 0) {
+        setSummary({ subtotal: 0, discount: 0, vat: 0, total: 0 });
+        return;
+      }
+      setIsCalculating(true);
+      try {
+        const payload = {
+          items: cart.map(item => ({
+            itemId: item.product.id,
+            quantity: item.quantity
+          })),
+          discount: parseFloat(discountInput) || 0
+        };
+        const response = await apiClient.post<{ subtotal: number, discount: number, vat: number, total: number }>('/pos/calculate-summary', payload);
+        if (response.success && response.data) {
+          setSummary(response.data);
+        }
+      } catch (err) {
+        console.error('Error calculating summary from backend:', err);
+      } finally {
+        setIsCalculating(false);
+      }
+    };
+
+    fetchSummary();
+  }, [cart, discountInput]);
 
   // Credit warnings check
   const isOverCreditLimit = activeCustomer 
-    ? (activeCustomer.due + grandTotal) > activeCustomer.creditLimit 
+    ? (activeCustomer.due + summary.total) > activeCustomer.creditLimit 
     : false;
 
   const handleAddToCart = (product: Product) => {
@@ -135,7 +169,7 @@ export default function POSView({
     updateCartQty(product.id, delta);
   };
 
-  const handleCheckout = (method: string) => {
+  const handleCheckout = async (method: string) => {
     if (cart.length === 0) {
       toast.error('কার্টটি খালি আছে!');
       return;
@@ -149,33 +183,58 @@ export default function POSView({
 
     // Restrict checkout if it violates credit limits
     if (method === 'বাকি' && activeCustomer && isOverCreditLimit) {
-      toast.error(`পেমেন্ট ব্যর্থ! বকেয়াসহ কাস্টমারের বকেয়া পরিমাণ (৳${activeCustomer.due + grandTotal}) তার ক্রেডিট সীমা (৳${activeCustomer.creditLimit}) অতিক্রম করবে!`);
+      toast.error(`পেমেন্ট ব্যর্থ! বকেয়াসহ কাস্টমারের বকেয়া পরিমাণ (৳${activeCustomer.due + summary.total}) তার ক্রেডিট সীমা (৳${activeCustomer.creditLimit}) অতিক্রম করবে!`);
       return;
     }
 
-    // Call checkout on parent page to sync records
-    checkoutCart(method, selectedCustomerId, discountAmount, vatAmount, grandTotal);
+    setIsSubmitting(true);
+    const toastId = toast.loading('অর্ডার প্রসেস করা হচ্ছে...');
 
-    // Prepare live receipt data for visual presentation
-    const invoiceNo = `INV-10${33 + Math.floor(Math.random() * 900)}`;
-    const now = new Date();
-    const dateFormatted = `${now.toLocaleDateString('bn-BD')} ${now.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}`;
+    try {
+      const payload = {
+        customerId: selectedCustomerId === 'guest' ? undefined : selectedCustomerId,
+        items: cart.map(item => ({
+          itemId: item.product.id,
+          quantity: item.quantity
+        })),
+        discount: summary.discount,
+        paymentMethod: method
+      };
 
-    setActiveInvoice({
-      invoiceNo,
-      date: dateFormatted,
-      customerName: activeCustomer ? activeCustomer.name : 'গেস্ট ক্রেতা',
-      customerPhone: activeCustomer ? activeCustomer.phone : 'N/A',
-      items: [...cart],
-      subtotal,
-      discount: discountAmount,
-      vat: vatAmount,
-      total: grandTotal,
-      paymentMethod: method
-    });
+      const response = await apiClient.post<any>('/pos/checkout', payload);
 
-    // Reset local states
-    setDiscountInput('');
+      if (response.success && response.data) {
+        const orderData = response.data;
+        const invoiceNumber = orderData.invoice?.invoiceNumber || `INV-${orderData.id.slice(-6).toUpperCase()}`;
+
+        toast.success('অর্ডার এবং ইনভয়েস সফলভাবে তৈরি হয়েছে!', { id: toastId });
+
+        const now = new Date();
+        const dateFormatted = `${now.toLocaleDateString('bn-BD')} ${now.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}`;
+
+        setActiveInvoice({
+          invoiceNo: invoiceNumber,
+          date: dateFormatted,
+          customerName: activeCustomer ? activeCustomer.name : 'গেস্ট ক্রেতা',
+          customerPhone: activeCustomer ? activeCustomer.phone : 'N/A',
+          items: [...cart],
+          subtotal: summary.subtotal,
+          discount: summary.discount,
+          vat: summary.vat,
+          total: summary.total,
+          paymentMethod: method
+        });
+
+        // Reset local states
+        setDiscountInput('');
+      } else {
+        toast.error('চেকআউট ব্যর্থ হয়েছে!', { id: toastId });
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'চেকআউট করার সময় একটি ত্রুটি ঘটেছে!', { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Animation variants
@@ -456,7 +515,7 @@ export default function POSView({
             <div className="space-y-2.5 text-xs font-bold text-[#66756e]">
               <div className="flex justify-between">
                 <span>সাবটোটাল</span>
-                <span className="text-[#17231f]">৳ {subtotal}</span>
+                <span className="text-[#17231f]">৳ {summary.subtotal}</span>
               </div>
               
               {/* Custom Discount input element */}
@@ -473,7 +532,7 @@ export default function POSView({
 
               <div className="flex justify-between text-emerald-800">
                 <span className="flex items-center gap-1">কৃষি ভ্যাট / ট্যাক্স <span className="bg-emerald-50 text-emerald-700 text-[8px] font-black px-1.5 py-0.5 rounded-full border border-emerald-100">৫%</span></span>
-                <span>৳ {vatAmount}</span>
+                <span>৳ {summary.vat}</span>
               </div>
               
               {/* Debt Warning warning signal in cart */}
@@ -486,7 +545,7 @@ export default function POSView({
 
               <div className="flex justify-between text-[#17231f] text-sm font-black pt-3.5 border-t border-[#eef2ef]">
                 <span>সর্বমোট পরিশোধযোগ্য</span>
-                <span className="text-[#0f4f3a] text-lg font-black">৳ {grandTotal.toLocaleString()}</span>
+                <span className="text-[#0f4f3a] text-lg font-black">৳ {summary.total.toLocaleString()}</span>
               </div>
             </div>
 
@@ -496,7 +555,12 @@ export default function POSView({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleCheckout('নগদ ক্যাশ')}
-                className="py-3 bg-[#0f4f3a] hover:bg-[#082d22] text-white text-xs font-extrabold rounded-2xl transition-all shadow-sm cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                disabled={isSubmitting || isCalculating}
+                className={`py-3 text-white text-xs font-extrabold rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center gap-0.5 ${
+                  isSubmitting || isCalculating
+                    ? 'bg-[#e5ebe6] text-[#b3bfb9] cursor-not-allowed shadow-none'
+                    : 'bg-[#0f4f3a] hover:bg-[#082d22] cursor-pointer'
+                }`}
               >
                 <span>নগদ</span>
                 <span className="text-[8px] opacity-80 font-semibold">Cash</span>
@@ -505,18 +569,23 @@ export default function POSView({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => handleCheckout('bKash')}
-                className="py-3 bg-[#e2125b] hover:bg-[#c10c4d] text-white text-xs font-extrabold rounded-2xl transition-all shadow-sm cursor-pointer flex flex-col items-center justify-center gap-0.5"
+                disabled={isSubmitting || isCalculating}
+                className={`py-3 text-white text-xs font-extrabold rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center gap-0.5 ${
+                  isSubmitting || isCalculating
+                    ? 'bg-[#e5ebe6] text-[#b3bfb9] cursor-not-allowed shadow-none'
+                    : 'bg-[#e2125b] hover:bg-[#c10c4d] cursor-pointer'
+                }`}
               >
                 <span>bKash</span>
                 <span className="text-[8px] opacity-80 font-semibold">ডিজিটাল</span>
               </motion.button>
               <motion.button
-                whileHover={!(selectedCustomerId === 'guest' || isOverCreditLimit) ? { scale: 1.02 } : undefined}
-                whileTap={!(selectedCustomerId === 'guest' || isOverCreditLimit) ? { scale: 0.98 } : undefined}
+                whileHover={!(selectedCustomerId === 'guest' || isOverCreditLimit || isSubmitting || isCalculating) ? { scale: 1.02 } : undefined}
+                whileTap={!(selectedCustomerId === 'guest' || isOverCreditLimit || isSubmitting || isCalculating) ? { scale: 0.98 } : undefined}
                 onClick={() => handleCheckout('বাকি')}
-                disabled={selectedCustomerId === 'guest' || isOverCreditLimit}
+                disabled={selectedCustomerId === 'guest' || isOverCreditLimit || isSubmitting || isCalculating}
                 className={`py-3 text-white text-xs font-extrabold rounded-2xl transition-all shadow-sm flex flex-col items-center justify-center gap-0.5 ${
-                  selectedCustomerId === 'guest' || isOverCreditLimit
+                  selectedCustomerId === 'guest' || isOverCreditLimit || isSubmitting || isCalculating
                     ? 'bg-[#e5ebe6] text-[#b3bfb9] cursor-not-allowed shadow-none'
                     : 'bg-[#d96f32] hover:bg-[#c05e26] cursor-pointer'
                 }`}
