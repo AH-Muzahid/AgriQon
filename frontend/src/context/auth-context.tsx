@@ -20,9 +20,9 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (email: string, password: string, name: string, role: 'USER' | 'SELLER') => Promise<User>;
+  register: (email: string, password: string, name: string) => Promise<User>;
   signInWithGoogle: () => Promise<void>;
-  signUpWithGoogle: (role: 'USER' | 'SELLER') => Promise<void>;
+  signUpWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
@@ -128,12 +128,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function register(
     email: string,
     password: string,
-    name: string,
-    role: 'USER' | 'SELLER' = 'USER'
+    name: string
   ): Promise<User> {
     setIsLoading(true);
     try {
-      const response = await apiClient.register<{ user: User; token?: string; accessToken?: string }>({ email, password, name, role });
+      const response = await apiClient.register<{ user: User; token?: string; accessToken?: string }>({ email, password, name });
       // apiClient response interceptor unwraps axios response and returns `response.data`.
       const { user: userData, token, accessToken } = response.data;
       if (process.env.NODE_ENV !== 'production') {
@@ -185,18 +184,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function signUpWithGoogle(role: 'USER' | 'SELLER') {
+  async function signUpWithGoogle() {
     setIsLoading(true);
     try {
-      // Store intended role in sessionStorage and also pass it in redirectTo.
-      // Passing it in redirectTo ensures the server-side callback handler can read it.
-      sessionStorage.setItem('googleAuthRole', role);
-
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

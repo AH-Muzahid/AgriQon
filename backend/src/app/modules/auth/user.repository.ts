@@ -2,8 +2,18 @@ import { Prisma, User } from '../../../generated/client';
 import { prisma } from '../../lib/prisma';
 
 export class UserRepository {
+  private prisma: any;
+
+  constructor(tx?: any) {
+    this.prisma = tx || prisma;
+  }
+
+  withTransaction(tx: any): UserRepository {
+    return new UserRepository(tx);
+  }
+
   async findByEmail(email: string): Promise<User | null> {
-    return await prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: {
         email,
         deletedAt: null,
@@ -12,7 +22,7 @@ export class UserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
-    return await prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: {
         id,
         deletedAt: null,
@@ -21,7 +31,7 @@ export class UserRepository {
   }
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
-    return await prisma.user.create({
+    return await this.prisma.user.create({
       data,
     });
   }
@@ -35,27 +45,27 @@ export class UserRepository {
     replacedBy?: string;
     familyId?: string;
   }) {
-    return await prisma.refreshToken.create({
+    return await this.prisma.refreshToken.create({
       data,
     });
   }
 
   async findRefreshToken(token: string) {
-    return await prisma.refreshToken.findUnique({
+    return await this.prisma.refreshToken.findUnique({
       where: { token },
       include: { user: true },
     });
   }
 
   async updateRefreshTokenUsage(id: string) {
-    return await prisma.refreshToken.update({
+    return await this.prisma.refreshToken.update({
       where: { id },
       data: { lastUsedAt: new Date() },
     });
   }
 
   async revokeRefreshToken(id: string, replacedBy?: string) {
-    return await prisma.refreshToken.update({
+    return await this.prisma.refreshToken.update({
       where: { id },
       data: { 
         revokedAt: new Date(),
@@ -65,14 +75,14 @@ export class UserRepository {
   }
 
   async revokeTokenFamily(familyId: string) {
-    return await prisma.refreshToken.updateMany({
+    return await this.prisma.refreshToken.updateMany({
       where: { familyId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
   }
 
   async revokeAllRefreshTokensForUser(userId: string) {
-    return await prisma.refreshToken.updateMany({
+    return await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });

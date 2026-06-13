@@ -5,10 +5,9 @@ import { cookies } from 'next/headers';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const role = searchParams.get('role') || 'USER';
   const provider = searchParams.get('provider') || 'google';
 
-  console.log(`[AuthCallback Route] Handling OAuth callback. Code present: ${!!code}, Role: ${role}, Provider: ${provider}`);
+  console.log(`[AuthCallback Route] Handling OAuth callback. Code present: ${!!code}, Provider: ${provider}`);
 
   if (code) {
     const cookieStore = await cookies();
@@ -66,7 +65,6 @@ export async function GET(request: Request) {
           idToken: session.access_token,
           email: session.user.email,
           name: session.user.user_metadata?.full_name || session.user.email,
-          role,
         }),
       });
 

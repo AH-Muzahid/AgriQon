@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, Lock, User, Briefcase, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -15,7 +15,6 @@ export default function SignupPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'USER' as 'USER' | 'SELLER',
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -25,14 +24,10 @@ export default function SignupPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && user) {
-      if (user.role === 'SELLER') {
-        if (!user.businessId) {
-          router.replace('/onboarding');
-        } else {
-          router.replace('/dashboard');
-        }
+      if (user.businessId) {
+        router.replace('/dashboard');
       } else {
-        router.replace('/');
+        router.replace('/onboarding');
       }
     }
   }, [user, isLoading, router]);
@@ -49,15 +44,11 @@ export default function SignupPage() {
     setSubmitting(true);
 
     try {
-      const signedUpUser = await register(formData.email, formData.password, formData.name, formData.role);
-      if (signedUpUser.role === 'SELLER') {
-        if (!signedUpUser.businessId) {
-          router.push('/onboarding');
-        } else {
-          router.push('/dashboard');
-        }
+      const signedUpUser = await register(formData.email, formData.password, formData.name);
+      if (signedUpUser.businessId) {
+        router.push('/dashboard');
       } else {
-        router.push('/');
+        router.push('/onboarding');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -248,36 +239,7 @@ export default function SignupPage() {
                 </div>
               </div>
 
-              {/* I am a... (Role Selector Toggle) */}
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-[var(--brand-muted)] ml-1">Register As</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: 'USER' })}
-                    className={`h-13 rounded-xl border-2 font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
-                      formData.role === 'USER' 
-                        ? 'border-[var(--brand-leaf)] bg-[var(--brand-leaf-soft)] text-[var(--brand-leaf)]' 
-                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                    }`}
-                  >
-                    <User className="w-4 h-4" />
-                    Buyer / Enterprise
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role: 'SELLER' })}
-                    className={`h-13 rounded-xl border-2 font-black text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] ${
-                      formData.role === 'SELLER' 
-                        ? 'border-[var(--brand-leaf)] bg-[var(--brand-leaf-soft)] text-[var(--brand-leaf)]' 
-                        : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                    }`}
-                  >
-                    <Briefcase className="w-4 h-4" />
-                    Seller / Producer
-                  </button>
-                </div>
-              </div>
+
 
               {/* Passwords (Side by side on desktop) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -351,7 +313,7 @@ export default function SignupPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => signUpWithGoogle(formData.role)}
+            onClick={() => signUpWithGoogle()}
             disabled={submitting || isLoading}
             className="w-full h-13 rounded-xl border-slate-200/80 bg-white font-black text-slate-700 gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center justify-center active:scale-[0.99]"
           >

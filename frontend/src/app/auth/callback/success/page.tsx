@@ -46,14 +46,10 @@ function SuccessHandler() {
 
         // Small delay for the success animation to show
         setTimeout(() => {
-          if (userData.role === 'SELLER') {
-            if (!userData.businessId) {
-              router.push('/onboarding');
-            } else {
-              router.push('/dashboard');
-            }
-          } else {
+          if (userData.businessId) {
             router.push('/dashboard');
+          } else {
+            router.push('/onboarding');
           }
         }, 1200);
       } catch (err) {

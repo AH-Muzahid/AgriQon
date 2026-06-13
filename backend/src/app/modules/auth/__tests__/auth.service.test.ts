@@ -13,15 +13,50 @@ jest.mock("../../../../config/env", () => ({
   },
 }));
 
-jest.mock("../../../lib/prisma", () => ({
-  prisma: {
+jest.mock("../../../lib/prisma", () => {
+  const mockPrisma: any = {
     user: {
-      update: jest.fn().mockResolvedValue({}),
+      update: jest.fn().mockImplementation((args: any) => Promise.resolve({
+        id: "user-1",
+        email: "test@example.com",
+        name: "Test User",
+        role: "USER",
+        businessId: args?.data?.businessId || "biz-1",
+      })),
     },
     loginActivity: {
       create: jest.fn().mockResolvedValue({}),
     },
-  },
+    organization: {
+      create: jest.fn().mockResolvedValue({ id: "org-1" }),
+    },
+    business: {
+      create: jest.fn().mockResolvedValue({ id: "biz-1" }),
+    },
+    userBusinessRole: {
+      create: jest.fn().mockResolvedValue({}),
+    },
+    $transaction: jest.fn((callback: any) => callback(mockPrisma)),
+  };
+  return { prisma: mockPrisma };
+});
+
+jest.mock("../../accounting/accounting.service", () => ({
+  AccountingService: jest.fn().mockImplementation(() => ({
+    initializeSystemAccounts: jest.fn().mockResolvedValue([]),
+  })),
+}));
+
+jest.mock("../../warehouse/warehouse.service", () => ({
+  WarehouseService: jest.fn().mockImplementation(() => ({
+    createWarehouse: jest.fn().mockResolvedValue({ id: "wh-1" }),
+  })),
+}));
+
+jest.mock("../../subscriptions/subscription.service", () => ({
+  SubscriptionService: jest.fn().mockImplementation(() => ({
+    createTrialSubscription: jest.fn().mockResolvedValue({ id: "sub-1" }),
+  })),
 }));
 
 describe("AuthService", () => {
@@ -35,7 +70,10 @@ describe("AuthService", () => {
       findById: jest.fn(),
       create: jest.fn(),
       createRefreshToken: jest.fn(),
+      withTransaction: jest.fn(),
     } as unknown as jest.Mocked<UserRepository>;
+
+    mockUserRepo.withTransaction.mockReturnValue(mockUserRepo);
 
     authService = new AuthService(mockUserRepo);
   });
@@ -65,7 +103,7 @@ describe("AuthService", () => {
       expect(bcrypt.hash).toHaveBeenCalledWith(userData.password, 12);
       expect(mockUserRepo.create).toHaveBeenCalled();
       expect(result.accessToken).toBe("test-token");
-      expect(result.user.id).toBe("user-1");
+      expect((result as any).user.id).toBe("user-1");
     });
 
     it("should throw error if email already exists", async () => {
@@ -104,7 +142,7 @@ describe("AuthService", () => {
         user.password,
       );
       expect(result.accessToken).toBe("test-token");
-      expect(result.user.id).toBe("user-1");
+      expect((result as any).user.id).toBe("user-1");
     });
 
     it("should throw error if user not found", async () => {
@@ -156,7 +194,7 @@ describe("AuthService", () => {
         name: oAuthData.name,
         role: "USER",
       });
-      expect(result.user.role).toBe("USER");
+      expect((result as any).user.role).toBe("USER");
       expect(result.accessToken).toBe("backend-access-token");
     });
 
@@ -177,7 +215,7 @@ describe("AuthService", () => {
         name: oAuthData.name,
         role: "USER",
       });
-      expect(result.user.role).toBe("USER");
+      expect((result as any).user.role).toBe("USER");
     });
 
     it("should sign up a new user as USER if an invalid role is provided", async () => {
@@ -199,7 +237,7 @@ describe("AuthService", () => {
         name: oAuthData.name,
         role: "USER",
       });
-      expect(result.user.role).toBe("USER");
+      expect((result as any).user.role).toBe("USER");
     });
 
     it("should login an existing user and preserve their role, ignoring the requested role", async () => {
@@ -214,7 +252,7 @@ describe("AuthService", () => {
       const result = await authService.oauthCallback({ ...oAuthData });
 
       expect(mockUserRepo.create).not.toHaveBeenCalled();
-      expect(result.user.role).toBe("ADMIN");
+      expect((result as any).user.role).toBe("ADMIN");
     });
 
     it("should throw an error if idToken is missing", async () => {

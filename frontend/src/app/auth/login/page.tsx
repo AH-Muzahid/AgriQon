@@ -19,14 +19,12 @@ export default function LoginPage() {
   // Redirect if already authenticated
   useEffect(() => {
     if (!isLoading && user) {
-      if (user.role === "SELLER") {
-        if (!user.businessId) {
-          router.replace("/onboarding");
-        } else {
-          router.replace("/dashboard");
-        }
+      if (user.role === 'ADMIN' || (user.role as string) === 'SUPER_ADMIN') {
+        router.replace('/admin');
+      } else if (user.businessId) {
+        router.replace('/dashboard');
       } else {
-        router.replace("/");
+        router.replace('/onboarding');
       }
     }
   }, [user, isLoading, router]);
@@ -38,14 +36,12 @@ export default function LoginPage() {
 
     try {
       const loggedInUser = await login(formData.email, formData.password);
-      if (loggedInUser.role === "SELLER") {
-        if (!loggedInUser.businessId) {
-          router.push("/onboarding");
-        } else {
-          router.push("/dashboard");
-        }
+      if (loggedInUser.role === 'ADMIN' || (loggedInUser.role as string) === 'SUPER_ADMIN') {
+        router.push('/admin');
+      } else if (loggedInUser.businessId) {
+        router.push('/dashboard');
       } else {
-        router.push("/");
+        router.push('/onboarding');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {

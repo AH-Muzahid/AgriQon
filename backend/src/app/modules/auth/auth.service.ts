@@ -9,6 +9,12 @@ import { CreateUserDTO, LoginDTO } from "./auth.validation";
 import { prisma } from "../../lib/prisma";
 import speakeasy from "speakeasy";
 import { decrypt } from "../../shared/utils/encryption";
+import { AccountingService } from "../accounting/accounting.service";
+import { AccountingRepository } from "../accounting/accounting.repository";
+import { WarehouseService } from "../warehouse/warehouse.service";
+import { WarehouseRepository } from "../warehouse/warehouse.repository";
+import { SubscriptionService } from "../subscriptions/subscription.service";
+import { SubscriptionRepository } from "../subscriptions/subscription.repository";
 
 export class AuthService {
   constructor(private userRepo: UserRepository) {}
@@ -24,9 +30,63 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
-    const user = await this.userRepo.create({
-      ...data,
-      password: hashedPassword,
+    const user = await prisma.$transaction(async (tx: any) => {
+      // 1. Create User (using tx-bound repository)
+      const createdUser = await this.userRepo.withTransaction(tx).create({
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+      });
+
+      // 2. Create Organization
+      const organization = await tx.organization.create({
+        data: {
+          name: `${data.name}'s Organization`,
+        },
+      });
+
+      // 3. Create Business (Tenant)
+      const business = await tx.business.create({
+        data: {
+          organizationId: organization.id,
+          name: `${data.name}'s Business`,
+        },
+      });
+
+      // 4. Link User as OWNER in UserBusinessRole
+      await tx.userBusinessRole.create({
+        data: {
+          userId: createdUser.id,
+          businessId: business.id,
+          role: "OWNER",
+        },
+      });
+
+      // 5. Update user's businessId link
+      const updatedUser = await tx.user.update({
+        where: { id: createdUser.id },
+        data: { businessId: business.id },
+      });
+
+      // 6. Initialize Accounting Accounts
+      const accountingRepoTx = new AccountingRepository(tx);
+      const accountingServiceTx = new AccountingService(accountingRepoTx);
+      await accountingServiceTx.initializeSystemAccounts(business.id);
+
+      // 7. Create Default Warehouse
+      const warehouseRepoTx = new WarehouseRepository(tx);
+      const warehouseServiceTx = new WarehouseService(warehouseRepoTx);
+      await warehouseServiceTx.createWarehouse({
+        name: env.defaultWarehouseName || "Main Warehouse",
+        businessId: business.id,
+      } as any);
+
+      // 8. Auto Provision Trial Subscription
+      const subscriptionRepoTx = new SubscriptionRepository(tx);
+      const subscriptionServiceTx = new SubscriptionService(subscriptionRepoTx);
+      await subscriptionServiceTx.createTrialSubscription({ businessId: business.id }, tx);
+
+      return updatedUser;
     });
 
     const accessToken = this.generateAccessToken(user);
@@ -464,21 +524,69 @@ export class AuthService {
     let user = await this.userRepo.findByEmail(data.email);
 
     if (!user) {
-      // Create new user if they don't exist — with validated role
-      user = await this.userRepo.create({
-        email: data.email,
-        name: data.name,
-        role: assignedRole,
+      // Create new user if they don't exist — with validated role and auto-provisioned organization/business
+      user = await prisma.$transaction(async (tx: any) => {
+        const createdUser = await this.userRepo.withTransaction(tx).create({
+          email: data.email,
+          name: data.name,
+          role: assignedRole,
+        });
+
+        const organization = await tx.organization.create({
+          data: {
+            name: `${data.name}'s Organization`,
+          },
+        });
+
+        const business = await tx.business.create({
+          data: {
+            organizationId: organization.id,
+            name: `${data.name}'s Business`,
+          },
+        });
+
+        await tx.userBusinessRole.create({
+          data: {
+            userId: createdUser.id,
+            businessId: business.id,
+            role: "OWNER",
+          },
+        });
+
+        const updatedUser = await tx.user.update({
+          where: { id: createdUser.id },
+          data: { businessId: business.id },
+        });
+
+        // Initialize Accounting Accounts
+        const accountingRepoTx = new AccountingRepository(tx);
+        const accountingServiceTx = new AccountingService(accountingRepoTx);
+        await accountingServiceTx.initializeSystemAccounts(business.id);
+
+        // Create Default Warehouse
+        const warehouseRepoTx = new WarehouseRepository(tx);
+        const warehouseServiceTx = new WarehouseService(warehouseRepoTx);
+        await warehouseServiceTx.createWarehouse({
+          name: env.defaultWarehouseName || "Main Warehouse",
+          businessId: business.id,
+        } as any);
+
+        // Auto Provision Trial Subscription
+        const subscriptionRepoTx = new SubscriptionRepository(tx);
+        const subscriptionServiceTx = new SubscriptionService(subscriptionRepoTx);
+        await subscriptionServiceTx.createTrialSubscription({ businessId: business.id }, tx);
+
+        return updatedUser;
       });
     }
 
-    const accessToken = this.generateAccessToken(user);
+    const accessToken = this.generateAccessToken(user!);
     const { token, hashedToken } = this.generateSecureToken();
     const familyId = crypto.randomBytes(20).toString("hex");
 
-    await this.saveRefreshToken(user.id, hashedToken, familyId, sessionInfo);
+    await this.saveRefreshToken(user!.id, hashedToken, familyId, sessionInfo);
 
-    return { user, accessToken, refreshToken: token };
+    return { user: user!, accessToken, refreshToken: token };
   }
 
   private async verifySupabaseToken(idToken: string): Promise<string> {
